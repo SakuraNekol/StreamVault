@@ -10,6 +10,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-1.8+-red.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.7.x-brightgreen.svg)](https://spring.io/projects/spring-boot)
+![Build Status](https://github.com/lemon8866/StreamVault/actions/workflows/docker-image.yml/badge.svg)
 
 </div>
 
@@ -24,6 +25,7 @@
 > 7. `backstage为后台服务端 java`  `app/uniapp  手机端源码`   `app/extend  浏览器扩展`  `app/desktop  桌面端客户端源码`
 > 8. 维护者比较懒 故本库没有详细部署文档 更多详细内容 请自行部署体验 也欢迎各位大佬提交部署PR到doc目录
 > 9. 大部分站点都支持文件的分片下载,本项目暂未开启分片下载 视风控情况后续考虑开启分片下载
+> 10. 已经借助AI之力完成了本项目的wiki，具体使用可以参考[项目Wiki](https://github.com/lemon8866/StreamVault.wiki.git)
 
 ## ⚠️ 声明
 

@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build latest
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ on:
       image_tag:
         description: 'Docker Image Tag (e.g., test, v1.0.0)'
         required: true
-        default: 'test'
+        default: 'latest'
 
 jobs:
   build:
