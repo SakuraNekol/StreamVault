@@ -95,6 +95,28 @@ public class StringUtil {
 		}
 	}
 
+	
+    public static String simplifyTitle(String originalTitle) {
+        if (originalTitle == null || originalTitle.trim().isEmpty()) {
+            return "未知标题";
+        }
+        String cleaned = originalTitle.replaceAll("#[^_#\\s]+", "");
+        cleaned = cleaned.replaceAll("_+", "_");
+        cleaned = cleaned.replaceAll("^_+|_+$", "");
+        String[] parts = cleaned.split("_");
+        StringBuilder simplified = new StringBuilder();
+        int count = 0;
+        for (String part : parts) {
+            part = part.trim();
+            if (!part.isEmpty()) {
+                simplified.append(part);
+                count++;
+                if (count >= 3) break; // 最多保留前3个有效词
+            }
+        }
+        return simplified.length() > 0 ? simplified.toString() : "未知标题";
+    }
+
 
 	public static String getRemoteAddr(HttpServletRequest request) {
 		String remoteAddr = request.getHeader("X-Real-IP");
@@ -110,8 +132,4 @@ public class StringUtil {
     public static boolean isNotBlank(final CharSequence cs) {
         return !StringUtils.isBlank(cs);
     }
-
-	public static void main(String[] args) {
-		System.out.println(StringUtil.getFileName("反恐精英1.6 #动画制作 #游戏 #反恐精英 #童年回忆", "123"));
-	}
 }
