@@ -254,11 +254,13 @@ public class EmbyMetadataGenerator {
 
     public static void createDouNfo(String upname, String upmid,String upface, String ctime, String cid, String title,
             String desc, String pic, String out) {
+    	title =StringUtil.simplifyTitle(title);
         generateMovieMeta(Platform.DOUYIN, upname, upface, upmid, ctime, cid, title, desc, pic, out);
     }
 
     public static void createKuaiNfo(String upname, String upmid, String ctime, String cid, String title,
             String desc, String pic, String out) {
+    	title =StringUtil.simplifyTitle(title);
         generateMovieMeta(Platform.KUAISHOU, upname, null, upmid, ctime, cid, title, desc, pic, out);
     }
 
@@ -370,7 +372,11 @@ public class EmbyMetadataGenerator {
             String[] dates = getFormattedDates(videoInfo.get("ctime"));
             String airedDate = dates[0];
             String dateadded = dates[1];
-
+            //
+            if (platform == Platform.DOUYIN) {
+                episodeTitle = StringUtil.simplifyTitle(episodeTitle);
+            }
+            //
             // 构建NFO内容
             StringBuilder nfoContent = new StringBuilder()
                     .append(XML_HEADER).append("\n")
