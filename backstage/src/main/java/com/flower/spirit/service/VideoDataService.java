@@ -21,7 +21,6 @@ import com.flower.spirit.config.Global;
 import com.flower.spirit.dao.VideoDataDao;
 import com.flower.spirit.entity.VideoDataEntity;
 import com.flower.spirit.utils.CommandUtil;
-import com.flower.spirit.utils.FileUtils;
 import com.flower.spirit.utils.StringUtil;
 
 

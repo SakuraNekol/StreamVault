@@ -6,13 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-
-import com.flower.spirit.dao.CookiesConfigDao;
 import com.flower.spirit.entity.BiliConfigEntity;
 import com.flower.spirit.entity.ConfigEntity;
 import com.flower.spirit.entity.TikTokConfigEntity;
 import com.flower.spirit.entity.CookiesConfigEntity;
-import com.flower.spirit.entity.NotifyConfigEntity;
 import com.flower.spirit.service.BiliConfigService;
 import com.flower.spirit.service.ConfigService;
 import com.flower.spirit.service.CookiesConfigService;

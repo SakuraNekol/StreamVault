@@ -21,7 +21,6 @@ import java.io.InputStreamReader;
 
 import com.flower.spirit.entity.VideoMixEntity;
 import com.flower.spirit.entity.VideoMixSegmentEntity;
-import com.flower.spirit.utils.EncoderUtil;
 import com.flower.spirit.utils.FileUtil;
 import com.flower.spirit.entity.VideoDataEntity;
 import com.flower.spirit.dao.VideoMixDao;
@@ -29,9 +28,6 @@ import com.flower.spirit.dao.VideoMixSegmentDao;
 import com.flower.spirit.dao.VideoDataDao;
 import com.flower.spirit.common.AjaxEntity;
 import com.flower.spirit.config.Global;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.JSONArray;
-
 @Service
 public class VideoMixService {
 

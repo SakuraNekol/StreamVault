@@ -6,11 +6,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSONObject;
 import com.flower.spirit.common.AjaxEntity;
 import com.flower.spirit.config.Global;
@@ -19,8 +15,6 @@ import com.flower.spirit.utils.XbogusUtil;
 
 @Service
 public class DouYinService {
-
-	private static String domain = "https://www.douyin.com/";
 	
 	private static String loginQRdomain = "https://sso.douyin.com/get_qrcode/?";
 	
@@ -104,8 +98,7 @@ public class DouYinService {
                 redirect.setRequestProperty("Referer", DouUtil.referer);
                 redirect.setRequestProperty("Cookie",setCookieHeader);
 //                System.out.println(redirect.getResponseCode());
-                
-                Map<String, List<String>> redirect_headerFields = redirect.getHeaderFields();
+               
 //                List<String> redirect_cookies = redirect_headerFields.get("Set-Cookie");
 //                System.out.println(String.join("; ", redirect_cookies));
 //                if(redirect.getResponseCode() == 302) {

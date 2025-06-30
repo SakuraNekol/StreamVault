@@ -23,8 +23,6 @@ import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.flower.spirit.config.Global;
-import com.flower.spirit.dao.FfmpegQueueDao;
-import com.flower.spirit.dao.FfmpegQueueDataDao;
 import com.flower.spirit.dao.VideoDataDao;
 import com.flower.spirit.entity.ProcessHistoryEntity;
 import com.flower.spirit.entity.VideoDataEntity;
@@ -69,11 +67,6 @@ public class AnalysisService {
 
 	private ExecutorService ytdlp = Executors.newFixedThreadPool(3);
 
-	@Autowired
-	private FfmpegQueueDao ffmpegQueueDao;
-
-	@Autowired
-	private FfmpegQueueDataDao ffmpegQueueDataDao;
 
 	/**
 	 * 解析资源
