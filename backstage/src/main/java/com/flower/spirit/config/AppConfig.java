@@ -93,6 +93,9 @@ public class AppConfig {
 		if(null!=data.getNfonetaddr() && !"".equals(data.getNfonetaddr())) {
 			Global.nfonetaddr = data.getNfonetaddr();
 		}
+		if(null!=data.getFrontend() && !"".equals(data.getFrontend())) {
+			Global.frontend = data.getFrontend();
+		}
 		if (data.getAgenttype() != null && !data.getAgenttype().trim().isEmpty() &&
 			    data.getAgentaddress() != null && !data.getAgentaddress().trim().isEmpty() &&
 			    data.getAgentport() != null && !data.getAgentport().trim().isEmpty()) {

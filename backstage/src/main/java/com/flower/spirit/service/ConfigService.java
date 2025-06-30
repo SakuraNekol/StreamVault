@@ -63,7 +63,9 @@ public class ConfigService {
 		if(null!=configEntity.getNfonetaddr() && !"".equals(configEntity.getNfonetaddr())) {
 			Global.nfonetaddr = configEntity.getNfonetaddr();
 		}
-		
+		if(null!=configEntity.getFrontend() && !"".equals(configEntity.getFrontend())) {
+			Global.frontend = configEntity.getFrontend();
+		}
 		return new AjaxEntity(Global.ajax_option_success, "操作成功", configEntity);
 	}
 
