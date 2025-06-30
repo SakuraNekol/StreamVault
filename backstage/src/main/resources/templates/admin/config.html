@@ -115,8 +115,8 @@
                                             <div class="form-group">
                                                 <label>主页配置&nbsp;<a href="https://bd.kwaie.com" onclick="return confirmRedirect(this);" style="font-size: 12px;" title="该demo非本仓库提供">播放主页DEMO</a></label>
                                                  <select id="frontend" class="form-control frontend" name="frontend">
-                                                    <option value="0" th:selected="${config.frontend} eq '0'">空白主页</option>
-                                                    <option value="1" th:selected="${config.frontend} eq '1'" disabled>播放主页(下个版本)</option>
+                                                    <option value="blank" th:selected="${config.frontend} eq 'blank'">空白主页</option>
+                                                    <option value="video" th:selected="${config.frontend} eq 'video'">播放主页(dev版)</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -501,6 +501,7 @@
               option['readonlytoken'] = readonlytoken;
               option['ytdlpmode'] = $("#ytdlpmode").val();
               option['nfonetaddr'] = $("#nfonetaddr").val();
+              option['frontend'] = $("#frontend").val();
               $.post("/admin/api/saveConfig",option,function(data,status){
                   if(data.resCode =="000001"){
                       layer.closeAll();
@@ -650,6 +651,7 @@
             option['readonlytoken'] = readonlytoken;
             option['ytdlpmode'] = $("#ytdlpmode").val();
             option['nfonetaddr'] = $("#nfonetaddr").val();
+            option['frontend'] = $("#frontend").val();
             $.post("/admin/api/saveConfig",option,function(data,status){
                 if(data.resCode =="000001"){
                     layer.closeAll();
