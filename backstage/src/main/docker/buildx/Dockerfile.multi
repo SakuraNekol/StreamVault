@@ -1,4 +1,4 @@
-# ---- 第一个阶段：构建 Python 环境 ----
+# ---- 第一阶段：构建 Python 环境 ----
 FROM python:3.11-alpine as python-builder
 
 ENV TZ=Asia/Shanghai
@@ -13,37 +13,45 @@ ARG BUILD_VERSION=2025.06.30.052234
 RUN wget -O /usr/local/bin/yt-dlp https://github.com/lemon8866/yt-dlp/releases/download/${BUILD_VERSION}/yt-dlp && \
     chmod a+rx /usr/local/bin/yt-dlp
 
-# ---- 第二个阶段：构建最终镜像 ----
-FROM openjdk:8-jdk-alpine
+---
+
+# ---- 第二阶段：最终运行环境（纯 Alpine）----
+FROM alpine
 
 ENV TZ=Asia/Shanghai
 
-# 安装依赖工具
-RUN apk add --no-cache ffmpeg
+# 安装 Java、Python 运行环境及其他依赖
+RUN apk add --no-cache \
+    openjdk8 \
+    ffmpeg \
+    python3 \
+    py3-pip \
+    libffi \
+    libstdc++ \
+    && python3 -m ensurepip && \
+    pip install --no-cache-dir virtualenv
 
-# 拷贝 Python 虚拟环境和 yt-dlp
+# 拷贝 Python 包（f2）、yt-dlp 等
 COPY --from=python-builder /usr/local /usr/local
 COPY --from=python-builder /usr/lib /usr/lib
-
-# 添加 Python 支持文件
 COPY --from=python-builder /usr/include /usr/include
 
-# 拷贝脚本和资源
+# 设置环境变量
+ENV JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk
+ENV PATH=$JAVA_HOME/bin:$PATH
+ENV YT_DLP_PATH=/usr/local/bin/yt-dlp
+
+# 拷贝资源文件
 COPY db /home/app/db/
 COPY script /home/app/script/
 RUN mkdir -p /app/resources
 
-# 添加 JAR 文件
+# 拷贝 JAR 文件
 ADD spirit-0.0.1-SNAPSHOT.jar /app/app.jar
 
-# 配置环境变量
-ENV YT_DLP_PATH=/usr/local/bin/yt-dlp
-ENV PATH="/usr/local/bin:$PATH"
-
-# 暴露挂载点
+# 设置工作目录、挂载点
+WORKDIR /app
 VOLUME ["/tmp", "/app"]
 
-WORKDIR /app
-
-# 启动 Java 主应用
+# 启动 Java 应用
 ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/app/app.jar", "--spring.profiles.active=docker"]
