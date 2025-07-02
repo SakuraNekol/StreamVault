@@ -1,12 +1,16 @@
-name: x86-jre17 build
+name: Build Multi-stage Docker Image
 
 on:
   workflow_dispatch:
     inputs:
       image_tag:
-        description: 'x86-jre17'
+        description: 'Docker Image Tag (e.g., multi, v1.0.0-multi)'
         required: true
-        default: 'jre17'
+        default: 'multi'
+      build_version:
+        description: 'yt-dlp Build Version'
+        required: false
+        default: '2025.06.30.052234'
 
 jobs:
   build:
@@ -47,11 +51,15 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and Push with Input Tag
+      - name: Build and Push Multi-stage Image
         run: |
           docker buildx build \
-            --platform linux/amd64 \
+            --platform linux/arm64,linux/amd64 \
+            --build-arg BUILD_VERSION=${{ github.event.inputs.build_version }} \
             -t qingfeng2336/stream-vault:${{ github.event.inputs.image_tag }} \
             --push \
-            -f ./backstage/src/main/docker/buildx/Dockerfile.jre17 \
+            -f ./backstage/src/main/docker/buildx/Dockerfile.multi \
             ./backstage/src/main/docker/buildx
+
+      - name: Image digest
+        run: echo "Image pushed successfully with tag ${{ github.event.inputs.image_tag }}"
