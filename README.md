@@ -84,6 +84,11 @@ StreamVault（原名：spirit）是一个视频资源管理与下载平台，支
 | 红薯      | 🤔     | 🤔             |              |                                                   |
 | 通用平台  | ✅     | ❌            |  仅支持yt-dlp| docker版自带 不接受issues 具体支持地址参考yt-dlp仓库|
 
+* **通用平台**：除抖音、哔哩哔哩、快手外的所有平台，包括但不限于YouTube、Twitter、Instagram、微博、小红书等，均通过yt-dlp处理。详细支持列表请参考[yt-dlp官方支持站点文档](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md)。
+* 这里通用平台只是代表没有适配解析NFO 等一些小细节问题
+* 由于红薯 微博 TikTok 为添加处理 所以 暂时走通用平台进行处理
+* 通用平台支持什么具体请自测
+
 ### 💻 技术栈
 
 - 🛠️ 后端：Spring Boot 2.7.x + JPA + SQLite
