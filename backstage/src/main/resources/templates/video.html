@@ -217,8 +217,15 @@
             text-align: center;
             padding: 1rem;
             margin-top: 1rem;
+            margin-bottom: 2rem;
             color: #666;
             font-size: 0.875rem;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
 
@@ -508,8 +515,14 @@
             </div>
 
             <!-- 加载更多提示 -->
-            <div id="loadMoreTrigger" class="load-more-trigger hidden">
-                <p>下拉加载更多</p>
+            <div id="loadMoreTrigger" class="load-more-trigger">
+                <div class="flex items-center justify-center">
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p>滚动加载更多内容</p>
+                </div>
             </div>
         </div>
 
@@ -776,12 +789,14 @@
                 const trigger = document.getElementById('loadMoreTrigger');
                 if (trigger) {
                     observer.observe(trigger);
+                    console.log('已设置滚动监听');
                 }
             } else {
                 // 降级到滚动事件
                 window.addEventListener('scroll', debounce(() => {
-                    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 1000) {
+                    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 200) {
                         if (hasMore && !isLoading) {
+                            console.log('触发滚动加载');
                             loadMoreVideos();
                         }
                     }
@@ -847,7 +862,7 @@
                         videoListEl.appendChild(videoCard);
                     });
                     
-                    hasMore = response.data.length >= 20;
+                    hasMore = response.hasMore;
                     
                     if (hasMore) {
                         showLoadMoreTrigger();
@@ -871,14 +886,19 @@
         
         // 加载更多视频
         async function loadMoreVideos() {
-            if (isLoading || !hasMore) return;
+            if (isLoading || !hasMore) {
+                console.log('跳过加载更多：', isLoading ? '正在加载中' : '没有更多数据');
+                return;
+            }
             
+            console.log('开始加载更多视频，当前页码：', currentPage);
             currentPage++;
             isLoading = true;
             showLoading();
             
             try {
                 const response = await fetchVideos();
+                console.log('加载更多响应：', response);
                 
                 if (response && response.data && response.data.length > 0) {
                     const videoListEl = document.getElementById('videoList');
@@ -889,13 +909,17 @@
                     });
                     
                     hasMore = response.hasMore;
+                    console.log('是否有更多数据：', hasMore);
                     
-                    if (!hasMore) {
+                    if (hasMore) {
+                        showLoadMoreTrigger();
+                    } else {
                         hideLoadMoreTrigger();
                     }
                 } else {
                     hasMore = false;
                     hideLoadMoreTrigger();
+                    console.log('没有更多数据');
                 }
             } catch (error) {
                 console.error('加载更多视频失败:', error);
@@ -910,8 +934,8 @@
         // 获取视频数据
         async function fetchVideos() {
             const params = new URLSearchParams({
-                page: currentPage,
-                size: 20
+                pageNo: currentPage,
+                pageSize: 20
             });
             
             if (currentSearch) {
@@ -924,18 +948,24 @@
             }
             
             const url = addTokenToUrl(`${serverConfig.url}/api/findVideos?${params.toString()}`);
+            console.log('请求URL:', url);
             
             const response = await axios.get(url, {
                 timeout: 10000
             });
             
+            console.log('服务器响应:', response.data);
+            
             // 根据实际响应结构返回数据
             if (response.data && response.data.record && response.data.record.content) {
+                const hasMore = !response.data.record.last;
+                console.log('当前页:', currentPage, '总页数:', response.data.record.totalPages, '是否有更多:', hasMore);
+                
                 return {
                     data: response.data.record.content,
                     totalPages: response.data.record.totalPages,
                     totalElements: response.data.record.totalElements,
-                    hasMore: !response.data.record.last
+                    hasMore: hasMore
                 };
             }
             
@@ -1122,11 +1152,17 @@
         }
         
         function showLoadMoreTrigger() {
-            document.getElementById('loadMoreTrigger').classList.remove('hidden');
+            const trigger = document.getElementById('loadMoreTrigger');
+            trigger.classList.remove('hidden');
+            trigger.style.display = 'block';
+            console.log('显示加载更多触发器');
         }
         
         function hideLoadMoreTrigger() {
-            document.getElementById('loadMoreTrigger').classList.add('hidden');
+            const trigger = document.getElementById('loadMoreTrigger');
+            trigger.classList.add('hidden');
+            trigger.style.display = 'none';
+            console.log('隐藏加载更多触发器');
         }
         
         // 获取服务器配置
