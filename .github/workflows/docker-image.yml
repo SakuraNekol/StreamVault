@@ -76,9 +76,9 @@ jobs:
           cp -r backstage/src/main/docker/buildx/db release_package/
           cp -r backstage/src/main/docker/buildx/script release_package/
           cd release_package
-          zip -r ../spirit-${{ github.event.inputs.release_tag || github.event.inputs.image_tag }}.zip .
+          zip -r ../StreamVault-${{ github.event.inputs.release_tag || github.event.inputs.image_tag }}.zip .
           cd ..
-          echo "生成的发布包: spirit-${{ github.event.inputs.release_tag || github.event.inputs.image_tag }}.zip"
+          echo "生成的发布包: StreamVault-${{ github.event.inputs.release_tag || github.event.inputs.image_tag }}.zip"
 
       - name: Create GitHub Release
         if: ${{ github.event.inputs.create_release == 'true' }}
@@ -89,6 +89,6 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            spirit-${{ github.event.inputs.release_tag || github.event.inputs.image_tag }}.zip
+            StreamVault-${{ github.event.inputs.release_tag || github.event.inputs.image_tag }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

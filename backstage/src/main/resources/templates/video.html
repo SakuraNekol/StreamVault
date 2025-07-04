@@ -92,6 +92,12 @@
             font-weight: 500;
             color: white;
             background: rgba(0, 0, 0, 0.7);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .video-platform-tag.cursor-pointer:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
 
@@ -379,6 +385,12 @@
                                     </svg>
                                 </div>
                             </div>
+                            <button id="resetFilterBtn" 
+                                    class="p-1.5 sm:p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors duration-200 ml-1 hidden">
+                                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
                         </div>
                         
                         <!-- 操作按钮 -->
@@ -606,13 +618,42 @@
         // 页面初始化
         document.addEventListener('DOMContentLoaded', function() {
             loadSettings();
-            setupEventListeners();
+            setupEventListeners(); // 这里会初始化重置按钮状态
             setupInfiniteScroll();
             loadVideoList();
             
             // 监听剪贴板变化
             setupClipboardListener();
+            
+            // 显示平台标签筛选提示
+            setTimeout(() => {
+                showMessage('提示：点击视频卡片上的平台标签可筛选相同平台的视频');
+            }, 2000);
+            
+            // 从URL参数中恢复筛选状态
+            restoreFilterFromUrl();
         });
+        
+        // 从URL参数中恢复筛选状态
+        function restoreFilterFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const platformParam = urlParams.get('platform');
+            const searchParam = urlParams.get('search');
+            
+            // 恢复平台筛选
+            if (platformParam) {
+                filterByPlatform(platformParam);
+            }
+            
+            // 恢复搜索筛选
+            if (searchParam) {
+                const searchInput = document.getElementById('searchInput');
+                searchInput.value = searchParam;
+                currentSearch = searchParam;
+                updateResetFilterButton();
+                resetAndLoad();
+            }
+        }
         
         // 页面大小调整
         window.addEventListener('resize', debounce(() => {
@@ -754,6 +795,7 @@
             const searchInput = document.getElementById('searchInput');
             searchInput.addEventListener('input', debounce(() => {
                 currentSearch = searchInput.value.trim();
+                updateResetFilterButton();
                 resetAndLoad();
             }, 500));
             
@@ -761,8 +803,112 @@
             const platformSelect = document.getElementById('platformSelect');
             platformSelect.addEventListener('change', () => {
                 currentPlatform = platformSelect.value;
+                updateResetFilterButton();
                 resetAndLoad();
             });
+            
+            // 重置筛选按钮
+            const resetFilterBtn = document.getElementById('resetFilterBtn');
+            resetFilterBtn.addEventListener('click', () => {
+                // 重置搜索和平台筛选
+                searchInput.value = '';
+                currentSearch = '';
+                platformSelect.selectedIndex = 0;
+                currentPlatform = '';
+                
+                // 隐藏重置按钮
+                resetFilterBtn.classList.add('hidden');
+                
+                // 重新加载视频列表
+                resetAndLoad();
+                
+                // 显示提示
+                showMessage('已重置所有筛选条件');
+            });
+            
+            // 初始化重置按钮状态
+            updateResetFilterButton();
+        }
+        
+        // 更新重置筛选按钮显示状态
+        function updateResetFilterButton() {
+            const resetFilterBtn = document.getElementById('resetFilterBtn');
+            if (currentSearch || currentPlatform) {
+                resetFilterBtn.classList.remove('hidden');
+                // 更新URL参数
+                updateUrlParams();
+            } else {
+                resetFilterBtn.classList.add('hidden');
+                // 清除URL参数
+                clearUrlParams();
+            }
+        }
+        
+        // 更新URL参数
+        function updateUrlParams() {
+            const urlParams = new URLSearchParams();
+            
+            if (currentPlatform) {
+                urlParams.set('platform', currentPlatform);
+            }
+            
+            if (currentSearch) {
+                urlParams.set('search', currentSearch);
+            }
+            
+            // 更新URL，不刷新页面
+            const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+            window.history.replaceState({}, '', newUrl);
+        }
+        
+        // 清除URL参数
+        function clearUrlParams() {
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+        
+        // 通过平台标签筛选视频
+        function filterByPlatform(platform) {
+            console.log('筛选平台:', platform);
+            // 更新平台选择下拉框
+            const platformSelect = document.getElementById('platformSelect');
+            
+            if (platform && platform.trim() !== '') {
+                // 查找匹配的选项
+                let found = false;
+                for (let i = 0; i < platformSelect.options.length; i++) {
+                    if (platformSelect.options[i].value === platform) {
+                        platformSelect.selectedIndex = i;
+                        found = true;
+                        break;
+                    }
+                }
+                
+                // 如果下拉框中没有匹配的选项，添加一个新选项
+                if (!found) {
+                    const option = document.createElement('option');
+                    option.value = platform;
+                    option.textContent = platform;
+                    platformSelect.appendChild(option);
+                    platformSelect.value = platform;
+                }
+                
+                // 设置当前平台并重新加载
+                currentPlatform = platform;
+                updateResetFilterButton();
+                resetAndLoad();
+                
+                // 显示筛选提示
+                showMessage(`已筛选平台: ${platform}，点击平台标签可筛选相同平台视频`);
+            } else {
+                // 重置为全部
+                platformSelect.selectedIndex = 0; // 选择"全部"选项
+                currentPlatform = '';
+                updateResetFilterButton();
+                resetAndLoad();
+                
+                // 显示重置提示
+                showMessage('已重置平台筛选，显示全部视频');
+            }
         }
         
         // 重置并加载
@@ -771,6 +917,8 @@
             hasMore = true;
             document.getElementById('videoList').innerHTML = '';
             loadVideoList();
+            // 滚动到顶部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         
         // 无限滚动设置
@@ -944,7 +1092,7 @@
             }
             
             if (currentPlatform) {
-                params.append('platform', currentPlatform);
+                params.append('videoplatform', currentPlatform);
             }
             
             const url = addTokenToUrl(`${serverConfig.url}/api/findVideos?${params.toString()}`);
@@ -1012,7 +1160,7 @@
                     <img src="${coverUrl}" 
                          alt="${title}" 
                          loading="lazy">
-                    <div class="video-platform-tag ${platformClass}">
+                    <div class="video-platform-tag ${platformClass} cursor-pointer" data-platform="${platform}">
                         ${platform}
                     </div>
                     <div class="play-button">
@@ -1024,13 +1172,23 @@
                 <div class="p-3">
                     <h3 class="font-medium text-gray-900 line-clamp-2 mb-2">${title}</h3>
                     <div class="flex items-center justify-between text-sm text-gray-500">
-                        <span class="${platformClass} text-white px-2 py-1 rounded text-xs">
+                        <span class="${platformClass} text-white px-2 py-1 rounded text-xs cursor-pointer hover:shadow-md transition-all" data-platform="${platform}">
                             ${platform}
                         </span>
                         <span>${formattedDate}</span>
                     </div>
                 </div>
             `;
+            
+            // 为平台标签添加点击事件
+            const platformTags = card.querySelectorAll('[data-platform]');
+            platformTags.forEach(tag => {
+                tag.addEventListener('click', (event) => {
+                    event.stopPropagation(); // 阻止事件冒泡，避免触发卡片的点击事件
+                    const platform = event.target.getAttribute('data-platform');
+                    filterByPlatform(platform);
+                });
+            });
             
             return card;
         }
@@ -1507,9 +1665,6 @@
                 localStorage.removeItem(`progress_${currentVideoId}`);
             }
         }
-        
-
-        
 
     </script>
 </body>
