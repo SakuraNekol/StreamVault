@@ -20,6 +20,10 @@ on:
           - 'true'
           - 'false'
 
+permissions:
+  contents: write
+  packages: write 
+
 jobs:
   build:
     runs-on: ubuntu-latest
