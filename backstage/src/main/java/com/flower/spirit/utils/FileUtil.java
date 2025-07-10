@@ -39,6 +39,37 @@ public class FileUtil {
     }
 
     
+    public static String generateDir(boolean real,String platform,String filename,String favname,String ext,int index) {
+    	String datepath = DateUtils.getDate("yyyy");
+    	String resdir ="";
+    	if(real) {
+    		resdir = resdir+uploadRealPath+System.getProperty("file.separator");
+    	}else {
+    		resdir = resdir+savefile+System.getProperty("file.separator");
+    	}
+    	//拼接平台
+    	resdir=resdir+platform+System.getProperty("file.separator");
+    	
+    	//拼接类型
+    	resdir=resdir+"graphic"+System.getProperty("file.separator");
+    	
+    	if(favname== null) {
+    		resdir =resdir+datepath+System.getProperty("file.separator");
+    	}else {
+    		resdir =resdir+favname+System.getProperty("file.separator");
+    	}
+    	if(filename!= null) {
+    		resdir =resdir+filename;	
+    		if(ext != null) {
+    			resdir =resdir+System.getProperty("file.separator")+filename+"-index-"+index+"."+ext;
+    		}else {
+    			resdir =resdir+System.getProperty("file.separator");
+    		}
+    	}
+    	return resdir;
+    }
+    
+    
     /**
      * @param real
      * @param platform
@@ -312,6 +343,18 @@ public class FileUtil {
             }
         }
     }
+    
+    public static String readJson(String filePath) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(filePath));
+        StringBuilder jsonContent = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            jsonContent.append(line);
+        }
+        reader.close();
+        return jsonContent.toString();
+    }
+    
     
     public static JSONArray readJsonFromFile(String filePath) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(filePath));

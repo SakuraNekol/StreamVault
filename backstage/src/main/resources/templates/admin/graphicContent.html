@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+	<title>图文内容管理-StreamVault</title>
+	<th:block th:insert="admin/include/header :: metaHeader"></th:block>
+	<link href="../static/css/bootstrap.min.css" rel="stylesheet">
+	<link href="../static/css/materialdesignicons.min.css" rel="stylesheet">
+	<link href="../static/css/style.min.css" rel="stylesheet">
+	<link href="../static/js/skin/laypage.css" rel="stylesheet">
+
+	<style>
+		/* 图文内容卡片样式 */
+		.graphic-card {
+			border: 1px solid #e9ecef;
+			border-radius: 8px;
+			margin-bottom: 20px;
+			background: #fff;
+			box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+			transition: all 0.3s ease;
+		}
+		
+		.graphic-card:hover {
+			box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+			transform: translateY(-2px);
+		}
+		
+		.graphic-header {
+			padding: 15px;
+			border-bottom: 1px solid #e9ecef;
+			background: #f8f9fa;
+			border-radius: 8px 8px 0 0;
+		}
+		
+		.graphic-title {
+			font-size: 16px;
+			font-weight: 600;
+			color: #333;
+			margin: 0;
+			line-height: 1.4;
+		}
+		
+		.graphic-meta {
+			margin-top: 8px;
+			font-size: 12px;
+			color: #666;
+		}
+		
+		.platform-badge {
+			display: inline-block;
+			padding: 2px 8px;
+			border-radius: 12px;
+			font-size: 11px;
+			font-weight: 500;
+			margin-right: 8px;
+		}
+		
+		.platform-douyin {
+			background: #ff6b6b;
+			color: white;
+		}
+		
+		.graphic-content {
+			padding: 15px;
+		}
+		
+		.content-text {
+			font-size: 14px;
+			color: #555;
+			line-height: 1.5;
+			margin-bottom: 15px;
+			max-height: 60px;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			display: -webkit-box;
+			-webkit-line-clamp: 3;
+			-webkit-box-orient: vertical;
+		}
+		
+		.media-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+			gap: 10px;
+			margin-bottom: 15px;
+		}
+		
+		.media-item {
+			position: relative;
+			border-radius: 6px;
+			overflow: hidden;
+			background: #f8f9fa;
+			aspect-ratio: 1;
+		}
+		
+		.media-item img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			cursor: pointer;
+			transition: transform 0.3s ease;
+		}
+		
+		.media-item:hover img {
+			transform: scale(1.05);
+		}
+		
+		.media-item video {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+		
+		.media-type-indicator {
+			position: absolute;
+			top: 5px;
+			right: 5px;
+			background: rgba(0,0,0,0.7);
+			color: white;
+			padding: 2px 6px;
+			border-radius: 4px;
+			font-size: 10px;
+		}
+		
+		.graphic-footer {
+			padding: 10px 15px;
+			border-top: 1px solid #e9ecef;
+			background: #f8f9fa;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+		
+		.author-info {
+			font-size: 12px;
+			color: #666;
+		}
+		
+		.action-buttons {
+			display: flex;
+			gap: 5px;
+		}
+		
+		.btn-sm {
+			padding: 4px 8px;
+			font-size: 12px;
+		}
+		
+		/* 搜索区域样式 */
+		.search-section {
+			background: #f8f9fa;
+			border-radius: 8px;
+			padding: 20px;
+			margin-bottom: 20px;
+		}
+		
+		/* 加载状态 */
+		.loading {
+			text-align: center;
+			padding: 40px;
+			color: #666;
+		}
+		
+		.loading i {
+			font-size: 24px;
+			animation: spin 1s linear infinite;
+		}
+		
+		@keyframes spin {
+			0% { transform: rotate(0deg); }
+			100% { transform: rotate(360deg); }
+		}
+		
+		/* 空状态 */
+		.empty-state {
+			text-align: center;
+			padding: 60px 20px;
+			color: #999;
+		}
+		
+		.empty-state i {
+			font-size: 48px;
+			margin-bottom: 15px;
+			color: #ddd;
+		}
+		
+		/* 分页样式 */
+		.pagination {
+			justify-content: center;
+			margin-top: 30px;
+		}
+		
+		/* 图片预览模态框样式 */
+		.image-preview-modal .modal-dialog {
+			max-width: 90vw;
+			max-height: 90vh;
+		}
+		
+		.image-preview-modal .modal-content {
+			background: transparent;
+			border: none;
+		}
+		
+		.image-preview-modal .modal-body {
+			padding: 0;
+			text-align: center;
+		}
+		
+		.image-preview-modal img {
+			max-width: 100%;
+			max-height: 80vh;
+			object-fit: contain;
+		}
+		
+		/* 展开媒体按钮样式 */
+		.expand-media-btn:hover {
+			background: #f0f8ff !important;
+			border-color: #007bff !important;
+		}
+		
+		/* 所有媒体文件模态框样式 */
+		.all-media-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+			gap: 15px;
+			padding: 20px;
+			max-height: 60vh;
+			overflow-y: auto;
+		}
+		
+		.modal-media-item {
+			position: relative;
+			border: 1px solid #e9ecef;
+			border-radius: 8px;
+			overflow: hidden;
+			background: #fff;
+			box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+			transition: transform 0.2s ease;
+		}
+		
+		.modal-media-item:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+		}
+		
+		.media-filename {
+			padding: 8px 12px;
+			background: #f8f9fa;
+			font-size: 12px;
+			color: #666;
+			border-top: 1px solid #e9ecef;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+		
+		.modal-media-item .media-type-indicator {
+			position: absolute;
+			top: 8px;
+			right: 8px;
+			background: rgba(0,0,0,0.8);
+			color: white;
+			padding: 4px 8px;
+			border-radius: 4px;
+			font-size: 11px;
+			z-index: 10;
+		}
+	</style>
+</head>
+
+<body>
+<div class="lyear-layout-web">
+	<div class="lyear-layout-container">
+		<!--左侧导航-->
+		<div th:include="admin/include/common :: headermenu"></div>
+		<!--End 头部信息-->
+
+		<!--页面主要内容-->
+		<main class="lyear-layout-content">
+			<div class="container-fluid">
+				
+				<!-- 搜索区域 -->
+				<div class="search-section">
+					<div class="row">
+						<div class="col-md-12">
+							<h5 class="mb-3">
+								<i class="mdi mdi-image-multiple"></i> 图文内容管理
+							</h5>
+						</div>
+					</div>
+					<form class="search-form">
+						<div class="row">
+							<div class="col-md-3">
+								<div class="form-group">
+									<label class="control-label">平台</label>
+									<select name="platform" class="form-control" id="platformFilter">
+										<option value="">全部平台</option>
+										<option value="douyin">抖音</option>
+									</select>
+								</div>
+							</div>
+							<div class="col-md-3">
+								<div class="form-group">
+									<label class="control-label">作者</label>
+									<input type="text" name="author" class="form-control" placeholder="请输入作者名称" id="authorFilter">
+								</div>
+							</div>
+							<div class="col-md-4">
+								<div class="form-group">
+									<label class="control-label">标题关键词</label>
+									<input type="text" name="title" class="form-control" placeholder="请输入标题关键词" id="titleFilter">
+								</div>
+							</div>
+							<div class="col-md-2">
+								<div class="form-group">
+									<label class="control-label">&nbsp;</label>
+									<div>
+										<button type="button" class="btn btn-primary btn-block" id="searchBtn">
+											<i class="mdi mdi-magnify"></i> 搜索
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</form>
+				</div>
+
+				<!-- 内容区域 -->
+				<div class="content-area">
+					<!-- 加载状态 -->
+					<div class="loading" id="loadingState" style="display: none;">
+						<i class="mdi mdi-loading"></i>
+						<p>正在加载图文内容...</p>
+					</div>
+					
+					<!-- 空状态 -->
+					<div class="empty-state" id="emptyState" style="display: none;">
+						<i class="mdi mdi-image-off"></i>
+						<h5>暂无图文内容</h5>
+						<p>当前没有找到任何图文内容数据</p>
+					</div>
+					
+					<!-- 图文内容列表 -->
+					<div id="graphicContentList">
+						<!-- 动态生成的图文内容卡片 -->
+					</div>
+				</div>
+
+				<!-- 分页 -->
+				<div class="row">
+					<div class="col-12">
+						<ul id="pager" class="pagination">
+							<!-- 分页控件 -->
+						</ul>
+					</div>
+				</div>
+
+			</div>
+		</main>
+		<!--End 页面主要内容-->
+	</div>
+</div>
+
+<!-- 图片预览模态框 -->
+<div class="modal fade image-preview-modal" id="imagePreviewModal" tabindex="-1" role="dialog">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-body">
+				<img id="previewImage" src="" alt="图片预览">
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript" src="../static/js/jquery.min.js"></script>
+<script type="text/javascript" src="../static/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../static/js/perfect-scrollbar.min.js"></script>
+<script type="text/javascript" src="../static/js/main.min.js"></script>
+<script type="text/javascript" src="../static/js/laypage.js"></script>
+<script src="../static/js/layer/layer.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+$(function(){
+	// 初始化页面
+	initPage();
+	
+	// 绑定搜索事件
+	bindSearchEvents();
+});
+
+// 当前页面参数
+var currentPage = 1;
+var pageSize = 15;
+var searchParams = {};
+
+/**
+ * 初始化页面
+ */
+function initPage() {
+	console.log('初始化图文内容页面');
+	loadGraphicContentList();
+}
+
+/**
+ * 绑定搜索相关事件
+ */
+function bindSearchEvents() {
+	// 搜索按钮点击事件
+	$('#searchBtn').click(function() {
+		console.log('执行搜索操作');
+		currentPage = 0; // 重置页码
+		collectSearchParams();
+		loadGraphicContentList();
+	});
+	
+	// 回车搜索
+	$('.search-form input').keypress(function(e) {
+		if (e.which == 13) {
+			$('#searchBtn').click();
+		}
+	});
+}
+
+/**
+ * 收集搜索参数
+ */
+function collectSearchParams() {
+	searchParams = {
+		platform: $('#platformFilter').val(),
+		author: $('#authorFilter').val(),
+		title: $('#titleFilter').val(),
+		pageNo: currentPage,
+		pageSize: pageSize
+	};
+	console.log('搜索参数:', searchParams);
+}
+
+/**
+ * 加载图文内容列表
+ */
+function loadGraphicContentList() {
+	console.log('开始加载图文内容列表，页码:', currentPage);
+	
+	// 显示加载状态
+	showLoading();
+	
+	// 收集搜索参数
+	collectSearchParams();
+	
+	// 发送请求
+	$.post("/admin/api/findGraphicContentList", searchParams, function(data) {
+		console.log('接口返回数据:', data);
+		
+		if (data.resCode === "000001") {
+			var record = data.record;
+			var contentList = record.content || [];
+			
+			if (contentList.length > 0) {
+				renderGraphicContentList(contentList);
+				renderPagination(record);
+				hideLoading();
+			} else {
+				showEmptyState();
+			}
+		} else {
+			console.error('数据加载失败:', data.message);
+			layer.msg(data.message || '数据加载失败');
+			showEmptyState();
+		}
+	}).fail(function(xhr, status, error) {
+		console.error('请求失败:', error);
+		layer.msg('网络请求失败，请稍后重试');
+		showEmptyState();
+	});
+}
+
+/**
+ * 渲染图文内容列表
+ */
+function renderGraphicContentList(contentList) {
+	console.log('渲染图文内容列表，数量:', contentList.length);
+	
+	var html = '';
+	
+	for (var i = 0; i < contentList.length; i++) {
+		var item = contentList[i];
+		html += generateGraphicCard(item);
+	}
+	
+	$('#graphicContentList').html(html);
+	
+	// 绑定事件
+	bindCardEvents();
+}
+
+/**
+ * 生成图文卡片HTML
+ */
+function generateGraphicCard(item) {
+	var platformClass = item.platform === 'douyin' ? 'platform-douyin' : 'platform-default';
+	var platformName = item.platform === 'douyin' ? '抖音' : item.platform;
+	
+	// 解析图片/视频数组
+	var mediaList = [];
+	try {
+		if (item.images) {
+			mediaList = JSON.parse(item.images);
+		}
+	} catch (e) {
+		console.error('解析媒体文件失败:', e);
+	}
+		
+	var mediaHtml = generateMediaGrid(mediaList, item.id);
+	
+	var html = `
+		<div class="graphic-card" data-id="${item.id}">
+			<div class="graphic-header">
+				<h6 class="graphic-title" title="${item.title || ''}">${item.title || '无标题'}</h6>
+				<div class="graphic-meta">
+					<span class="platform-badge ${platformClass}">${platformName}</span>
+					<span>ID: ${item.videoid || 'N/A'}</span>
+				</div>
+			</div>
+			
+			<div class="graphic-content">
+				<div class="content-text" title="${item.content || ''}">${item.content || '无内容描述'}</div>
+				${mediaHtml}
+			</div>
+			
+			<div class="graphic-footer">
+				<div class="author-info">
+					<i class="mdi mdi-account"></i> ${item.author || '未知作者'}
+				</div>
+				<div class="action-buttons">
+					<button class="btn btn-sm btn-outline-primary download-package" data-id="${item.id}" data-title="${item.title || '图文内容'}" data-images='${JSON.stringify(mediaList)}'>
+						<i class="mdi mdi-download"></i> 打包下载
+					</button>
+					<button class="btn btn-sm btn-outline-success copy-link" data-url="${item.originaladdress || ''}">
+						<i class="mdi mdi-link"></i> 复制链接
+					</button>
+					<button class="btn btn-sm btn-outline-danger delete-content" data-id="${item.id}" data-title="${item.title || '未命名内容'}">
+						<i class="mdi mdi-delete"></i> 删除
+					</button>
+				</div>
+			</div>
+		</div>
+	`;
+	
+	return html;
+}
+
+/**
+ * 生成媒体网格HTML
+ * @param {Array} mediaList 媒体文件列表
+ * @param {string} cardId 卡片ID
+ */
+function generateMediaGrid(mediaList, cardId) {
+	if (!mediaList || mediaList.length === 0) {
+		return '<div class="text-muted text-center py-3"><i class="mdi mdi-image-off"></i> 暂无媒体文件</div>';
+	}
+	
+	var html = '<div class="media-grid">';
+	
+	// 最多显示6个媒体文件
+	var displayCount = Math.min(mediaList.length, 6);
+	
+	for (var i = 0; i < displayCount; i++) {
+		var mediaPath = mediaList[i];
+		var isVideo = isVideoFile(mediaPath);
+		var mediaType = isVideo ? 'video' : 'image';
+		var typeIndicator = isVideo ? '<span class="media-type-indicator">视频</span>' : '';
+		
+		// 构建媒体URL（这里需要根据实际的静态资源访问路径调整）
+		var mediaUrl = mediaPath.replace(/\\\\/g, '/');
+		
+		if (isVideo) {
+			html += `
+				<div class="media-item">
+					${typeIndicator}
+					<video controls>
+						<source src="${mediaUrl}" type="video/mp4">
+						您的浏览器不支持视频播放
+					</video>
+				</div>
+			`;
+		} else {
+			html += `
+				<div class="media-item">
+					<img src="${mediaUrl}" alt="图片" class="preview-image" data-src="${mediaUrl}">
+				</div>
+			`;
+		}
+	}
+	
+	// 如果还有更多媒体文件，显示展开按钮
+	if (mediaList.length > 6) {
+		html += `
+			<div class="media-item d-flex align-items-center justify-content-center bg-light expand-media-btn" 
+				 data-card-id="${cardId}" data-all-media='${JSON.stringify(mediaList)}' 
+				 style="cursor: pointer; border: 2px dashed #ccc;">
+				<div class="text-center">
+					<i class="mdi mdi-plus-circle text-primary" style="font-size: 20px;"></i>
+					<br>
+					<small class="text-muted">+${mediaList.length - 6} 更多</small>
+					<br>
+					<small class="text-primary">点击查看</small>
+				</div>
+			</div>
+		`;
+	}
+	
+	html += '</div>';
+	return html;
+}
+
+/**
+ * 判断是否为视频文件
+ */
+function isVideoFile(filePath) {
+	var videoExtensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm'];
+	var extension = filePath.toLowerCase().substring(filePath.lastIndexOf('.'));
+	return videoExtensions.includes(extension);
+}
+
+/**
+ * 绑定卡片相关事件
+ */
+function bindCardEvents() {
+	// 图片预览
+	$('.preview-image').click(function() {
+		var imageSrc = $(this).data('src');
+		$('#previewImage').attr('src', imageSrc);
+		$('#imagePreviewModal').modal('show');
+	});
+	
+	// 展开查看所有媒体文件
+	$('.expand-media-btn').click(function() {
+		var cardId = $(this).data('card-id');
+		var allMedia = $(this).data('all-media');
+		
+		console.log('展开查看所有媒体文件，卡片ID:', cardId, '总文件数:', allMedia.length);
+		showAllMediaModal(allMedia, cardId);
+	});
+	
+	// 打包下载
+	$('.download-package').click(function() {
+		var id = $(this).data('id');
+		var title = $(this).data('title');
+		var images = $(this).data('images');
+		
+		console.log('开始打包下载，ID:', id, '标题:', title);
+		
+		if (!images || images.length === 0) {
+			layer.msg('该内容暂无可下载的媒体文件');
+			return;
+		}
+		
+		downloadMediaPackage(images, title);
+	});
+	
+	// 复制链接
+	$('.copy-link').click(function() {
+		var url = $(this).data('url');
+		if (url) {
+			copyToClipboard(url);
+			layer.msg('链接已复制到剪贴板');
+		} else {
+			layer.msg('暂无原始链接');
+		}
+	});
+	
+	// 删除内容
+	$('.delete-content').click(function() {
+		var id = $(this).data('id');
+		var title = $(this).data('title');
+		
+		console.log('准备删除图文内容，ID:', id, '标题:', title);
+		
+		// 显示确认对话框
+		layer.confirm('确定要删除图文内容 "' + title + '" 吗？<br><span style="color: #ff6b6b;">此操作不可撤销！</span>', {
+			icon: 3,
+			title: '删除确认',
+			btn: ['确定删除', '取消']
+		}, function(index) {
+			// 确认删除
+			deleteGraphicContent(id, index);
+		}, function(index) {
+			// 取消删除
+			layer.close(index);
+		});
+	});
+}
+
+/**
+ * 显示所有媒体文件的模态框
+ * @param {Array} mediaList 所有媒体文件列表
+ * @param {string} cardId 卡片ID
+ */
+function showAllMediaModal(mediaList, cardId) {
+	console.log('显示所有媒体文件模态框，文件数量:', mediaList.length);
+	
+	// 生成所有媒体文件的HTML
+	var modalContent = '<div class="all-media-grid">';
+	
+	for (var i = 0; i < mediaList.length; i++) {
+		var mediaPath = mediaList[i];
+		var isVideo = isVideoFile(mediaPath);
+		var mediaUrl = mediaPath.replace(/\\\\/g, '/');
+		var fileName = getFileNameFromPath(mediaPath);
+		var typeIndicator = isVideo ? '<span class="media-type-indicator">视频</span>' : '';
+		
+		if (isVideo) {
+			modalContent += `
+				<div class="modal-media-item">
+					${typeIndicator}
+					<video controls style="width: 100%; height: 200px; object-fit: cover;">
+						<source src="${mediaUrl}" type="video/mp4">
+						您的浏览器不支持视频播放
+					</video>
+					<div class="media-filename" title="${fileName}">${fileName}</div>
+				</div>
+			`;
+		} else {
+			modalContent += `
+				<div class="modal-media-item">
+					<img src="${mediaUrl}" alt="图片" style="width: 100%; height: 200px; object-fit: cover; cursor: pointer;" 
+						 class="modal-preview-image" data-src="${mediaUrl}">
+					<div class="media-filename" title="${fileName}">${fileName}</div>
+				</div>
+			`;
+		}
+	}
+	
+	modalContent += '</div>';
+	
+	// 使用layer弹窗显示
+	layer.open({
+		type: 1,
+		title: '所有媒体文件 (共 ' + mediaList.length + ' 个)',
+		shadeClose: true,
+		shade: 0.5,
+		maxmin: true,
+		area: ['90%', '80%'],
+		content: modalContent,
+		success: function(layero, index) {
+			// 绑定模态框内的图片预览事件
+			layero.find('.modal-preview-image').click(function() {
+				var imageSrc = $(this).data('src');
+				$('#previewImage').attr('src', imageSrc);
+				$('#imagePreviewModal').modal('show');
+			});
+		}
+	});
+}
+
+/**
+ * 打包下载媒体文件
+ * @param {Array} mediaList 媒体文件列表
+ * @param {string} title 内容标题
+ */
+function downloadMediaPackage(mediaList, title) {
+	console.log('准备下载媒体包，文件数量:', mediaList.length);
+	
+	// 显示下载进度提示
+	var loadingIndex = layer.load(1, {
+		shade: [0.3, '#000'],
+		content: '正在准备下载文件...',
+		success: function(layero) {
+			layero.find('.layui-layer-content').css({
+				'padding-top': '40px',
+				'width': '200px'
+			});
+		}
+	});
+	
+	// 使用JSZip创建压缩包
+	if (typeof JSZip === 'undefined') {
+		// 如果JSZip未加载，动态加载
+		loadJSZip().then(function() {
+			createAndDownloadZip(mediaList, title, loadingIndex);
+		}).catch(function(error) {
+			console.error('JSZip加载失败:', error);
+			layer.close(loadingIndex);
+			layer.msg('下载功能初始化失败，请刷新页面重试');
+		});
+	} else {
+		createAndDownloadZip(mediaList, title, loadingIndex);
+	}
+}
+
+/**
+ * 动态加载JSZip库
+ */
+function loadJSZip() {
+	return new Promise(function(resolve, reject) {
+		var script = document.createElement('script');
+		script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+		script.onload = function() {
+			console.log('JSZip库加载成功');
+			resolve();
+		};
+		script.onerror = function() {
+			reject(new Error('JSZip库加载失败'));
+		};
+		document.head.appendChild(script);
+	});
+}
+
+/**
+ * 创建并下载ZIP文件
+ * @param {Array} mediaList 媒体文件列表
+ * @param {string} title 内容标题
+ * @param {number} loadingIndex 加载层索引
+ */
+function createAndDownloadZip(mediaList, title, loadingIndex) {
+	var zip = new JSZip();
+	var downloadPromises = [];
+	var successCount = 0;
+	var totalCount = mediaList.length;
+	
+	console.log('开始创建ZIP文件，总文件数:', totalCount);
+	
+	// 清理标题作为文件夹名称
+	var folderName = sanitizeFileName(title);
+	
+	// 为每个媒体文件创建下载Promise
+	mediaList.forEach(function(mediaPath, index) {
+		var mediaUrl = mediaPath.replace(/\\\\/g, '/');
+		var fileName = getFileNameFromPath(mediaPath);
+		var sanitizedFileName = sanitizeFileName(fileName);
+		
+		var promise = downloadFileAsBlob(mediaUrl)
+			.then(function(blob) {
+				if (blob) {
+					zip.file(folderName + '/' + sanitizedFileName, blob);
+					successCount++;
+					console.log('文件下载成功:', sanitizedFileName, '进度:', successCount + '/' + totalCount);
+					
+					// 更新进度提示
+					layer.msg('正在下载文件 ' + successCount + '/' + totalCount, {
+						time: 1000,
+						shade: false
+					});
+				}
+				return blob;
+			})
+			.catch(function(error) {
+				console.error('文件下载失败:', mediaUrl, error);
+				return null;
+			});
+		
+		downloadPromises.push(promise);
+	});
+	
+	// 等待所有文件下载完成
+	Promise.all(downloadPromises).then(function(results) {
+		layer.close(loadingIndex);
+		
+		if (successCount === 0) {
+			layer.msg('所有文件下载失败，请检查网络连接或文件路径');
+			return;
+		}
+		
+		if (successCount < totalCount) {
+			layer.msg('部分文件下载失败，将下载已成功的 ' + successCount + ' 个文件');
+		}
+		
+		// 生成ZIP文件并下载
+		console.log('开始生成ZIP文件');
+		var generateIndex = layer.load(1, {
+			shade: [0.3, '#000'],
+			content: '正在生成压缩包...'
+		});
+		
+		zip.generateAsync({
+			type: "blob",
+			compression: "DEFLATE",
+			compressionOptions: {
+				level: 6
+			}
+		}).then(function(content) {
+			layer.close(generateIndex);
+			
+			// 创建下载链接
+			var zipFileName = folderName + '_媒体文件.zip';
+			var url = window.URL.createObjectURL(content);
+			var a = document.createElement('a');
+			a.href = url;
+			a.download = zipFileName;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			window.URL.revokeObjectURL(url);
+			
+			console.log('ZIP文件下载完成:', zipFileName);
+			layer.msg('打包下载完成！共 ' + successCount + ' 个文件');
+		}).catch(function(error) {
+			layer.close(generateIndex);
+			console.error('ZIP文件生成失败:', error);
+			layer.msg('压缩包生成失败，请重试');
+		});
+	});
+}
+
+/**
+ * 下载文件为Blob对象
+ * @param {string} url 文件URL
+ * @returns {Promise<Blob>} 文件Blob对象
+ */
+function downloadFileAsBlob(url) {
+	return new Promise(function(resolve, reject) {
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', url, true);
+		xhr.responseType = 'blob';
+		xhr.timeout = 30000; // 30秒超时
+		
+		xhr.onload = function() {
+			if (xhr.status === 200) {
+				resolve(xhr.response);
+			} else {
+				reject(new Error('HTTP ' + xhr.status + ': ' + xhr.statusText));
+			}
+		};
+		
+		xhr.onerror = function() {
+			reject(new Error('网络错误'));
+		};
+		
+		xhr.ontimeout = function() {
+			reject(new Error('请求超时'));
+		};
+		
+		xhr.send();
+	});
+}
+
+/**
+ * 从文件路径中提取文件名
+ * @param {string} filePath 文件路径
+ * @returns {string} 文件名
+ */
+function getFileNameFromPath(filePath) {
+	var fileName = filePath.split(/[\\\/]/).pop();
+	return fileName || 'unknown_file';
+}
+
+/**
+ * 清理文件名，移除非法字符
+ * @param {string} fileName 原始文件名
+ * @returns {string} 清理后的文件名
+ */
+function sanitizeFileName(fileName) {
+	// 移除或替换非法字符
+	return fileName
+		.replace(/[<>:"/\\|?*]/g, '_')  // 替换非法字符为下划线
+		.replace(/\s+/g, '_')          // 替换空格为下划线
+		.replace(/_{2,}/g, '_')        // 合并多个下划线
+		.replace(/^_+|_+$/g, '')       // 移除开头和结尾的下划线
+		.substring(0, 100);            // 限制长度
+}
+
+/**
+ * 删除图文内容
+ * @param {string} id 内容ID
+ * @param {number} layerIndex 确认对话框的索引
+ */
+function deleteGraphicContent(id, layerIndex) {
+	console.log('开始删除图文内容，ID:', id);
+	
+	// 显示删除进度提示
+	var loadingIndex = layer.load(1, {
+		shade: [0.3, '#000'],
+		content: '正在删除内容...',
+		success: function(layero) {
+			layero.find('.layui-layer-content').css({
+				'padding-top': '40px',
+				'width': '150px'
+			});
+		}
+	});
+	
+	// 发送删除请求
+	$.get("/admin/api/deleteGraphicContent", { id: id }, function(data) {
+		layer.close(loadingIndex);
+		layer.close(layerIndex);
+		
+		console.log('删除接口返回数据:', data);
+		
+		if (data.resCode === "000001") {
+			layer.msg('删除成功！', {
+				icon: 1,
+				time: 2000
+			});
+			
+			// 删除成功后重新加载列表
+			setTimeout(function() {
+				loadGraphicContentList();
+			}, 1000);
+		} else {
+			console.error('删除失败:', data.message);
+			layer.msg(data.message || '删除失败，请重试', {
+				icon: 2,
+				time: 3000
+			});
+		}
+	}).fail(function(xhr, status, error) {
+		layer.close(loadingIndex);
+		layer.close(layerIndex);
+		
+		console.error('删除请求失败:', error);
+		layer.msg('网络请求失败，请检查网络连接', {
+			icon: 2,
+			time: 3000
+		});
+	});
+}
+
+/**
+ * 复制文本到剪贴板
+ */
+function copyToClipboard(text) {
+	var textArea = document.createElement("textarea");
+	textArea.value = text;
+	document.body.appendChild(textArea);
+	textArea.select();
+	document.execCommand('copy');
+	document.body.removeChild(textArea);
+}
+
+/**
+ * 渲染分页
+ */
+function renderPagination(pageData) {
+	console.log('渲染分页信息:', pageData);
+	
+	var totalPages = pageData.totalPages || 1;
+	var currentPageNum = pageData.number || 0;
+	var totalElements = pageData.totalElements || 0;
+	
+	if (totalPages <= 1) {
+		$('#pager').html('');
+		return;
+	}
+	
+	var html = '';
+	
+	// 上一页
+	if (currentPageNum > 0) {
+		html += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="goToPage(${currentPageNum - 1})">上一页</a></li>`;
+	}
+	
+	// 页码
+	var startPage = Math.max(0, currentPageNum - 2);
+	var endPage = Math.min(totalPages - 1, currentPageNum + 2);
+	
+	for (var i = startPage; i <= endPage; i++) {
+		var activeClass = i === currentPageNum ? 'active' : '';
+		html += `<li class="page-item ${activeClass}"><a class="page-link" href="javascript:void(0)" onclick="goToPage(${i})">${i + 1}</a></li>`;
+	}
+	
+	// 下一页
+	if (currentPageNum < totalPages - 1) {
+		html += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="goToPage(${currentPageNum + 1})">下一页</a></li>`;
+	}
+	
+	// 总数信息
+	html += `<li class="page-item disabled"><span class="page-link">共 ${totalElements} 条</span></li>`;
+	
+	$('#pager').html(html);
+}
+
+/**
+ * 跳转到指定页码
+ */
+function goToPage(pageNum) {
+	console.log('跳转到页码:', pageNum);
+	currentPage = pageNum;
+	loadGraphicContentList();
+}
+
+/**
+ * 显示加载状态
+ */
+function showLoading() {
+	$('#loadingState').show();
+	$('#emptyState').hide();
+	$('#graphicContentList').hide();
+}
+
+/**
+ * 隐藏加载状态
+ */
+function hideLoading() {
+	$('#loadingState').hide();
+	$('#graphicContentList').show();
+}
+
+/**
+ * 显示空状态
+ */
+function showEmptyState() {
+	$('#loadingState').hide();
+	$('#graphicContentList').hide();
+	$('#emptyState').show();
+	$('#pager').html('');
+}
+
+</script>
+</body>
+</html>

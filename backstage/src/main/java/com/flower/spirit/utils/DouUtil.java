@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,14 +17,13 @@ import java.util.regex.Pattern;
 import org.apache.commons.httpclient.HttpException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.flower.spirit.config.Global;
+import com.flower.spirit.executor.DouYinExecutor;
 
 public class DouUtil {
 	
@@ -41,52 +39,98 @@ public class DouUtil {
 	public static String  odin_tt ="324fb4ea4a89c0c05827e18a1ed9cf9bf8a17f7705fcc793fec935b637867e2a5a9b8168c885554d029919117a18ba69";
 	public static String  passport_csrf_token ="2f142a9bb5db1f81f249d6fc997fe4a1";
 	public static String referer =  "https://www.douyin.com/";
-	public static  Map<String, String>  downVideo(String url) {
-		Document document = null;
-		Map<String, String>  data = new HashMap<String, String>();
+	
+
+	private static final Pattern VIDEO_ID_PATTERN_V1 = Pattern.compile("(?<=/video/)([^/]+)");
+	private static final Pattern VIDEO_ID_PATTERN_V2 = Pattern.compile("/video/(\\d+)");
+	
+	private static final Pattern NOTE_ID_PATTERN_V1 = Pattern.compile("(?<=/note/)([^/?]+)");
+	private static final Pattern NOTE_ID_PATTERN_V2 = Pattern.compile("/note/(\\d+)(?=[/?]|$)");
+	
+
+	/**
+	 * 下载抖音视频信息
+	 * 优化版本：减少重复代码，提高效率，增强可读性
+	 * @param url 抖音视频链接
+	 * @return 视频信息Map，包含视频ID、播放地址等
+	 */
+	public static Map<String, String> downVideo(String url) {
 		try {
-			 document = Jsoup.connect(url).userAgent(ua).get();
-			 String baseUri = document.baseUri();
-			 String pattern_v1="(?<=/video/).*?(?=/)";
-			 String pattern_v2 = "/video/(\\d+)";
-		     Pattern compile_v1 = Pattern.compile(pattern_v1);
-		     Pattern compile_v2 = Pattern.compile(pattern_v2);
-		     Matcher matcher_v1 = compile_v1.matcher(baseUri);
-		     Matcher matcher_v2 = compile_v2.matcher(baseUri);
-		     if(matcher_v1.find()) {
-		    	 String vedioId = matcher_v1.group(0);
-		    	 logger.info("DouYin vedioId="+vedioId);
-		    	 data  = DouUtil.getBogus(vedioId);
-		    	  if(data != null) {
-		    		  logger.info("接口解析数据"+data);
-		    		  return data;
-		    	  }else {
-		    		  //失败 使用htmlclient
-		    		  return null;
-//		    		  return DouUtil.htmlclient(url);
-		    	  }
-		     }
-		     if(matcher_v2.find()) {
-		    	 String vedioId = matcher_v2.group(0).replaceAll("video", "").replaceAll("/", "");
-		    	 logger.info("DouYin vedioId="+vedioId);
-		    	 data  = DouUtil.getBogus(vedioId);
-		    	  if(data != null) {
-		    		  logger.info("接口解析数据"+data);
-		    		  return data;
-		    	  }else {
-		    		  //失败 使用htmlclient
-		    		  return null;
-		    	  }
-		     }
-		     if(!matcher_v2.find() && !matcher_v1.find()) {
-		    	 return null;
-		     }
+			// 获取重定向后的真实URL
+			Document document = Jsoup.connect(url).userAgent(ua).get();
+			String baseUri = document.baseUri();
+			logger.info("抖音解析URL: {}", baseUri);
 			
-		} catch (IOException e1) {
-			logger.info("解析异常"+e1.getMessage());
+			// 提取视频ID
+			String videoId = extractVideoId(baseUri);
+			String noteId = extractNoteId(baseUri);
+			if (videoId == null) {
+				if(noteId!= null) {
+					DouYinExecutor.ImageTextExecutor(url,noteId);
+				}
+				return null;
+			}
+			
+			logger.info("抖音视频ID: {}", videoId);
+			
+			// 获取视频数据
+			Map<String, String> data = getBogus(videoId);
+			if (data != null) {
+				logger.info("接口解析成功，数据: {}", data);
+				return data;
+			} else {
+				logger.warn("接口解析失败，视频ID: {}", videoId);
+				return null;
+			}
+			
+		} catch (IOException e) {
+			logger.error("解析异常: {}", e.getMessage(), e);
 			return null;
-			//return DouUtil.htmlclient(url);
 		}
+	}
+	
+	/**
+	 * 从URL中提取视频ID
+	 * 支持多种URL格式的视频ID提取
+	 * @param baseUri 基础URI
+	 * @return 视频ID，如果提取失败返回null
+	 */
+	private static String extractVideoId(String baseUri) {
+		// 尝试第一种模式：/video/xxx/
+		Matcher matcher1 = VIDEO_ID_PATTERN_V1.matcher(baseUri);
+		if (matcher1.find()) {
+			return matcher1.group(1);
+		}
+		
+		// 尝试第二种模式：/video/数字
+		Matcher matcher2 = VIDEO_ID_PATTERN_V2.matcher(baseUri);
+		if (matcher2.find()) {
+			return matcher2.group(1);
+		}
+		
+		return null;
+	}
+	
+	
+	/**
+	 * 从URL中提取图文ID
+	 * 支持多种URL格式的图文ID提取
+	 * @param baseUri 基础URI
+	 * @return 视频ID，如果提取失败返回null
+	 */
+	private static String extractNoteId(String baseUri) {
+		// 尝试第一种模式：/video/xxx/
+		Matcher matcher1 = NOTE_ID_PATTERN_V1.matcher(baseUri);
+		if (matcher1.find()) {
+			return matcher1.group(1);
+		}
+		
+		// 尝试第二种模式：/video/数字
+		Matcher matcher2 = NOTE_ID_PATTERN_V2.matcher(baseUri);
+		if (matcher2.find()) {
+			return matcher2.group(1);
+		}
+		
 		return null;
 	}
 //	public static  Map<String, String> htmlclient(String url) {

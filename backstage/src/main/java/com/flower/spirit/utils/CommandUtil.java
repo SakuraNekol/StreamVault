@@ -142,6 +142,13 @@ public class CommandUtil {
                         .append("--uid \"").append(uid).append("\" ")
                         .append("--output \"").append(out).append("\"");
                 break;
+                
+            case "fetch_post_data":
+                cmd.append("fetch_post_data ")
+                        .append("--cookie \"").append(cookie).append("\" ")
+                        .append("--aweme_id \"").append(aid).append("\" ")
+                        .append("--output \"").append(out).append("\"");
+                break;
 
             default:
                 throw new IllegalArgumentException("Unsupported function: " + fuc);

@@ -1,3 +1,6 @@
+import warnings
+warnings.simplefilter("ignore")
+
 import asyncio
 import sys
 import argparse
@@ -69,6 +72,25 @@ async def fetch_video(cookie: str, aweme_id: str):
         "create_time": video.create_time
     }
     print(jsonres)
+    
+# 获取视频信息的方法
+async def fetch_post_data(cookie: str, aweme_id: str, output_file: str):
+    kwargs = {
+        "headers": {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0",
+            "Referer": "https://www.douyin.com/",
+        },
+        "cookie": cookie,
+        "proxies": {"http": None, "https": None},
+    }
+    
+    handler = DouyinHandler(kwargs)
+    setattr(handler, "enable_bark", False)
+    
+    video = await handler.fetch_one_video(aweme_id=aweme_id)
+
+    if write_to_file(video._to_raw(), output_file):
+        print("stream-vault-ok")
 
 # 获取用户点赞列表方法
 async def fetch_user_like_videos(cookie: str, uid: str, maxc: str, output_file: str):
@@ -289,6 +311,12 @@ async def main():
     fetch_user_feed_videos_parser.add_argument("--cookie", type=str, required=True, help="Douyin cookie")
     fetch_user_feed_videos_parser.add_argument("--uid", type=str, required=True, help="User ID")
     fetch_user_feed_videos_parser.add_argument("--output", type=str, required=True, help="Output file path")
+    
+    # 获取作品通用 
+    fetch_user_post_parser = subparsers.add_parser("fetch_post_data", help="Fetch a Post from Douyin")
+    fetch_user_post_parser.add_argument("--cookie", type=str, required=True, help="Douyin cookie")
+    fetch_user_post_parser.add_argument("--aweme_id", type=str, required=True, help="Aweme ID of the video")
+    fetch_user_post_parser.add_argument("--output", type=str, required=True, help="Output file path")
 
     args = parser.parse_args()
     
@@ -304,6 +332,8 @@ async def main():
         await fetch_user_collects_videos(args.cookie, args.cid ,args.maxc, args.output)
     if args.command == "fetch_user_feed_videos":
         await fetch_user_feed_videos(args.cookie, args.uid, args.output)
+    if args.command == "fetch_post_data":
+    	await fetch_post_data(args.cookie, args.aweme_id, args.output)
 
 if __name__ == "__main__":
     asyncio.run(main())

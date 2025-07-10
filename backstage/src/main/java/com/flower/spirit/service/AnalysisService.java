@@ -643,12 +643,13 @@ public class AnalysisService {
 		if (null != Global.tiktokCookie && !Global.tiktokCookie.equals("")) {
 			ProcessHistoryEntity saveProcess = processHistoryService.saveProcess(null, video, platform);
 			Map<String, String> downVideo = DouUtil.downVideo(video);
-
-			this.putRecord(downVideo.get("awemeid"), downVideo.get("desc"), downVideo.get("videoplay"),
-					downVideo.get("cover"), platform, video, downVideo.get("type"), Global.tiktokCookie, downVideo);
-			System.gc();
-			sendNotify.sendNotifyData(downVideo.get("desc"), video, platform);
-			processHistoryService.saveProcess(saveProcess.getId(), video, platform);
+			if(downVideo!= null) {
+				this.putRecord(downVideo.get("awemeid"), downVideo.get("desc"), downVideo.get("videoplay"),
+						downVideo.get("cover"), platform, video, downVideo.get("type"), Global.tiktokCookie, downVideo);
+				System.gc();
+				sendNotify.sendNotifyData(downVideo.get("desc"), video, platform);
+				processHistoryService.saveProcess(saveProcess.getId(), video, platform);
+			}
 		} else {
 			logger.info("抖音cookie未填 不处理");
 		}

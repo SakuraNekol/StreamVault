@@ -89,7 +89,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.event.inputs.release_tag || github.event.inputs.image_tag }}
-          name: Spirit Release ${{ github.event.inputs.release_tag || github.event.inputs.image_tag }}
+          name: StreamVault Release ${{ github.event.inputs.release_tag || github.event.inputs.image_tag }}
           draft: false
           prerelease: false
           files: |

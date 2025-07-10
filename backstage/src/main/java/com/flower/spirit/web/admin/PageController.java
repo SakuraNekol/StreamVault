@@ -172,4 +172,14 @@ public class PageController {
 	public String videokpop() {
 		return "admin/videokpop";
 	}
+	
+	
+	/**
+	 * 视频列表页
+	 * @return
+	 */
+	@RequestMapping(value = "/graphicContentList")
+	public String graphicContentList() {
+		return "admin/graphicContent";
+	}
 }

@@ -20,6 +20,7 @@ import com.flower.spirit.entity.ConfigEntity;
 import com.flower.spirit.entity.CookiesConfigEntity;
 import com.flower.spirit.entity.CookiesRequestEntity;
 import com.flower.spirit.entity.DownloaderEntity;
+import com.flower.spirit.entity.GraphicContentEntity;
 import com.flower.spirit.entity.ProcessHistoryEntity;
 import com.flower.spirit.entity.TikTokConfigEntity;
 import com.flower.spirit.entity.UserEntity;
@@ -32,6 +33,7 @@ import com.flower.spirit.service.ConfigService;
 import com.flower.spirit.service.CookiesConfigService;
 import com.flower.spirit.service.DouYinService;
 import com.flower.spirit.service.DownloaderService;
+import com.flower.spirit.service.GraphicContentService;
 import com.flower.spirit.service.ProcessHistoryService;
 import com.flower.spirit.service.SystemService;
 import com.flower.spirit.service.TikTokConfigService;
@@ -93,6 +95,9 @@ public class AdminController {
 	
 	@Autowired
 	private VideoMixService videoMixService;
+	
+	@Autowired
+	private GraphicContentService graphicContentService;
 	
 	/**  
 	
@@ -412,6 +417,23 @@ public class AdminController {
 	@PostMapping(value = "/ytextractor")
 	public AjaxEntity ytextractor(VideoDataEntity enity) {
 		return configService.ytextractor(enity);
+	}
+	
+	/**
+	 * 分页获取已缓存的视频历史记录
+	 * 
+	 * @param videoDataEntity
+	 * @param request
+	 * @return
+	 */
+	@PostMapping(value = "/findGraphicContentList")
+	public AjaxEntity findGraphicContentList(GraphicContentEntity graphicContentEntity, HttpServletRequest request) {
+		return graphicContentService.findPage(graphicContentEntity);
+	}
+
+	@GetMapping(value = "/deleteGraphicContent")
+	public AjaxEntity deleteGraphicContent(String id, HttpServletRequest request) {
+		return graphicContentService.deleteGraphicContent(id);
 	}
 	
 } 
