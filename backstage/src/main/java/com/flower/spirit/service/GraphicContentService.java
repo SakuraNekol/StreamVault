@@ -60,6 +60,10 @@ public class GraphicContentService {
 					predicate.getExpressions().add(
 							criteriaBuilder.like(root.get("platform"), "%" + seachDate.getPlatform() + "%"));
 				}
+				if (seachDate != null && StringUtil.isString(seachDate.getAuthor())) {
+					predicate.getExpressions().add(
+							criteriaBuilder.like(root.get("author"), "%" + seachDate.getAuthor() + "%"));
+				}
 				query.orderBy(criteriaBuilder.desc(root.get("id")));
 				return predicate;
 			}

@@ -1216,7 +1216,7 @@ function renderPagination(pageData) {
 	console.log('渲染分页信息:', pageData);
 	
 	var totalPages = pageData.totalPages || 1;
-	var currentPageNum = pageData.number || 1; // 前后端页码都从1开始，直接使用
+	var currentPageNum = (pageData.number || 0) + 1; // 后端返回从0开始，前端显示从1开始，需要加1
 	var totalElements = pageData.totalElements || 0;
 	
 	if (totalPages <= 1) {
