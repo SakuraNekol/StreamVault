@@ -63,8 +63,8 @@ public class DouUtil {
 			
 			// 提取视频ID
 			String videoId = extractVideoId(baseUri);
-			String noteId = extractNoteId(baseUri);
 			if (videoId == null) {
+				String noteId = extractNoteId(baseUri);
 				if(noteId!= null) {
 					DouYinExecutor.ImageTextExecutor(url,noteId);
 				}
