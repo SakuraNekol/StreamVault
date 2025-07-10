@@ -41,8 +41,8 @@ public class DouUtil {
 	public static String referer =  "https://www.douyin.com/";
 	
 
-	private static final Pattern VIDEO_ID_PATTERN_V1 = Pattern.compile("(?<=/video/)([^/]+)");
-	private static final Pattern VIDEO_ID_PATTERN_V2 = Pattern.compile("/video/(\\d+)");
+	private static final Pattern VIDEO_ID_PATTERN_V1 = Pattern.compile("(?<=/video/)([^/?]+)");
+	private static final Pattern VIDEO_ID_PATTERN_V2 = Pattern.compile("/video/(\\d+)(?=[/?]|$)");
 	
 	private static final Pattern NOTE_ID_PATTERN_V1 = Pattern.compile("(?<=/note/)([^/?]+)");
 	private static final Pattern NOTE_ID_PATTERN_V2 = Pattern.compile("/note/(\\d+)(?=[/?]|$)");
