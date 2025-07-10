@@ -13,4 +13,6 @@ public interface GraphicContentDao extends PagingAndSortingRepository<GraphicCon
 
 	void deleteById(Integer id);
 
+	Optional<GraphicContentEntity> findByVideoidAndPlatform(String post, String name);
+
 }

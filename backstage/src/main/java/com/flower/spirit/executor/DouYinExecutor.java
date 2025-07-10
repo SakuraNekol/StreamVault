@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
@@ -50,6 +51,14 @@ public class DouYinExecutor {
 	public static void ImageTextExecutor(String originaladdress,String post) throws IOException {
 		
 		String taskout = Global.apppath + "lot" +System.getProperty("file.separator") + "imageText_"+post + ".json";
+		GraphicContentEntity graphicContentEntity = new GraphicContentEntity();
+		graphicContentEntity.setVideoid(post);
+		graphicContentEntity.setPlatform(Global.platform.douyin.name());
+		
+		Optional<GraphicContentEntity> byVideoidAndPlatform = staticGraphicContentDao.findByVideoidAndPlatform(post,Global.platform.douyin.name());
+		if(byVideoidAndPlatform.isPresent()) {
+			return;
+		}
 		String f2cmd = CommandUtil.f2cmd(Global.tiktokCookie, post, "fetch_post_data", null, null, null, taskout);
 		if (null != f2cmd && f2cmd.contains("stream-vault-ok")) {
 			String json = FileUtil.readJson(taskout);
@@ -96,17 +105,14 @@ public class DouYinExecutor {
 					 imageList.add(cos);
 				}
 			}
-			GraphicContentEntity graphicContentEntity = new GraphicContentEntity();
+	
 			graphicContentEntity.setOriginaladdress(originaladdress);
-			graphicContentEntity.setVideoid(post);
-			graphicContentEntity.setPlatform(Global.platform.douyin.name());
 			graphicContentEntity.setTitle(desc);
 			graphicContentEntity.setMarkroute(markroute);
 			graphicContentEntity.setContent(desc);
 			graphicContentEntity.setImages(imageList.toJSONString());
 			graphicContentEntity.setAuthor(nickname);
 			graphicContentEntity.setCreatetime(new Date());
-//			graphicContentEntity.setTags(f2cmd)
 			staticGraphicContentDao.save(graphicContentEntity);
 			Files.deleteIfExists(Paths.get(taskout));
 			sendNotify.sendNotifyData(filename, originaladdress, Global.platform.douyin.name());

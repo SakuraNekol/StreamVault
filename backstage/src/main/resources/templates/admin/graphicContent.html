@@ -188,28 +188,158 @@
 		.pagination {
 			justify-content: center;
 			margin-top: 30px;
+			margin-bottom: 0;
+		}
+		
+		/* 分页容器样式 */
+		.pagination-container {
+			background: #f8f9fa;
+			border-radius: 8px;
+			padding: 20px;
+			margin-top: 30px;
+			box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+		}
+		
+		.pagination .page-link {
+			border-radius: 6px;
+			margin: 0 2px;
+			border: 1px solid #dee2e6;
+			color: #495057;
+			transition: all 0.2s ease;
+		}
+		
+		.pagination .page-link:hover {
+			background-color: #e9ecef;
+			border-color: #adb5bd;
+			color: #495057;
+		}
+		
+		.pagination .page-item.active .page-link {
+			background-color: #007bff;
+			border-color: #007bff;
+			color: white;
 		}
 		
 		/* 图片预览模态框样式 */
 		.image-preview-modal .modal-dialog {
-			max-width: 90vw;
-			max-height: 90vh;
+			max-width: 95vw;
+			max-height: 95vh;
+			margin: 2.5vh auto;
 		}
 		
 		.image-preview-modal .modal-content {
-			background: transparent;
+			background: rgba(0, 0, 0, 0.9);
 			border: none;
+			border-radius: 8px;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+		}
+		
+		.image-preview-modal .modal-header {
+			border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+			background: rgba(0, 0, 0, 0.8);
+			padding: 15px 20px;
+		}
+		
+		.image-preview-modal .modal-title {
+			color: white;
+			font-size: 16px;
+			font-weight: 500;
 		}
 		
 		.image-preview-modal .modal-body {
-			padding: 0;
+			padding: 20px;
 			text-align: center;
+			background: rgba(0, 0, 0, 0.9);
+			position: relative;
+			min-height: 400px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
 		}
 		
-		.image-preview-modal img {
+		.image-preview-modal img,
+		.image-preview-modal video {
 			max-width: 100%;
-			max-height: 80vh;
+			max-height: 75vh;
 			object-fit: contain;
+			border-radius: 4px;
+			box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+			transition: transform 0.3s ease;
+		}
+		
+		.image-preview-modal .close {
+			color: white;
+			opacity: 0.8;
+			font-size: 24px;
+			text-shadow: none;
+		}
+		
+		.image-preview-modal .close:hover {
+			color: white;
+			opacity: 1;
+		}
+		
+		.preview-controls {
+			position: absolute;
+			bottom: 20px;
+			left: 50%;
+			transform: translateX(-50%);
+			display: flex;
+			gap: 10px;
+			background: rgba(0, 0, 0, 0.7);
+			padding: 10px 15px;
+			border-radius: 25px;
+			backdrop-filter: blur(10px);
+		}
+		
+		.preview-control-btn {
+			background: rgba(255, 255, 255, 0.2);
+			border: none;
+			color: white;
+			width: 40px;
+			height: 40px;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			transition: all 0.3s ease;
+			font-size: 16px;
+		}
+		
+		.preview-control-btn:hover {
+			background: rgba(255, 255, 255, 0.3);
+			transform: scale(1.1);
+		}
+		
+		.preview-control-btn:active {
+			transform: scale(0.95);
+		}
+		
+		/* 媒体预览全屏样式 */
+		.media-fullscreen {
+			position: fixed !important;
+			top: 0 !important;
+			left: 0 !important;
+			width: 100vw !important;
+			height: 100vh !important;
+			z-index: 9999 !important;
+			background: rgba(0, 0, 0, 0.95) !important;
+			margin: 0 !important;
+		}
+		
+		.media-fullscreen .modal-content {
+			height: 100vh;
+			border-radius: 0;
+		}
+		
+		.media-fullscreen .modal-body {
+			height: calc(100vh - 80px);
+		}
+		
+		.media-fullscreen img,
+		.media-fullscreen video {
+			max-height: calc(100vh - 120px);
 		}
 		
 		/* 展开媒体按钮样式 */
@@ -347,11 +477,13 @@
 				</div>
 
 				<!-- 分页 -->
-				<div class="row">
+				<div class="mt-4">
 					<div class="col-12">
-						<ul id="pager" class="pagination">
-							<!-- 分页控件 -->
-						</ul>
+						<div class="d-flex justify-content-center">
+							<ul id="pager" class="pagination">
+								<!-- 分页控件 -->
+							</ul>
+						</div>
 					</div>
 				</div>
 
@@ -361,12 +493,40 @@
 	</div>
 </div>
 
-<!-- 图片预览模态框 -->
+<!-- 图片/视频预览模态框 -->
 <div class="modal fade image-preview-modal" id="imagePreviewModal" tabindex="-1" role="dialog">
 	<div class="modal-dialog modal-lg" role="document">
 		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="关闭">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
 			<div class="modal-body">
-				<img id="previewImage" src="" alt="图片预览">
+				<img id="previewImage" src="" alt="图片预览" style="display: none;">
+				<video id="previewVideo" controls style="display: none;">
+					<source src="" type="video/mp4">
+					您的浏览器不支持视频播放
+				</video>
+				
+				<!-- 预览控制面板 -->
+				<div class="preview-controls">
+					<button class="preview-control-btn" id="zoomOutBtn" title="缩小">
+						<i class="mdi mdi-magnify-minus"></i>
+					</button>
+					<button class="preview-control-btn" id="zoomInBtn" title="放大">
+						<i class="mdi mdi-magnify-plus"></i>
+					</button>
+					<button class="preview-control-btn" id="resetZoomBtn" title="重置">
+						<i class="mdi mdi-backup-restore"></i>
+					</button>
+					<button class="preview-control-btn" id="fullscreenBtn" title="全屏">
+						<i class="mdi mdi-fullscreen"></i>
+					</button>
+					<button class="preview-control-btn" id="downloadBtn" title="下载">
+						<i class="mdi mdi-download"></i>
+					</button>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -577,7 +737,7 @@ function generateMediaGrid(mediaList, cardId) {
 			html += `
 				<div class="media-item">
 					${typeIndicator}
-					<video controls>
+					<video class="preview-video" data-src="${mediaUrl}" style="cursor: pointer;">
 						<source src="${mediaUrl}" type="video/mp4">
 						您的浏览器不支持视频播放
 					</video>
@@ -629,8 +789,15 @@ function bindCardEvents() {
 	// 图片预览
 	$('.preview-image').click(function() {
 		var imageSrc = $(this).data('src');
-		$('#previewImage').attr('src', imageSrc);
-		$('#imagePreviewModal').modal('show');
+		var fileName = getFileNameFromPath(imageSrc);
+		showMediaPreview(imageSrc, false, fileName);
+	});
+	
+	// 视频预览
+	$('.preview-video').click(function() {
+		var videoSrc = $(this).data('src');
+		var fileName = getFileNameFromPath(videoSrc);
+		showMediaPreview(videoSrc, true, fileName);
 	});
 	
 	// 展开查看所有媒体文件
@@ -713,7 +880,8 @@ function showAllMediaModal(mediaList, cardId) {
 			modalContent += `
 				<div class="modal-media-item">
 					${typeIndicator}
-					<video controls style="width: 100%; height: 200px; object-fit: cover;">
+					<video style="width: 100%; height: 200px; object-fit: cover; cursor: pointer;" 
+						   class="modal-preview-video" data-src="${mediaUrl}" data-filename="${fileName}">
 						<source src="${mediaUrl}" type="video/mp4">
 						您的浏览器不支持视频播放
 					</video>
@@ -724,7 +892,7 @@ function showAllMediaModal(mediaList, cardId) {
 			modalContent += `
 				<div class="modal-media-item">
 					<img src="${mediaUrl}" alt="图片" style="width: 100%; height: 200px; object-fit: cover; cursor: pointer;" 
-						 class="modal-preview-image" data-src="${mediaUrl}">
+						 class="modal-preview-image" data-src="${mediaUrl}" data-filename="${fileName}">
 					<div class="media-filename" title="${fileName}">${fileName}</div>
 				</div>
 			`;
@@ -733,21 +901,35 @@ function showAllMediaModal(mediaList, cardId) {
 	
 	modalContent += '</div>';
 	
-	// 使用layer弹窗显示
-	layer.open({
+	// 使用layer弹窗显示，设置更高的z-index
+	var allMediaModalIndex = layer.open({
 		type: 1,
 		title: '所有媒体文件 (共 ' + mediaList.length + ' 个)',
 		shadeClose: true,
 		shade: 0.5,
 		maxmin: true,
 		area: ['90%', '80%'],
+		zIndex: 19891014, // 设置较高的z-index
 		content: modalContent,
 		success: function(layero, index) {
 			// 绑定模态框内的图片预览事件
 			layero.find('.modal-preview-image').click(function() {
 				var imageSrc = $(this).data('src');
-				$('#previewImage').attr('src', imageSrc);
-				$('#imagePreviewModal').modal('show');
+				var fileName = $(this).data('filename');
+				// 关闭当前的所有媒体模态框
+				layer.close(index);
+				// 显示图片预览
+				showMediaPreview(imageSrc, false, fileName);
+			});
+			
+			// 绑定模态框内的视频预览事件
+			layero.find('.modal-preview-video').click(function() {
+				var videoSrc = $(this).data('src');
+				var fileName = $(this).data('filename');
+				// 关闭当前的所有媒体模态框
+				layer.close(index);
+				// 显示视频预览
+				showMediaPreview(videoSrc, true, fileName);
 			});
 		}
 	});
@@ -1105,6 +1287,185 @@ function showEmptyState() {
 	$('#pager').html('');
 }
 
+/**
+ * 显示媒体预览（图片或视频）
+ * @param {string} mediaSrc 媒体文件路径
+ * @param {boolean} isVideo 是否为视频
+ * @param {string} fileName 文件名
+ */
+function showMediaPreview(mediaSrc, isVideo, fileName) {
+	
+	// 重置缩放
+	currentZoom = 1;
+	currentMediaSrc = mediaSrc;
+	currentFileName = fileName || getFileNameFromPath(mediaSrc);
+	
+	// 设置标题
+	$('#previewModalTitle').text(currentFileName);
+	
+	if (isVideo) {
+		// 显示视频，隐藏图片
+		$('#previewImage').hide();
+		$('#previewVideo').show();
+		$('#previewVideo source').attr('src', mediaSrc);
+		$('#previewVideo')[0].load(); // 重新加载视频
+		
+		// 视频不支持缩放，隐藏缩放按钮
+		$('#zoomOutBtn, #zoomInBtn, #resetZoomBtn').hide();
+	} else {
+		// 显示图片，隐藏视频
+		$('#previewVideo').hide();
+		$('#previewImage').show();
+		$('#previewImage').attr('src', mediaSrc);
+		
+		// 图片支持缩放，显示缩放按钮
+		$('#zoomOutBtn, #zoomInBtn, #resetZoomBtn').show();
+	}
+	
+	// 显示模态框，设置高z-index确保在layer弹窗之上
+	$('#imagePreviewModal').css('z-index', 19891015).modal('show');
+}
+
+// 全局变量
+var currentZoom = 1;
+var currentMediaSrc = '';
+var currentFileName = '';
+
+/**
+ * 初始化预览控制事件
+ */
+function initPreviewControls() {
+	// 缩小
+	$('#zoomOutBtn').click(function() {
+		if (currentZoom > 0.2) {
+			currentZoom -= 0.2;
+			applyZoom();
+		}
+	});
+	
+	// 放大
+	$('#zoomInBtn').click(function() {
+		if (currentZoom < 3) {
+			currentZoom += 0.2;
+			applyZoom();
+		}
+	});
+	
+	// 重置缩放
+	$('#resetZoomBtn').click(function() {
+		currentZoom = 1;
+		applyZoom();
+	});
+	
+	// 全屏切换
+	$('#fullscreenBtn').click(function() {
+		toggleFullscreen();
+	});
+	
+	// 下载
+	$('#downloadBtn').click(function() {
+		if (currentMediaSrc) {
+			downloadFile(currentMediaSrc, currentFileName);
+		}
+	});
+	
+	// ESC键退出全屏
+	$(document).keydown(function(e) {
+		if (e.keyCode === 27) { // ESC键
+			if ($('#imagePreviewModal').hasClass('media-fullscreen')) {
+				exitFullscreen();
+			}
+		}
+	});
+}
+
+/**
+ * 应用缩放
+ */
+function applyZoom() {
+	var transform = 'scale(' + currentZoom + ')';
+	$('#previewImage').css('transform', transform);
+}
+
+/**
+ * 切换全屏
+ */
+function toggleFullscreen() {
+	var modal = $('#imagePreviewModal');
+	if (modal.hasClass('media-fullscreen')) {
+		exitFullscreen();
+	} else {
+		enterFullscreen();
+	}
+}
+
+/**
+ * 进入全屏
+ */
+function enterFullscreen() {
+	var modal = $('#imagePreviewModal');
+	modal.addClass('media-fullscreen');
+	$('#fullscreenBtn i').removeClass('mdi-fullscreen').addClass('mdi-fullscreen-exit');
+	$('#fullscreenBtn').attr('title', '退出全屏');
+}
+
+/**
+ * 退出全屏
+ */
+function exitFullscreen() {
+	var modal = $('#imagePreviewModal');
+	modal.removeClass('media-fullscreen');
+	$('#fullscreenBtn i').removeClass('mdi-fullscreen-exit').addClass('mdi-fullscreen');
+	$('#fullscreenBtn').attr('title', '全屏');
+}
+
+/**
+ * 下载文件
+ * @param {string} fileUrl 文件URL
+ * @param {string} fileName 文件名
+ */
+function downloadFile(fileUrl, fileName) {
+	console.log('下载文件:', fileUrl, fileName);
+	
+	var link = document.createElement('a');
+	link.href = fileUrl;
+	link.download = fileName;
+	link.style.display = 'none';
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+	
+	layer.msg('开始下载: ' + fileName);
+}
+
+/**
+ * 从路径中提取文件名
+ * @param {string} filePath 文件路径
+ * @returns {string} 文件名
+ */
+function getFileNameFromPath(filePath) {
+	if (!filePath) return '未知文件';
+	
+	// 处理Windows和Unix路径分隔符
+	var fileName = filePath.replace(/\\\\/g, '/').split('/').pop();
+	return fileName || '未知文件';
+}
+
+// 页面加载完成后初始化预览控制
+$(document).ready(function() {
+	initPreviewControls();
+	
+	// 模态框关闭时重置状态
+	$('#imagePreviewModal').on('hidden.bs.modal', function() {
+		exitFullscreen();
+		currentZoom = 1;
+		applyZoom();
+		$('#previewImage').attr('src', '');
+		$('#previewVideo source').attr('src', '');
+	});
+});
+
 </script>
+
 </body>
 </html>
