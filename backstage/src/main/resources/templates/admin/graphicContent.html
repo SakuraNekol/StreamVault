@@ -568,7 +568,7 @@ function bindSearchEvents() {
 	// 搜索按钮点击事件
 	$('#searchBtn').click(function() {
 		console.log('执行搜索操作');
-		currentPage = 0; // 重置页码
+		currentPage = 1; // 重置页码
 		collectSearchParams();
 		loadGraphicContentList();
 	});
@@ -589,7 +589,7 @@ function collectSearchParams() {
 		platform: $('#platformFilter').val(),
 		author: $('#authorFilter').val(),
 		title: $('#titleFilter').val(),
-		pageNo: currentPage,
+		pageNo: currentPage, // 前后端页码都从1开始，直接传递
 		pageSize: pageSize
 	};
 	console.log('搜索参数:', searchParams);
@@ -1216,7 +1216,7 @@ function renderPagination(pageData) {
 	console.log('渲染分页信息:', pageData);
 	
 	var totalPages = pageData.totalPages || 1;
-	var currentPageNum = pageData.number || 0;
+	var currentPageNum = pageData.number || 1; // 前后端页码都从1开始，直接使用
 	var totalElements = pageData.totalElements || 0;
 	
 	if (totalPages <= 1) {
@@ -1227,21 +1227,21 @@ function renderPagination(pageData) {
 	var html = '';
 	
 	// 上一页
-	if (currentPageNum > 0) {
+	if (currentPageNum > 1) {
 		html += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="goToPage(${currentPageNum - 1})">上一页</a></li>`;
 	}
 	
 	// 页码
-	var startPage = Math.max(0, currentPageNum - 2);
-	var endPage = Math.min(totalPages - 1, currentPageNum + 2);
+	var startPage = Math.max(1, currentPageNum - 2);
+	var endPage = Math.min(totalPages, currentPageNum + 2);
 	
 	for (var i = startPage; i <= endPage; i++) {
 		var activeClass = i === currentPageNum ? 'active' : '';
-		html += `<li class="page-item ${activeClass}"><a class="page-link" href="javascript:void(0)" onclick="goToPage(${i})">${i + 1}</a></li>`;
+		html += `<li class="page-item ${activeClass}"><a class="page-link" href="javascript:void(0)" onclick="goToPage(${i})">${i}</a></li>`;
 	}
 	
 	// 下一页
-	if (currentPageNum < totalPages - 1) {
+	if (currentPageNum < totalPages) {
 		html += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="goToPage(${currentPageNum + 1})">下一页</a></li>`;
 	}
 	
