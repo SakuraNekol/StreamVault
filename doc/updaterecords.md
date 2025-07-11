@@ -1,6 +1,15 @@
 ### 更新记录
 
 ```
+2025/07/10  Tagged the version as 250710 on Docker Hub. Merged the 250710 tag into the latest tag.
+Merged the latest upstream code of yt-dlp.
+Added support for parsing Douyin (TikTok China) note-type content.
+Added a "Graphic Library" feature in the backend.
+
+```
+
+
+```
 2025/07/04   docker hub 标记版本为250704  合并到latest
 yt-dlp合并上游最新代码
 播放主页问题优化 
