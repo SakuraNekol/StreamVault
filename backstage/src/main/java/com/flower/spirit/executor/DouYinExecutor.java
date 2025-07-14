@@ -17,6 +17,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.flower.spirit.config.Global;
 import com.flower.spirit.dao.GraphicContentDao;
 import com.flower.spirit.entity.GraphicContentEntity;
+import com.flower.spirit.entity.ProcessHistoryEntity;
+import com.flower.spirit.service.ProcessHistoryService;
 import com.flower.spirit.utils.CommandUtil;
 import com.flower.spirit.utils.DouUtil;
 import com.flower.spirit.utils.FileUtil;
@@ -35,11 +37,17 @@ public class DouYinExecutor {
 	@Autowired
 	private GraphicContentDao graphicContentDao;
 	
+	@Autowired
+	private ProcessHistoryService processHistoryService;
+	
     private static GraphicContentDao staticGraphicContentDao;
+    
+    private static ProcessHistoryService staticprocessHistoryService;
 
     @PostConstruct
     public void init() {
         staticGraphicContentDao = graphicContentDao;
+        staticprocessHistoryService = processHistoryService;
     }
 	
 	
@@ -49,7 +57,7 @@ public class DouYinExecutor {
 	 * @throws IOException 
 	 */
 	public static void ImageTextExecutor(String originaladdress,String post) throws IOException {
-		
+		ProcessHistoryEntity saveProcess = staticprocessHistoryService.saveProcess(null, originaladdress, "抖音");
 		String taskout = Global.apppath + "lot" +System.getProperty("file.separator") + "imageText_"+post + ".json";
 		GraphicContentEntity graphicContentEntity = new GraphicContentEntity();
 		graphicContentEntity.setVideoid(post);
@@ -115,8 +123,8 @@ public class DouYinExecutor {
 			graphicContentEntity.setCreatetime(new Date());
 			staticGraphicContentDao.save(graphicContentEntity);
 			Files.deleteIfExists(Paths.get(taskout));
-			sendNotify.sendNotifyData(filename, originaladdress, Global.platform.douyin.name());
-
+			sendNotify.sendNotifyData(filename, originaladdress, "抖音");
+			staticprocessHistoryService.saveProcess(saveProcess.getId(), originaladdress, "抖音");
 		}
 
 		
