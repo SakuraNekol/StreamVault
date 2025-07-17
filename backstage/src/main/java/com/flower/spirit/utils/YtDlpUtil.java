@@ -162,27 +162,65 @@ public class YtDlpUtil {
 	}
 
 	public static String getPlatform(String url) {
+		// 参数验证
+		if (url == null || url.trim().isEmpty()) {
+			logger.warn("URL为空，无法获取平台信息");
+			return null;
+		}
+
+		Process process = null;
 		try {
 			// 使用yt-dlp的--dump-json参数获取视频信息
-			String command = "yt-dlp --dump-json " + url;
-//			System.out.println(command);
-			Process process = Runtime.getRuntime().exec(command);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			String jsonStr = reader.readLine();
-//			System.out.println(jsonStr);
-			if (jsonStr != null) {
+			List<String> command = new ArrayList<>();
+			command.add("yt-dlp");
+			command.add("--dump-json");
+			if (Global.proxyinfo != null) {
+				command.add("--proxy");
+				command.add(Global.proxyinfo);
+			}
+			if (null != Global.useragent && !"".equals(Global.useragent)) {
+				command.add("--user-agent");
+				command.add(Global.useragent);
+			}
+			command.add(url);
+
+			ProcessBuilder processBuilder = new ProcessBuilder(command);
+			process = processBuilder.start();
+
+			// 读取输出
+			String jsonStr;
+			try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), "UTF-8"))) {
+				jsonStr = reader.readLine();
+			}
+
+			int exitCode = process.waitFor();
+			if (exitCode != 0) {
+				logger.error("获取平台信息失败，yt-dlp退出码: {}", exitCode);
+				return null;
+			}
+
+			if (jsonStr != null && !jsonStr.trim().isEmpty()) {
 				JSONObject json = JSONObject.parseObject(jsonStr);
 				// 从json中获取extractor字段,这就是平台信息
 				String platform = json.getString("extractor");
-//				System.out.println(jsonStr);
-				if (platform != null) {
+				if (platform != null && !platform.trim().isEmpty()) {
+					logger.debug("获取到平台信息: {}", platform);
 					return platform;
 				}
 			}
+
+			logger.warn("无法从yt-dlp输出中解析平台信息");
+			return null;
+
 		} catch (Exception e) {
-			logger.error("获取平台信息失败: " + e.getMessage());
+			logger.error("获取平台信息失败: {}", e.getMessage(), e);
+			return null;
+		} finally {
+			// 确保资源清理
+			if (process != null) {
+				process.destroy();
+			}
 		}
-		return null;
 	}
 	public static void main(String[] args) throws IOException, InterruptedException {
 		String a = YtDlpUtil.getPlatform("https://x.com/FRIEREN_PR/status/1914514504383078713");
