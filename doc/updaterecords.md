@@ -1,5 +1,15 @@
 ### 更新记录
 
+
+```
+2025/07/17  Tagged the version as 250717 on Docker Hub. Merged the 250717 tag into the latest tag.
+优化CommandUtil类的资源释放问题
+调整单链固定线程为动态线程  最小值1 最大值5 减少冷占用
+Fix fixed session issue
+抖音图文新增提交记录
+
+```
+
 ```
 2025/07/10  Tagged the version as 250710 on Docker Hub. Merged the 250710 tag into the latest tag.
 Merged the latest upstream code of yt-dlp.
