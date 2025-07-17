@@ -19,7 +19,12 @@ public class CommandUtil {
 
     static Pattern pattern = Pattern.compile("\"(.*?)\"");
 
+    /**
+     * 执行命令并输出结果到控制台
+     * @param command 要执行的命令
+     */
     public static void command(String command) {
+        Process process = null;
         try {
             ProcessBuilder processBuilder;
             if (System.getProperty("os.name").toLowerCase().contains("win")) {
@@ -29,22 +34,29 @@ public class CommandUtil {
             }
 
             processBuilder.redirectErrorStream(true);
-            Process process = processBuilder.start();
-
-            // Read command output
-            InputStream inputStream = process.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                System.out.println(line);
+            process = processBuilder.start();
+            try (InputStream inputStream = process.getInputStream();
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println(line);
+                }
             }
-
             int exitCode = process.waitFor();
-            System.out.println("Command executed with exit code: " + exitCode);
-
+            logger.info("命令执行完毕，退出码：" + exitCode);
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            logger.error("命令执行异常：" + e.getMessage(), e);
+        } finally {
+            if (process != null) {
+                try {
+                    process.destroy();
+                    if (process.isAlive()) {
+                        process.destroyForcibly();
+                    }
+                } catch (Exception e) {
+                    logger.error("销毁进程时发生异常：" + e.getMessage());
+                }
+            }
         }
     }
 
@@ -73,8 +85,15 @@ public class CommandUtil {
         return wallpaper;
     }
 
+    /**
+     * 执行命令并返回输出结果
+     * @param command 要执行的命令
+     * @return 命令执行的输出结果
+     */
     public static String commandos(String command) {
         StringBuilder output = new StringBuilder();
+        Process process = null;
+        BufferedReader reader = null;
         try {
             ProcessBuilder processBuilder;
             if (System.getProperty("os.name").toLowerCase().contains("win")) {
@@ -82,24 +101,31 @@ public class CommandUtil {
             } else {
                 processBuilder = new ProcessBuilder("/bin/sh", "-c", command);
             }
-
             processBuilder.redirectErrorStream(true);
-            Process process = processBuilder.start();
-
-            // 读取 Python 脚本输出
-            InputStream inputStream = process.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                output.append(line).append("\n");
+            process = processBuilder.start();
+            try (InputStream inputStream = process.getInputStream();
+                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"))) {
+                reader = bufferedReader;
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    output.append(line).append("\n");
+                }
             }
-
             int exitCode = process.waitFor();
-            // System.out.println("Python 脚本执行完毕，退出码：" + exitCode);
-
+            logger.info("命令执行完毕，退出码：" + exitCode);
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            logger.error("命令执行异常：" + e.getMessage(), e);
+        } finally {
+            if (process != null) {
+                try {
+                    process.destroy();
+                    if (process.isAlive()) {
+                        process.destroyForcibly();
+                    }
+                } catch (Exception e) {
+                    logger.error("销毁进程时发生异常：" + e.getMessage());
+                }
+            }
         }
         return output.toString().trim();
     }
@@ -149,7 +175,6 @@ public class CommandUtil {
                         .append("--aweme_id \"").append(aid).append("\" ")
                         .append("--output \"").append(out).append("\"");
                 break;
-
             default:
                 throw new IllegalArgumentException("Unsupported function: " + fuc);
         }
@@ -164,7 +189,6 @@ public class CommandUtil {
             logger.error("[删除目录警告] 正在尝试删除空目录或根路径");
             return false;
         }
-
         try {
             // 规范化路径
             File directory = new File(directoryPath);
@@ -176,7 +200,6 @@ public class CommandUtil {
                 logger.error("[删除目录警告] 正在删除白名单外的目录" + saveFileCanonical);
                 return false;
             }
-
             // 验证目录是否存在
             if (!directory.exists() || !directory.isDirectory()) {
                 logger.error("[删除目录警告] 目标目录不存在");
@@ -204,5 +227,4 @@ public class CommandUtil {
             return false;
         }
     }
-
 }
