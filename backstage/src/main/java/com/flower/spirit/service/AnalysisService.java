@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.io.FilenameUtils;
@@ -61,11 +64,11 @@ public class AnalysisService {
 
 	// private ExecutorService steamcmd = Executors.newFixedThreadPool(1);
 
-	private ExecutorService domestic = Executors.newFixedThreadPool(3); // 目前 d k使用这个exec
+	private ExecutorService domestic = new ThreadPoolExecutor(1,5, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
 
-	private ExecutorService bilibili = Executors.newFixedThreadPool(2);
+	private ExecutorService bilibili = new ThreadPoolExecutor(1, 3, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
 
-	private ExecutorService ytdlp = Executors.newFixedThreadPool(3);
+	private ExecutorService ytdlp = new ThreadPoolExecutor(1, 5, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
 
 
 	/**
