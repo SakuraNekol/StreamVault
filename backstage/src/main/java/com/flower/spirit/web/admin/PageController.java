@@ -1,6 +1,7 @@
 package com.flower.spirit.web.admin;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -94,7 +95,12 @@ public class PageController {
 	 */
 	@RequestMapping(value = "/loginOut")
 	public String loginOut(HttpServletRequest request) {
-		request.getSession().setAttribute(Global.user_session_key, null);
+//		request.getSession().setAttribute(Global.user_session_key, null);
+	    HttpSession session = request.getSession(false);
+	    if (session != null) {
+	        // 完全销毁Session
+	        session.invalidate();
+	    }
 		return "admin/login";
 	}
 	/**

@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,11 +96,19 @@ public class SystemService {
 		}
 
 		if (MD5Util.MD5(userEntity.getPassword()).equals(findByUsername.getPassword())) {
+
+		    HttpSession oldSession = request.getSession(false);
+		    if (oldSession != null) {
+		        oldSession.invalidate();
+		    }
+		    HttpSession newSession = request.getSession(true);
+			
 			Date date = new Date();
 			findByUsername.setLasttime(Long.toString(date.getTime()));
 			userDao.save(findByUsername);
 			logger.info("用户 {} 在 {} 登录成功", username, ip);
-			request.getSession().setAttribute(Global.user_session_key, findByUsername);
+//			request.getSession().setAttribute(Global.user_session_key, findByUsername);
+			newSession.setAttribute(Global.user_session_key, findByUsername);
 			// 登录成功，重置失败计数
 			SecurityUtil.resetLoginAttempts(ip);
 			return new AjaxEntity(Global.ajax_success, Global.ajax_login_success_message, null);
