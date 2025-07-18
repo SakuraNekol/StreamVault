@@ -119,33 +119,6 @@ public class SystemService {
 		return new AjaxEntity(Global.ajax_login_err, Global.ajax_login_err_message, null);
 	}
 
-	/**
-	 * 上传文件
-	 * 
-	 * @param file
-	 * @param req
-	 * @param path
-	 * @return
-	 */
-	public String uploadFile(MultipartFile file, HttpServletRequest req, String path) {
-		UserEntity attribute = (UserEntity) req.getSession().getAttribute(Global.user_session_key);
-		String date = DateUtils.getDate("yyyy/MM/dd");
-		String uploadpath = attribute.getUsername() + "/" + path + "/" + date + "/";
-		FileUtils.createDirectory(fileSavePath + uploadpath);
-		String oldName = file.getOriginalFilename();
-		String newName = UUID.randomUUID().toString() +
-				oldName.substring(oldName.lastIndexOf("."), oldName.length());
-		try {
-			file.transferTo(new File(fileSavePath + uploadpath, newName));
-			// 返回虚拟映射
-			String replace = staticAccessPath.replace("**", "");
-			return replace + uploadpath + newName;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return "上传失败! ";
-		}
-
-	}
 
 	public AjaxEntity checkVersion() {
 		String version = "https://mirror.ghproxy.com/https://raw.githubusercontent.com/lemon8866/spirit/main/version";
