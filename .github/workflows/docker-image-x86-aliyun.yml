@@ -1,0 +1,128 @@
+name: Build and Push to Aliyun Registry
+
+on:
+  workflow_dispatch:
+    inputs:
+      docker_version:
+        description: 'Docker镜像版本号 (例如: latest, v1.0.0)'
+        required: true
+        default: 'latest'
+      create_release:
+        description: '是否创建GitHub Release'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      release_tag:
+        description: '发布版本标签 (例如: v1.0.0)'
+        required: false
+        default: ''
+      aliyun_registry:
+        description: '阿里云镜像仓库地址'
+        required: true
+        default: 'registry.cn-beijing.aliyuncs.com'
+      aliyun_username:
+        description: '阿里云镜像仓库用户名'
+        required: true
+        default: ''
+      aliyun_password:
+        description: '阿里云镜像仓库密钥'
+        required: true
+        default: ''
+      aliyun_repository:
+        description: '阿里云镜像仓库名称'
+        required: true
+        default: ''
+
+permissions:
+  contents: write
+  packages: write 
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v3
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build JAR with Maven
+        run: |
+          cd backstage
+          mvn clean package -DskipTests
+          cp target/spirit-0.0.1-SNAPSHOT.jar src/main/docker/buildx/
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Generate release tag if not provided
+        id: generate_tag
+        run: |
+          if [ -z "${{ github.event.inputs.release_tag }}" ]; then
+            RELEASE_TAG=$(date +"%Y%m%d")
+            echo "使用生成的发布标签: $RELEASE_TAG"
+          else
+            RELEASE_TAG="${{ github.event.inputs.release_tag }}"
+            echo "使用提供的发布标签: $RELEASE_TAG"
+          fi
+          echo "release_tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Login to Aliyun Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ github.event.inputs.aliyun_registry }}
+          username: ${{ github.event.inputs.aliyun_username }}
+          password: ${{ github.event.inputs.aliyun_password }}
+
+      - name: Build and Push to Aliyun Registry
+        run: |
+          docker buildx build \
+            --platform linux/amd64 \
+            -t ${{ github.event.inputs.aliyun_registry }}/${{ github.event.inputs.aliyun_repository }}:${{ github.event.inputs.docker_version }} \
+            --push \
+            -f ./backstage/src/main/docker/buildx/Dockerfile \
+            ./backstage/src/main/docker/buildx
+          echo "镜像已推送到阿里云: ${{ github.event.inputs.aliyun_registry }}/${{ github.event.inputs.aliyun_repository }}:${{ github.event.inputs.docker_version }}"
+
+      - name: Create Release Package
+        if: ${{ github.event.inputs.create_release == 'true' }}
+        run: |
+          mkdir -p release_package
+          cp backstage/src/main/docker/buildx/spirit-0.0.1-SNAPSHOT.jar release_package/
+          cp -r backstage/src/main/docker/buildx/db release_package/
+          cp -r backstage/src/main/docker/buildx/script release_package/
+          cd release_package
+          zip -r ../StreamVault-${{ steps.generate_tag.outputs.release_tag }}.zip .
+          cd ..
+          echo "生成的发布包: StreamVault-${{ steps.generate_tag.outputs.release_tag }}.zip"
+
+      - name: Create GitHub Release
+        if: ${{ github.event.inputs.create_release == 'true' }}
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.generate_tag.outputs.release_tag }}
+          name: StreamVault Release ${{ steps.generate_tag.outputs.release_tag }}
+          draft: false
+          prerelease: false
+          files: |
+            StreamVault-${{ steps.generate_tag.outputs.release_tag }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
