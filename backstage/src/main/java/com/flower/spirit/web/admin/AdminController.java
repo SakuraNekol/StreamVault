@@ -1,6 +1,8 @@
 package com.flower.spirit.web.admin;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.flower.spirit.common.AjaxEntity;
 import com.flower.spirit.common.RequestEntity;
+import com.flower.spirit.config.Global;
 import com.flower.spirit.entity.BiliConfigEntity;
 import com.flower.spirit.entity.CollectDataDetailEntity;
 import com.flower.spirit.entity.CollectDataEntity;
@@ -26,6 +29,7 @@ import com.flower.spirit.entity.TikTokConfigEntity;
 import com.flower.spirit.entity.UserEntity;
 import com.flower.spirit.entity.VideoDataEntity;
 import com.flower.spirit.entity.VideoMixEntity;
+import com.flower.spirit.service.AnalysisService;
 import com.flower.spirit.service.BiliConfigService;
 import com.flower.spirit.service.CollectDataDetailService;
 import com.flower.spirit.service.CollectDataService;
@@ -98,6 +102,9 @@ public class AdminController {
 	
 	@Autowired
 	private GraphicContentService graphicContentService;
+	
+	@Autowired
+	private AnalysisService analysisService;
 	
 	/**  
 	
@@ -348,7 +355,27 @@ public class AdminController {
 	public AjaxEntity findCollectDataDetail(CollectDataDetailEntity entity) {
 		return collectDataDetailService.findPage(entity);
 	}
-	
+
+	/**
+	 * 获取线程池状态信息
+	 * 
+	 * @return 线程池状态信息
+	 */
+	@GetMapping(value = "/getThreadPoolStatus")
+	public AjaxEntity getThreadPoolStatus() {
+		try {
+			Map<String, Object> result = new HashMap<>();
+			Map<String, Object> analysisStatus = analysisService.getThreadPoolStatus();
+			result.put("analysis", analysisStatus);
+			Map<String, Object> collectStatus = collectDataService.getCollectThreadPoolStatus();
+			result.put("collect", collectStatus);
+
+			return new AjaxEntity(Global.ajax_success, "获取线程池状态成功", result);
+		} catch (Exception e) {
+			return new AjaxEntity(Global.ajax_uri_error, "获取线程池状态失败: " + e.getMessage(), null);
+		}
+	}
+
 	/**
 	 * 更新Cookie 配置
 	 * @param entity
@@ -435,5 +462,25 @@ public class AdminController {
 	public AjaxEntity deleteGraphicContent(String id, HttpServletRequest request) {
 		return graphicContentService.deleteGraphicContent(id);
 	}
-	
-} 
+
+	/**
+	 * 获取数据统计信息
+	 * 
+	 * @return 统计数据
+	 */
+	@GetMapping(value = "/getDataStatistics")
+	public AjaxEntity getDataStatistics() {
+		try {
+			Map<String, Object> result = new HashMap<>();
+			result.put("videoPlatformStats", videoDataService.countByVideoplatformGroupBy());
+			result.put("graphicPlatformStats", graphicContentService.countByPlatformGroupBy());
+			result.put("collectDataTotal", collectDataService.countTotal());
+			// 添加今日新增数据统计
+			result.put("videoTodayAdded", videoDataService.countTodayAdded());
+			result.put("graphicTodayAdded", graphicContentService.countTodayAdded());
+			return new AjaxEntity(Global.ajax_success, "获取数据统计成功", result);
+		} catch (Exception e) {
+			return new AjaxEntity(Global.ajax_uri_error, "获取数据统计失败: " + e.getMessage(), null);
+		}
+	}
+}

@@ -246,6 +246,67 @@ public class AnalysisService {
 		void run() throws Exception;
 	}
 
+	/**
+	 * 获取线程池状态信息
+	 * 
+	 * @return 线程池状态的Map集合
+	 */
+	public Map<String, Object> getThreadPoolStatus() {
+		Map<String, Object> status = new HashMap<>();
+		
+		// 国内平台线程池状态
+		if (domestic instanceof ThreadPoolExecutor) {
+			ThreadPoolExecutor domesticPool = (ThreadPoolExecutor) domestic;
+			Map<String, Object> domesticStatus = new HashMap<>();
+			domesticStatus.put("poolName", "国内平台线程池");
+			domesticStatus.put("corePoolSize", domesticPool.getCorePoolSize());
+			domesticStatus.put("maximumPoolSize", domesticPool.getMaximumPoolSize());
+			domesticStatus.put("activeCount", domesticPool.getActiveCount());
+			domesticStatus.put("poolSize", domesticPool.getPoolSize());
+			domesticStatus.put("taskCount", domesticPool.getTaskCount());
+			domesticStatus.put("completedTaskCount", domesticPool.getCompletedTaskCount());
+			domesticStatus.put("queueSize", domesticPool.getQueue().size());
+			domesticStatus.put("isShutdown", domesticPool.isShutdown());
+			domesticStatus.put("isTerminated", domesticPool.isTerminated());
+			status.put("domestic", domesticStatus);
+		}
+		
+		// 哔哩哔哩线程池状态
+		if (bilibili instanceof ThreadPoolExecutor) {
+			ThreadPoolExecutor bilibiliPool = (ThreadPoolExecutor) bilibili;
+			Map<String, Object> bilibiliStatus = new HashMap<>();
+			bilibiliStatus.put("poolName", "哔哩哔哩线程池");
+			bilibiliStatus.put("corePoolSize", bilibiliPool.getCorePoolSize());
+			bilibiliStatus.put("maximumPoolSize", bilibiliPool.getMaximumPoolSize());
+			bilibiliStatus.put("activeCount", bilibiliPool.getActiveCount());
+			bilibiliStatus.put("poolSize", bilibiliPool.getPoolSize());
+			bilibiliStatus.put("taskCount", bilibiliPool.getTaskCount());
+			bilibiliStatus.put("completedTaskCount", bilibiliPool.getCompletedTaskCount());
+			bilibiliStatus.put("queueSize", bilibiliPool.getQueue().size());
+			bilibiliStatus.put("isShutdown", bilibiliPool.isShutdown());
+			bilibiliStatus.put("isTerminated", bilibiliPool.isTerminated());
+			status.put("bilibili", bilibiliStatus);
+		}
+		
+		// YouTube等国外平台线程池状态
+		if (ytdlp instanceof ThreadPoolExecutor) {
+			ThreadPoolExecutor ytdlpPool = (ThreadPoolExecutor) ytdlp;
+			Map<String, Object> ytdlpStatus = new HashMap<>();
+			ytdlpStatus.put("poolName", "YouTube等国外平台线程池");
+			ytdlpStatus.put("corePoolSize", ytdlpPool.getCorePoolSize());
+			ytdlpStatus.put("maximumPoolSize", ytdlpPool.getMaximumPoolSize());
+			ytdlpStatus.put("activeCount", ytdlpPool.getActiveCount());
+			ytdlpStatus.put("poolSize", ytdlpPool.getPoolSize());
+			ytdlpStatus.put("taskCount", ytdlpPool.getTaskCount());
+			ytdlpStatus.put("completedTaskCount", ytdlpPool.getCompletedTaskCount());
+			ytdlpStatus.put("queueSize", ytdlpPool.getQueue().size());
+			ytdlpStatus.put("isShutdown", ytdlpPool.isShutdown());
+			ytdlpStatus.put("isTerminated", ytdlpPool.isTerminated());
+			status.put("ytdlp", ytdlpStatus);
+		}
+		return status;
+	}
+
 	private void twitter(String platform, String url) {
 		ProcessHistoryEntity saveProcess = processHistoryService.saveProcess(null, url, platform);
 		try {
@@ -392,119 +453,6 @@ public class AnalysisService {
 		} catch (Exception e) {
 			throw e;
 			// logger.error(youtube+"解析异常");
-		}
-
-	}
-
-	/**
-	 * 不支持 从本处登录帐号并验证 二次令牌 请先使用 docker exec 进行登录帐号 在配置帐号密码进行下载
-	 * 支持从steam 工坊下载
-	 * 
-	 * @param video
-	 * @throws IOException
-	 */
-	private void steamwork(String video) throws IOException {
-		File file = new File("/app/db/account.txt");
-		if (file.exists()) {
-			String account = "";
-			String password = "";
-			BufferedReader reader = null;
-			try {
-				reader = new BufferedReader(new FileReader(file));
-				String readStr;
-				while ((readStr = reader.readLine()) != null) {
-					if (readStr.contains("account")) {
-						account = readStr.replaceAll("account:", "");
-					}
-					if (readStr.contains("password")) {
-						password = readStr.replaceAll("password:", "");
-					}
-				}
-				reader.close();
-
-			} catch (IOException e) {
-				e.printStackTrace();
-			} finally {
-				if (reader != null) {
-					try {
-						reader.close();
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
-				}
-			}
-			String wallpaperId = getWallpaperId(video);
-			VideoDataEntity findByVideoid = findByVideoid(video, "wallpaper");
-			if (findByVideoid != null) {
-				logger.info("重复ID 不下载");
-				return;
-			}
-			String steamcmd = CommandUtil.steamcmd(account, password, wallpaperId);
-			if (!steamcmd.equals("")) {
-				// 下载完成 cp 文件
-				logger.info("ok");
-				String localapp = Global.uploadRealPath + "wallpaper/" + DateUtils.getDate("yyyy") + "/"
-						+ DateUtils.getDate("MM");
-				FileUtils.createDirectory(localapp);
-				CommandUtil.command("mv " + steamcmd + " " + localapp);
-				// 复制完成 建档
-				String json = localapp + "/" + wallpaperId + "/project.json";
-				try {
-					String jsonContent = new String(Files.readAllBytes(Paths.get(json)));
-					JSONObject jsonObject = JSON.parseObject(jsonContent);
-					String filename = jsonObject.getString("file");
-					String previewname = jsonObject.getString("preview");
-					String title = jsonObject.getString("title");
-					String cosaddr = Global.savefile + "wallpaper/" + DateUtils.getDate("yyyy") + "/"
-							+ DateUtils.getDate("MM")
-							+ "/" + wallpaperId;
-					VideoDataEntity videoDataEntity = new VideoDataEntity(wallpaperId, title, title, "wallpaper",
-							cosaddr + "/" + previewname, localapp + "/" + wallpaperId + "/" + filename,
-							cosaddr + "/" + filename, video);
-					videoDataDao.save(videoDataEntity);
-					logger.info("下载流程结束");
-				} catch (IOException e) {
-					logger.info("建档异常-");
-				}
-			}
-		} else {
-			// 文件不存在 认为使用screen 模式
-			String wallpaperId = getWallpaperId(video);
-			VideoDataEntity findByVideoid = findByVideoid(video, "wallpaper");
-			if (findByVideoid != null) {
-				logger.info("重复ID 不下载");
-				return;
-			}
-			try {
-				String execAndListening = Steamcmd.execAndListening(wallpaperId);
-				if (execAndListening != null) {
-					logger.info("ok");
-					String localapp = Global.uploadRealPath + "wallpaper/" + DateUtils.getDate("yyyy") + "/"
-							+ DateUtils.getDate("MM");
-					FileUtils.createDirectory(localapp);
-					CommandUtil.command("mv " + execAndListening + " " + localapp);
-					// 复制完成 建档
-					String json = localapp + "/" + wallpaperId + "/project.json";
-					try {
-						String jsonContent = new String(Files.readAllBytes(Paths.get(json)));
-						JSONObject jsonObject = JSON.parseObject(jsonContent);
-						String filename = jsonObject.getString("file");
-						String previewname = jsonObject.getString("preview");
-						String title = jsonObject.getString("title");
-						String cosaddr = Global.savefile + "wallpaper/" + DateUtils.getDate("yyyy") + "/"
-								+ DateUtils.getDate("MM") + "/" + wallpaperId;
-						VideoDataEntity videoDataEntity = new VideoDataEntity(wallpaperId, title, title, "wallpaper",
-								cosaddr + "/" + previewname, localapp + "/" + wallpaperId + "/" + filename,
-								cosaddr + "/" + filename, video);
-						videoDataDao.save(videoDataEntity);
-						logger.info("下载流程结束");
-					} catch (IOException e) {
-						logger.info("建档异常-");
-					}
-				}
-			} catch (Exception e) {
-				logger.info("系统异常");
-			}
 		}
 
 	}
@@ -740,21 +688,6 @@ public class AnalysisService {
 			return "快手";
 		}
 		return URLUtil.urlAnalysis(input);
-	}
-
-	private String getWallpaperId(String url) {
-		// 创建正则表达式模式，匹配id参数的值
-		Pattern pattern = Pattern.compile("\\?id=(\\d+)");
-		Matcher matcher = pattern.matcher(url);
-
-		if (matcher.find()) {
-			// 提取id的值
-			String idValue = matcher.group(1);
-			return idValue;
-		} else {
-			System.out.println("ID not found in the URL.");
-		}
-		return null;
 	}
 
 	public VideoDataEntity findByVideoid(String id, String platform) {

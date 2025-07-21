@@ -2,6 +2,11 @@ package com.flower.spirit.service;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -19,7 +24,6 @@ import com.flower.spirit.common.AjaxEntity;
 import com.flower.spirit.config.Global;
 import com.flower.spirit.dao.GraphicContentDao;
 import com.flower.spirit.entity.GraphicContentEntity;
-import com.flower.spirit.entity.VideoDataEntity;
 import com.flower.spirit.utils.CommandUtil;
 import com.flower.spirit.utils.StringUtil;
 
@@ -83,6 +87,38 @@ public class GraphicContentService {
 			graphicContentDao.deleteById(Integer.valueOf(id));
 		}
 		return new AjaxEntity(Global.ajax_success, "操作成功", null);
+	}
+
+
+
+	public Map<String, Long> countByPlatformGroupBy() {
+		List<Object[]> graphicPlatformStats = graphicContentDao.countByPlatformGroupBy();
+		Map<String, Long> graphicPlatformMap = new HashMap<>();
+		for (Object[] stat : graphicPlatformStats) {
+			String platform = (String) stat[0];
+			Long count = (Long) stat[1];
+			graphicPlatformMap.put(platform != null ? platform : "未知", count);
+		}
+		return graphicPlatformMap;
+	}
+
+	/**
+	 * 统计今日新增图文内容数量
+	 * 
+	 * @return 今日新增图文内容数量
+	 */
+	public Long countTodayAdded() {
+		// 获取今日开始时间（00:00:00）
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(Calendar.HOUR_OF_DAY, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
+		Date startDate = calendar.getTime();
+		// 获取明日开始时间（作为今日结束时间）
+		calendar.add(Calendar.DAY_OF_MONTH, 1);
+		Date endDate = calendar.getTime();
+		return graphicContentDao.countTodayAdded(startDate, endDate);
 	}
 
 }

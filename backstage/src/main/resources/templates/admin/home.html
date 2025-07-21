@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>数据概览 - StreamVault</title>
+    <th:block th:insert="admin/include/header :: metaHeader"></th:block>
+    <link href="../static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../static/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="../static/css/style.min.css" rel="stylesheet">
+    <link href="../static/js/skin/laypage.css" rel="stylesheet">
+    <style>
+        /* 现代化扁平设计 - 全局样式 */
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #06b6d4;
+            --light-bg: #f8fafc;
+            --white: #ffffff;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --border-radius: 12px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --transition: all 0.2s ease-in-out;
+        }
+        
+        /* 分割显示样式 - 紧凑布局 */
+        .stats-value-split {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin: 1rem 0;
+        }
+        
+        .split-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+        
+        .split-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            line-height: 1;
+        }
+        
+        .split-label {
+            font-size: 0.9rem;
+            color: var(--gray-500);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.25rem;
+        }
+        
+        .split-divider {
+            width: 1px;
+            height: 2rem;
+            background: var(--gray-200);
+            flex-shrink: 0;
+        }
+
+        /* 全局重置 */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--gray-700);
+            background: var(--light-bg);
+        }
+
+        .container-fluid {
+            background: var(--light-bg);
+            min-height: 100vh;
+            padding: 24px 16px;
+        }
+
+
+
+        /* 统计卡片 - 扁平化设计 */
+        .stats-card {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            transition: var(--transition);
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .stats-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .stats-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--white);
+        }
+
+        .stats-icon.primary { background: var(--primary-color); }
+        .stats-icon.success { background: var(--success-color); }
+        .stats-icon.warning { background: var(--warning-color); }
+        .stats-icon.info { background: var(--info-color); }
+
+        .stats-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--gray-900);
+            line-height: 1;
+            margin: 16.5px 0;
+            
+        }
+
+        .stats-label {
+            font-size: 1.175rem;
+            font-weight: 500;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+
+
+
+        
+        /* 平台统计卡片 - 扁平化设计 */
+        .platform-card {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            transition: var(--transition);
+            height: 100%;
+        }
+
+        .platform-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-md);
+        }
+
+        .platform-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .platform-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 18px;
+            margin-right: 12px;
+        }
+
+        .platform-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin: 0;
+        }
+
+        .platform-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--gray-100);
+            transition: var(--transition);
+        }
+
+        .platform-item:last-child {
+            border-bottom: none;
+        }
+
+        .platform-item:hover {
+            background: var(--gray-50);
+            margin: 0 -12px;
+            padding: 12px;
+            border-radius: 6px;
+        }
+
+        .platform-name {
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            color: var(--gray-700);
+            font-size: 0.875rem;
+        }
+
+        .platform-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-right: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
+        .platform-count {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        /* 平台徽章颜色 - 扁平化 */
+        .badge-douyin { background: #ff6b6b; color: var(--white); }
+        .badge-bilibili { background: #00a1d6; color: var(--white); }
+        .badge-youtube { background: #ff0000; color: var(--white); }
+        .badge-kuaishou { background: #ff6600; color: var(--white); }
+        .badge-xiaohongshu { background: #ff2442; color: var(--white); }
+        .badge-weibo { background: #e6162d; color: var(--white); }
+        .badge-default { background: var(--gray-500); color: var(--white); }
+
+        /* 总计行样式 - 扁平化 */
+        .platform-total {
+            background: var(--gray-50);
+            margin: 16px -24px -24px -24px;
+            padding: 16px 24px;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .platform-total .platform-item {
+            border-bottom: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .platform-total .platform-item:hover {
+            background: transparent;
+            margin: 0;
+            padding: 0;
+        }
+
+        .platform-total .platform-name {
+            font-weight: 700;
+            color: var(--gray-900);
+            font-size: 0.875rem;
+        }
+
+        .platform-total .platform-count {
+            font-size: 1.25rem;
+            color: var(--primary-color);
+        }
+        
+        /* 加载状态 - 现代化设计 */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 32px;
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--gray-200);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 24px;
+        }
+
+        .loading-text {
+            color: var(--gray-600);
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 空状态样式 - 现代化设计 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 32px;
+            color: var(--gray-500);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 24px;
+            opacity: 0.3;
+            color: var(--gray-400);
+        }
+
+        .empty-state p {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        /* 响应式设计 - 移动端优先 */
+        @media (max-width: 576px) {
+            .container-fluid {
+                padding: 16px 12px;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .stats-card {
+                padding: 20px;
+                margin-bottom: 16px;
+            }
+
+
+
+            .stats-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
+
+            .today-stats {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .platform-card {
+                padding: 20px;
+                margin-bottom: 16px;
+            }
+
+            .platform-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+            }
+
+            .loading-container,
+            .empty-state {
+                padding: 40px 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container-fluid {
+                padding: 20px 16px;
+            }
+
+            .page-header {
+                margin-bottom: 24px;
+            }
+
+            .stats-card {
+                margin-bottom: 20px;
+            }
+
+            .platform-card {
+                margin-bottom: 20px;
+            }
+        }
+
+        /* 动画效果 - 优化性能 */
+        .fade-in {
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-up {
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 无障碍和性能优化 */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* 深色模式支持 */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --light-bg: #0f172a;
+                --white: #1e293b;
+                --gray-50: #1e293b;
+                --gray-100: #334155;
+                --gray-200: #475569;
+                --gray-300: #64748b;
+                --gray-400: #94a3b8;
+                --gray-500: #cbd5e1;
+                --gray-600: #e2e8f0;
+                --gray-700: #f1f5f9;
+                --gray-800: #f8fafc;
+                --gray-900: #ffffff;
+            }
+        }
+        #metricsContainer{
+        	margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+<div class="lyear-layout-web">
+    <div class="lyear-layout-container">
+        <div class="lyear-layout-main">
+            <div th:include="admin/include/common :: headermenu"> </div>
+            <main class="lyear-layout-content">
+                <div class="container-fluid">
+
+
+                    <!-- 加载状态 -->
+                    <div class="loading-container" id="loadingSpinner">
+                        <div class="loading-spinner"></div>
+                        <div class="loading-text">正在加载统计数据...</div>
+                    </div>
+                    
+                    <!-- 主要统计指标 -->
+                    <div class="row" id="metricsContainer" style="display: none;">
+                        <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
+                            <div class="stats-card fade-in">
+                                <div class="stats-card-header">
+                                    <div class="stats-icon primary">
+                                        <i class="mdi mdi-folder-multiple"></i>
+                                    </div>
+                                </div>
+                                <div class="stats-value" id="overviewCollect">0</div>
+                                <div class="stats-label">收藏夹总数</div>
+
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
+                            <div class="stats-card fade-in">
+                                <div class="stats-card-header">
+                                    <div class="stats-icon success">
+                                        <i class="mdi mdi-video"></i>
+                                    </div>
+                                </div>
+                                <div class="stats-value" id="overviewVideo">0</div>
+                                <div class="stats-label">视频总数</div>
+
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
+                            <div class="stats-card fade-in">
+                                <div class="stats-card-header">
+                                    <div class="stats-icon info">
+                                        <i class="mdi mdi-image-multiple"></i>
+                                    </div>
+                                </div>
+                                <div class="stats-value" id="overviewGraphic">0</div>
+                                <div class="stats-label">图文总数</div>
+
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
+                            <div class="stats-card fade-in">
+                                <div class="stats-card-header">
+                                    <div class="stats-icon warning">
+                                        <i class="mdi mdi-plus-circle"></i>
+                                    </div>
+                                </div>
+                                <div class="stats-value-split">
+                                    <div class="split-item">
+                                        <span class="split-value" id="videoTodayCount">0</span>
+                                        <span class="split-label">视频</span>
+                                    </div>
+                                    <div class="split-divider"></div>
+                                    <div class="split-item">
+                                        <span class="split-value" id="graphicTodayCount">0</span>
+                                        <span class="split-label">图文</span>
+                                    </div>
+                                </div>
+                                <div class="stats-label">今日新增</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 平台统计详情 -->
+                    <div class="row" id="platformsContainer" style="display: none;">
+                        <!-- 平台统计卡片将在这里动态生成 -->
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</div>
+
+    <script type="text/javascript" src="../static/js/jquery.min.js"></script>
+    <script type="text/javascript" src="../static/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../static/js/perfect-scrollbar.min.js"></script>
+    <script type="text/javascript" src="../static/js/main.min.js"></script>
+    <script type="text/javascript" src="../static/js/laypage.js"></script>
+    <script src="../static/js/layer/layer.js" type="text/javascript"></script>
+    <script>
+        /**
+         * 获取平台对应的徽章样式类名
+         * @param {string} platform - 平台名称
+         * @returns {string} 徽章样式类名
+         */
+        function getPlatformBadgeClass(platform) {
+            const platformMap = {
+                '抖音': 'badge-douyin',
+                'bilibili': 'badge-bilibili', 
+                'B站': 'badge-bilibili',
+                'youtube': 'badge-youtube',
+                'YouTube': 'badge-youtube',
+                '快手': 'badge-kuaishou',
+                '小红书': 'badge-xiaohongshu',
+                '微博': 'badge-weibo'
+            };
+            
+            // 先尝试精确匹配
+            if (platformMap[platform]) {
+                return platformMap[platform];
+            }
+            
+            // 模糊匹配
+            const platformLower = platform.toLowerCase();
+            if (platformLower.includes('douyin') || platformLower.includes('抖音')) {
+                return 'badge-douyin';
+            } else if (platformLower.includes('bilibili') || platformLower.includes('哔哩') || platformLower.includes('b站')) {
+                return 'badge-bilibili';
+            } else if (platformLower.includes('youtube') || platformLower.includes('yt')) {
+                return 'badge-youtube';
+            } else if (platformLower.includes('kuaishou') || platformLower.includes('快手')) {
+                return 'badge-kuaishou';
+            } else if (platformLower.includes('xiaohongshu') || platformLower.includes('小红书')) {
+                return 'badge-xiaohongshu';
+            } else if (platformLower.includes('weibo') || platformLower.includes('微博')) {
+                return 'badge-weibo';
+            } else {
+                return 'badge-default';
+            }
+        }
+
+        /**
+         * 获取平台对应的图标
+         * @param {string} platform - 平台名称
+         * @returns {string} 图标类名
+         */
+        function getPlatformIcon(platform) {
+            const iconMap = {
+                '抖音': 'mdi-music-note',
+                'bilibili': 'mdi-television-play',
+                'B站': 'mdi-television-play', 
+                'youtube': 'mdi-youtube',
+                'YouTube': 'mdi-youtube',
+                '快手': 'mdi-flash',
+                '小红书': 'mdi-book-open-page-variant',
+                '微博': 'mdi-comment-text'
+            };
+            return iconMap[platform] || 'mdi-web';
+        }
+
+        /**
+         * 数字动画效果 - 优化版本
+         * @param {string|Element} element - 目标元素
+         * @param {number} targetNumber - 目标数字
+         * @param {number} duration - 动画持续时间（毫秒）
+         */
+        function animateNumber(element, targetNumber, duration = 800) {
+            const $element = $(element);
+            const startNumber = 0;
+            const startTime = performance.now();
+            
+            function updateNumber(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // 使用缓动函数
+                const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+                const currentNumber = Math.floor(startNumber + (targetNumber - startNumber) * easeOutQuart);
+                
+                $element.text(currentNumber.toLocaleString());
+                
+                if (progress < 1) {
+                    requestAnimationFrame(updateNumber);
+                } else {
+                    $element.text(targetNumber.toLocaleString());
+                }
+            }
+            
+            requestAnimationFrame(updateNumber);
+        }
+
+        /**
+         * 显示加载状态
+         */
+        function showLoading() {
+            $('#loadingSpinner').fadeIn(200);
+            $('#metricsContainer').hide();
+            $('#platformsContainer').hide();
+        }
+
+        /**
+         * 隐藏加载状态并显示内容 - 优化版本
+         */
+        function hideLoading() {
+            $('#loadingSpinner').fadeOut(300, function() {
+                // 分阶段显示内容，创建更好的视觉效果
+                $('#metricsContainer').fadeIn(400, function() {
+                    // 指标卡片显示完成后再显示平台统计
+                    setTimeout(() => {
+                        $('#platformsContainer').fadeIn(500);
+                    }, 200);
+                });
+            });
+        }
+
+        /**
+         * 显示错误状态 - 增强版本
+         * @param {string} message - 错误消息
+         */
+        function showError(message) {
+            $('#loadingSpinner').fadeOut(200);
+            
+            const errorHtml = `
+                <div class="col-12">
+                    <div class="stats-card">
+                        <div class="empty-state">
+                            <i class="mdi mdi-alert-circle" style="color: var(--danger-color); font-size: 3rem;"></i>
+                            <p style="color: var(--gray-700); margin: 16px 0;">数据加载失败</p>
+                            <small style="color: var(--gray-500); display: block; margin-bottom: 20px;">${message}</small>
+                            <div>
+                                <button class="btn btn-primary" onclick="refreshStatistics()" style="margin-right: 8px;">
+                                    <i class="mdi mdi-refresh"></i> 重新加载
+                                </button>
+                                <button class="btn btn-outline-secondary" onclick="location.reload()">
+                                    <i class="mdi mdi-reload"></i> 刷新页面
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            $('#metricsContainer').html(errorHtml).fadeIn(300);
+            $('#platformsContainer').hide();
+        }
+        
+        /**
+         * 刷新统计数据 - 优化版本
+         */
+        function refreshStatistics() {
+            showLoading();
+            
+            $.ajax({
+                url: '/admin/api/getDataStatistics',
+                type: 'GET',
+                dataType: 'json',
+                timeout: 10000,
+                cache: false, // 禁用缓存确保数据实时性
+                success: function(response) {
+                    setTimeout(() => {
+                        if (response && response.resCode === '000001') {
+                            renderStatistics(response.record);
+                            hideLoading();
+                        } else {
+                            hideLoading();
+                            const message = response?.message || '未知错误';
+                            showError(message);
+                            layer.msg('获取统计数据失败: ' + message, {icon: 2});
+                        }
+                    }, 500);
+                },
+                error: function(xhr, status, error) {
+                    hideLoading();
+                    let errorMessage = '网络请求失败';
+                    
+                    if (status === 'timeout') {
+                        errorMessage = '请求超时，请稍后重试';
+                    } else if (xhr.status === 404) {
+                        errorMessage = '接口不存在';
+                    } else if (xhr.status === 500) {
+                        errorMessage = '服务器内部错误';
+                    } else if (xhr.status === 0) {
+                        errorMessage = '网络连接失败';
+                    }
+                    
+                    showError(errorMessage);
+                    layer.msg(errorMessage, {icon: 2});
+                }
+            });
+        }
+        
+        /**
+         * 渲染统计数据 - 现代化版本
+         * @param {Object} data - 统计数据对象
+         */
+        function renderStatistics(data) {
+            if (!data) {
+                showError('数据格式错误');
+                return;
+            }
+            
+            const platformContainer = $('#platformsContainer');
+            platformContainer.empty();
+            
+            let videoTotal = 0;
+            let graphicTotal = 0;
+            
+            // 安全地计算总数
+            try {
+                if (data.videoPlatformStats && typeof data.videoPlatformStats === 'object') {
+                    videoTotal = Object.values(data.videoPlatformStats)
+                        .filter(count => typeof count === 'number')
+                        .reduce((sum, count) => sum + count, 0);
+                }
+                if (data.graphicPlatformStats && typeof data.graphicPlatformStats === 'object') {
+                    graphicTotal = Object.values(data.graphicPlatformStats)
+                        .filter(count => typeof count === 'number')
+                        .reduce((sum, count) => sum + count, 0);
+                }
+            } catch (error) {
+                console.warn('计算平台统计总数时出错:', error);
+            }
+            
+            // 创建平台统计卡片
+            const platformCards = [];
+            
+            // 视频平台统计卡片
+            if (data.videoPlatformStats && Object.keys(data.videoPlatformStats).length > 0) {
+                const videoCard = createPlatformCard(data.videoPlatformStats, '视频平台统计', 'video');
+                platformCards.push(videoCard);
+            }
+            
+            // 图文平台统计卡片
+            if (data.graphicPlatformStats && Object.keys(data.graphicPlatformStats).length > 0) {
+                const graphicCard = createPlatformCard(data.graphicPlatformStats, '图文平台统计', 'graphic');
+                platformCards.push(graphicCard);
+            }
+            
+            // 渲染平台卡片或空状态
+            if (platformCards.length > 0) {
+                platformCards.forEach((card, index) => {
+                    setTimeout(() => {
+                        platformContainer.append(card);
+                    }, index * 100); // 错开渲染时间
+                });
+            } else {
+                platformContainer.append(`
+                    <div class="col-12">
+                        <div class="platform-card">
+                            <div class="empty-state">
+                                <i class="mdi mdi-database-off"></i>
+                                <p>暂无平台数据</p>
+                                <small class="text-muted">数据正在收集中，请稍后查看</small>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            }
+            
+            // 分阶段更新主要指标，创建更好的视觉效果
+              const metrics = [
+                  { selector: '#overviewCollect', value: data.collectDataTotal || 0, delay: 0 },
+                  { selector: '#overviewVideo', value: videoTotal, delay: 200 },
+                  { selector: '#overviewGraphic', value: graphicTotal, delay: 400 },
+                  { selector: '#videoTodayCount', value: data.videoTodayAdded || 0, delay: 600 },
+                  { selector: '#graphicTodayCount', value: data.graphicTodayAdded || 0, delay: 800 }
+              ];
+            
+            metrics.forEach(metric => {
+                setTimeout(() => {
+                    animateNumber(metric.selector, metric.value, 1000);
+                }, metric.delay);
+            });
+            
+            // 为平台统计数值添加动画效果
+            setTimeout(() => {
+                $('.platform-count').each(function(index) {
+                    const $this = $(this);
+                    const value = parseInt($this.text().replace(/,/g, '')) || 0;
+                    if (value > 0) {
+                        $this.text('0');
+                        setTimeout(() => {
+                            animateNumber(this, value, 800);
+                        }, index * 50); // 错开动画时间
+                    }
+                });
+            }, 1000);
+            
+            // 添加入场动画
+            setTimeout(() => {
+                $('.stats-card').addClass('fade-in');
+            }, 200);
+            
+            setTimeout(() => {
+                $('.platform-card').addClass('slide-up');
+            }, 400);
+        }
+        
+        // 删除createTotalCard函数，因为现在使用固定的主要指标卡片
+        
+        /**
+         * 创建平台统计卡片 - 增强版本
+         * @param {Object} platformStats - 平台统计数据
+         * @param {string} title - 卡片标题
+         * @param {string} type - 类型（video或graphic）
+         * @returns {string} HTML字符串
+         */
+        function createPlatformCard(platformStats, title, type) {
+            let platformItems = '';
+            let totalCount = 0;
+            
+            if (platformStats && Object.keys(platformStats).length > 0) {
+                // 按数量排序平台数据
+                const sortedPlatforms = Object.entries(platformStats)
+                    .filter(([platform, count]) => typeof count === 'number' && count > 0)
+                    .sort(([,a], [,b]) => b - a);
+                
+                for (const [platform, count] of sortedPlatforms) {
+                    totalCount += count;
+                    const badgeClass = getPlatformBadgeClass(platform);
+                    const icon = getPlatformIcon(platform);
+                    const percentage = totalCount > 0 ? ((count / (totalCount || 1)) * 100).toFixed(1) : 0;
+                    
+                    platformItems += `
+                        <div class="platform-item" data-platform="${platform}" data-count="${count}">
+                            <div class="platform-name">
+                                <span class="platform-badge ${badgeClass}">
+                                    <i class="mdi ${icon}"></i>
+                                    ${platform}
+                                </span>
+                            </div>
+                            <div class="platform-count" title="占比: ${percentage}%">${count.toLocaleString()}</div>
+                        </div>
+                    `;
+                }
+            } else {
+                platformItems = `
+                    <div class="empty-state">
+                        <i class="mdi mdi-${type === 'video' ? 'video-off' : 'image-off'}"></i>
+                        <p>暂无${type === 'video' ? '视频' : '图文'}数据</p>
+                        <small class="text-muted">等待数据同步中...</small>
+                    </div>
+                `;
+            }
+            
+            const icon = type === 'video' ? 'mdi-video' : 'mdi-image-multiple';
+            const iconColor = type === 'video' ? 'var(--success-color)' : 'var(--info-color)';
+            
+            let totalSection = '';
+            if (totalCount > 0) {
+                totalSection = `
+                    <div class="platform-total">
+                        <div class="platform-item">
+                            <div class="platform-name">
+                                <i class="mdi mdi-sigma" style="margin-right: 8px; color: var(--primary-color);"></i>
+                                <strong>总计</strong>
+                            </div>
+                            <div class="platform-count" style="color: var(--primary-color);">${totalCount.toLocaleString()}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            return `
+                <div class="col-lg-6 col-xl-6 mb-4">
+                    <div class="platform-card" data-type="${type}">
+                        <div class="platform-header">
+                            <div class="platform-icon" style="background: ${iconColor};">
+                                <i class="mdi ${icon}"></i>
+                            </div>
+                            <h3 class="platform-title">${title}</h3>
+                        </div>
+                        ${platformItems}
+                        ${totalSection}
+                    </div>
+                </div>
+            `;
+        }
+        
+        /**
+         * 页面初始化
+         */
+        $(document).ready(function() {
+            // 延迟加载以显示加载动画效果
+            setTimeout(() => {
+                refreshStatistics();
+            }, 300);
+            
+            // 添加键盘快捷键支持
+            $(document).keydown(function(e) {
+                // Ctrl+R 刷新数据
+                if (e.ctrlKey && e.key === 'r') {
+                    e.preventDefault();
+                    refreshStatistics();
+                }
+                // F5 刷新数据
+                if (e.key === 'F5') {
+                    e.preventDefault();
+                    refreshStatistics();
+                }
+            });
+            
+            // 添加定时刷新功能（可选）
+            let autoRefreshInterval;
+            const enableAutoRefresh = false; // 可根据需要开启
+            
+            if (enableAutoRefresh) {
+                autoRefreshInterval = setInterval(() => {
+                    console.log('自动刷新统计数据...');
+                    refreshStatistics();
+                }, 5 * 60 * 1000); // 每5分钟刷新一次
+            }
+            
+            // 页面可见性变化时的处理
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden && enableAutoRefresh) {
+                    // 页面重新可见时刷新数据
+                    refreshStatistics();
+                }
+            });
+            
+            // 窗口失焦时清除定时器，聚焦时重新设置
+            $(window).on('blur', function() {
+                if (autoRefreshInterval) {
+                    clearInterval(autoRefreshInterval);
+                }
+            }).on('focus', function() {
+                if (enableAutoRefresh && !autoRefreshInterval) {
+                    autoRefreshInterval = setInterval(() => {
+                        refreshStatistics();
+                    }, 5 * 60 * 1000);
+                }
+            });
+            
+            // 添加点击刷新按钮（如果需要）
+            $(document).on('click', '[data-action="refresh"]', function(e) {
+                e.preventDefault();
+                refreshStatistics();
+            });
+        });
+    </script>
+</body>
+</html>

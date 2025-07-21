@@ -1,18 +1,48 @@
 package com.flower.spirit.dao;
 
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
+import javax.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import com.flower.spirit.entity.GraphicContentEntity;
 
-public interface GraphicContentDao extends PagingAndSortingRepository<GraphicContentEntity, Integer>, JpaSpecificationExecutor<GraphicContentEntity>  {
+@Repository
+@Transactional
+public interface GraphicContentDao extends PagingAndSortingRepository<GraphicContentEntity, Integer>,
+		JpaSpecificationExecutor<GraphicContentEntity> {
 
 	Optional<GraphicContentEntity> findById(Integer id);
 
 	void deleteById(Integer id);
 
 	Optional<GraphicContentEntity> findByVideoidAndPlatform(String post, String name);
+
+	Optional<GraphicContentEntity> findByOriginaladdressAndPlatform(String url, String name);
+
+	/**
+	 * 按平台分组统计图文内容数量
+	 * 
+	 * @return List<Object[]> 每个元素包含[platform, count]
+	 */
+	@Query("SELECT g.platform, COUNT(g) FROM GraphicContentEntity g GROUP BY g.platform")
+	List<Object[]> countByPlatformGroupBy();
+
+	/**
+	 * 统计今日新增图文内容数量
+	 * 
+	 * @param startDate 今日开始时间
+	 * @param endDate 今日结束时间
+	 * @return 今日新增图文内容数量
+	 */
+	@Query("SELECT COUNT(g) FROM GraphicContentEntity g WHERE g.createtime >= :startDate AND g.createtime < :endDate")
+	Long countTodayAdded(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
 }

@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.io.File;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -192,6 +193,42 @@ public class CollectDataService {
 
 		}
 		return null;
+	}
+
+	/**
+	 * 获取收藏夹处理线程池状态信息
+	 * 
+	 * @return 线程池状态的Map集合
+	 */
+	public Map<String, Object> getCollectThreadPoolStatus() {
+		Map<String, Object> status = new HashMap<>();
+		
+		// 收藏夹处理线程池状态
+		if (exec instanceof ThreadPoolExecutor) {
+			ThreadPoolExecutor collectPool = (ThreadPoolExecutor) exec;
+			Map<String, Object> collectStatus = new HashMap<>();
+			collectStatus.put("poolName", "收藏夹处理线程池");
+			collectStatus.put("corePoolSize", collectPool.getCorePoolSize());
+			collectStatus.put("maximumPoolSize", collectPool.getMaximumPoolSize());
+			collectStatus.put("activeCount", collectPool.getActiveCount());
+			collectStatus.put("poolSize", collectPool.getPoolSize());
+			collectStatus.put("taskCount", collectPool.getTaskCount());
+			collectStatus.put("completedTaskCount", collectPool.getCompletedTaskCount());
+			collectStatus.put("queueSize", collectPool.getQueue().size());
+			collectStatus.put("isShutdown", collectPool.isShutdown());
+			collectStatus.put("isTerminated", collectPool.isTerminated());
+			status.put("collect", collectStatus);
+		} else {
+			// 对于单线程池的特殊处理
+			Map<String, Object> collectStatus = new HashMap<>();
+			collectStatus.put("poolName", "收藏夹处理线程池");
+			collectStatus.put("poolType", "SingleThreadExecutor");
+			collectStatus.put("isShutdown", exec.isShutdown());
+			collectStatus.put("isTerminated", exec.isTerminated());
+			collectStatus.put("description", "单线程池");
+			status.put("collect", collectStatus);
+		}
+		return status;
 	}
 
 	/**
@@ -725,5 +762,10 @@ public class CollectDataService {
 			return new AjaxEntity(Global.ajax_success, "更新成功", null);
 		}
 		return new AjaxEntity(Global.ajax_uri_error, "数据异常", null);
+	}
+
+	public Long countTotal() {
+		Long collectDataTotal = collectdDataDao.countTotal();
+		return collectDataTotal;
 	}
 }

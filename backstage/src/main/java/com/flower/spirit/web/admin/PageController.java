@@ -50,8 +50,8 @@ public class PageController {
 	public String admin(HttpServletRequest request) {
 		if(request.getSession().getAttribute(Global.user_session_key) ==  null) {
 			return "admin/login";
-		}else {
-			return "admin/index";
+		} else {
+			return "admin/home";
 		}
 	}
 	/**
@@ -61,8 +61,8 @@ public class PageController {
 	 */
 	@RequestMapping(value = "/login")
 	public String login(HttpServletRequest request) {
-		if(request.getSession().getAttribute(Global.user_session_key) !=  null) {
-			return "redirect:/admin/index";
+		if (request.getSession().getAttribute(Global.user_session_key) != null) {
+			return "redirect:/admin/home";
 		}
 		return "admin/login";
 	}
@@ -187,5 +187,25 @@ public class PageController {
 	@RequestMapping(value = "/graphicContentList")
 	public String graphicContentList() {
 		return "admin/graphicContent";
+	}
+
+	/**
+	 * 线程池监控页面
+	 * 
+	 * @return
+	 */
+	@RequestMapping(value = "/threadPoolMonitor")
+	public String threadPoolMonitor() {
+		return "admin/threadPoolMonitor";
+	}
+
+	/**
+	 * 数据统计页面
+	 * 
+	 * @return
+	 */
+	@RequestMapping(value = "/home")
+	public String dataStatistics() {
+		return "admin/home";
 	}
 }
