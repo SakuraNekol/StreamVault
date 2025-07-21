@@ -41,6 +41,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Check required secrets
+        run: |
+          echo "检查必需的GitHub Secrets配置..."
+          if [ -z "${{ secrets.ALIYUN_USERNAME }}" ]; then
+            echo "❌ 错误: 未配置 ALIYUN_USERNAME secret"
+            echo "请在仓库设置中添加 ALIYUN_USERNAME secret"
+            echo "路径: Settings → Secrets and variables → Actions → New repository secret"
+            exit 1
+          fi
+          if [ -z "${{ secrets.ALIYUN_PASSWORD }}" ]; then
+            echo "❌ 错误: 未配置 ALIYUN_PASSWORD secret"
+            echo "请在仓库设置中添加 ALIYUN_PASSWORD secret"
+            echo "路径: Settings → Secrets and variables → Actions → New repository secret"
+            exit 1
+          fi
+          echo "✅ 所有必需的secrets已正确配置"
+
       - name: Set up JDK 8
         uses: actions/setup-java@v3
         with:
