@@ -2,6 +2,20 @@
 
 
 ```
+2025/07/21  Tagged the version as 250721 on Docker Hub. Merged the 250721 tag into the latest tag.
+### ✨ New Features
+* **New Backend Homepage**: Replaced the old homepage with a redesigned dashboard showing platform-wide statistics and daily data trends.
+* **Running Status Monitor**: Added a new status page to view the state of all running threads in the system.
+* **Media Homepage**: The previous homepage has been moved to the media library and renamed as the "Media Home".
+### 🛠 Optimizations
+* **Menu Text Standardization**: All menu labels have been adjusted to a uniform four-character format for consistency.
+* **Icon Redesign**: Updated and unified all menu icons for better visual clarity.
+* **Mobile Adaptation**: Enhanced compatibility of image-text features on mobile devices.
+
+```
+
+
+```
 2025/07/17  Tagged the version as 250717 on Docker Hub. Merged the 250717 tag into the latest tag.
 优化CommandUtil类的资源释放问题
 调整单链固定线程为动态线程  最小值1 最大值5 减少冷占用
