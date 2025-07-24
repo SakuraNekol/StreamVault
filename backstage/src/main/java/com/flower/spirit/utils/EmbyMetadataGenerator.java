@@ -68,7 +68,6 @@ public class EmbyMetadataGenerator {
                     .append(createXmlTag("runtime", "1"))
                     .append("    <mpaa/>\n")
                     .append("    <certification/>\n")
-                    .append(createXmlTag("id", upmid))
                     .append("    <tmdbid/>\n")
                     .append(createXmlTag("country", DEFAULT_COUNTRY))
                     .append("    <status/>\n")
@@ -155,7 +154,6 @@ public class EmbyMetadataGenerator {
             nfoContent.append("    <mpaa/>\n");
             nfoContent.append("    <certification/>\n");
             nfoContent.append("    <episodeguide>{}</episodeguide>\n");
-            nfoContent.append("    <id/>\n");
             nfoContent.append("    <imdbid/>\n");
             nfoContent.append("    <tmdbid/>\n");
             nfoContent.append("    <premiered>" + premiered + "</premiered>\n");
@@ -218,7 +216,6 @@ public class EmbyMetadataGenerator {
             nfoContent.append("    <showtitle>bilibili收藏夹</showtitle>\n");
             nfoContent.append("    <season>1</season>\n");
             nfoContent.append("    <episode>" + episodeNumber + "</episode>\n");
-            nfoContent.append("    <id/>\n");
             nfoContent.append("    <ratings/>\n");
             nfoContent.append("    <userrating>0</userrating>\n");
             nfoContent.append("    <plot>" + overview + "</plot>\n");
@@ -505,7 +502,7 @@ public class EmbyMetadataGenerator {
         if (desc == null || desc.equals("-") || desc.trim().isEmpty()) {
             desc = "由【" + upname + "】上传的视频内容";
         }
-        return desc + "\r：" + upname + "\rUID：" + upmid + "\r视频ID：" + cid;
+        return desc + "\r\n发布者：" + upname + "\r\nUID：" + upmid + "\r\n视频ID：" + cid;
     }
 
 }
