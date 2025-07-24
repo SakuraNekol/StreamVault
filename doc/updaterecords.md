@@ -2,6 +2,15 @@
 
 
 ```
+2025/07/24  Tagged the version as 250724 on Docker Hub. Merged the 250724 tag into the latest tag.
+优化 bilibili douyin 单链接 NFO生成参数  actor  下新增profile 项 为作者主页
+优化 单链接 NFO 视频简介生成参数问题
+优化后台视频列表  视频首页 点击播放 移动端适配的问题
+yt-dlp合并上游最新代码
+```
+
+
+```
 2025/07/21  Tagged the version as 250721 on Docker Hub. Merged the 250721 tag into the latest tag.
 ### ✨ New Features
 * **New Backend Homepage**: Replaced the old homepage with a redesigned dashboard showing platform-wide statistics and daily data trends.
