@@ -93,6 +93,9 @@ public class AppConfig {
 		if(null!=data.getFrontend() && !"".equals(data.getFrontend())) {
 			Global.frontend = data.getFrontend();
 		}
+		if(null!=data.getRangenum() && !"".equals(data.getRangenum())) {
+			Global.RangeNumber = Integer.valueOf(data.getRangenum());
+		}
 		if (data.getAgenttype() != null && !data.getAgenttype().trim().isEmpty() &&
 			    data.getAgentaddress() != null && !data.getAgentaddress().trim().isEmpty() &&
 			    data.getAgentport() != null && !data.getAgentport().trim().isEmpty()) {

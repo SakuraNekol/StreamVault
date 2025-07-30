@@ -129,6 +129,12 @@
                                                 </select>
                                             </div>
                                         </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>分片下载</label>
+                                                <input class="form-control" type="text" id="rangenum" name="rangenum" placeholder="默认为1" th:value="${config.rangenum}">
+                                            </div>
+                                        </div>
                                     </div>
                                     
                                     <div class="form-group">
@@ -501,6 +507,7 @@
               option['readonlytoken'] = readonlytoken;
               option['ytdlpmode'] = $("#ytdlpmode").val();
               option['nfonetaddr'] = $("#nfonetaddr").val();
+              option['rangenum'] = $("#rangenum").val();
               option['frontend'] = $("#frontend").val();
               $.post("/admin/api/saveConfig",option,function(data,status){
                   if(data.resCode =="000001"){
@@ -651,6 +658,7 @@
             option['readonlytoken'] = readonlytoken;
             option['ytdlpmode'] = $("#ytdlpmode").val();
             option['nfonetaddr'] = $("#nfonetaddr").val();
+            option['rangenum'] = $("#rangenum").val();
             option['frontend'] = $("#frontend").val();
             $.post("/admin/api/saveConfig",option,function(data,status){
                 if(data.resCode =="000001"){

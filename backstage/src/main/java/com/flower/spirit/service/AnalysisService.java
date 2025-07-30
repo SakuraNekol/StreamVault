@@ -573,9 +573,10 @@ public class AnalysisService {
 	 * @param cover
 	 * @param platform
 	 * @throws IOException
+	 * @throws InterruptedException 
 	 */
 	public void putRecord(String awemeId, String desc, String playApi, String cover, String platform,
-			String originaladdress, String type, String cookie, Map<String, String> map) throws IOException {
+			String originaladdress, String type, String cookie, Map<String, String> map) throws IOException, InterruptedException {
 		String filename = StringUtil.getFileName(desc, awemeId);
 		String videofile = FileUtil.generateDir(Global.down_path, Global.platform.douyin.name(), true, filename, null,
 				null);
@@ -587,8 +588,7 @@ public class AnalysisService {
 		if (Global.downtype.equals("a2")) {
 			Aria2Util.sendMessage(Global.a2_link,
 					Aria2Util.createDouparameter(playApi,
-							FileUtil.generateDir(Global.down_path, Global.platform.douyin.name(), true, filename, null,
-									null),
+							FileUtil.generateDir(Global.down_path, Global.platform.douyin.name(), true, filename, null,null),
 							filename + ".mp4", Global.a2_token, cookie));
 		}
 		HashMap<String, String> header = new HashMap<String, String>();
@@ -598,7 +598,11 @@ public class AnalysisService {
 		if (Global.downtype.equals("http")) {
 			// 内置下载器
 			videofile = FileUtil.generateDir(true, Global.platform.douyin.name(), true, filename, null, null);
-			HttpUtil.downloadFileWithOkHttp(playApi, filename + ".mp4", videofile, header);
+			if (Global.RangeNumber == 1) {
+				HttpUtil.downloadFileWithOkHttp(playApi, filename + ".mp4", videofile, header);
+			} else {
+				HttpUtil.downloadFileWithOkHttp(playApi, filename + ".mp4", videofile, header, Global.RangeNumber);
+			}
 		}
 
 		String coverdir = FileUtil.generateDir(true, Global.platform.douyin.name(), true, filename, null, null);

@@ -423,8 +423,12 @@ public class CollectDataService {
 								null);
 						videofile = FileUtil.generateDir(true, Global.platform.douyin.name(), false, filename, taskname,
 								null);
-						String downloadFileWithOkHttp = HttpUtil.downloadFileWithOkHttp(videoplay, filename + ".mp4",
-								videofile, header);
+						String downloadFileWithOkHttp ="";
+						if(Global.RangeNumber==1) {
+							downloadFileWithOkHttp = HttpUtil.downloadFileWithOkHttp(videoplay, filename + ".mp4", videofile, header);
+						}else {
+							downloadFileWithOkHttp = HttpUtil.downloadFileWithOkHttp(videoplay, filename + ".mp4", videofile, header,Global.RangeNumber);
+						}
 						if (downloadFileWithOkHttp.equals("1")) {
 							logger.info(aweme_detail.toJSONString());
 							risk = "1";

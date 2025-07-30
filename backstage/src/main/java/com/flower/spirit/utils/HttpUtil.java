@@ -8,12 +8,21 @@ import java.io.FileOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
 import org.apache.commons.httpclient.Header;
@@ -37,6 +46,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.flower.spirit.config.Global;
 
 import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -306,10 +316,9 @@ public class HttpUtil {
         return downBiliFromUrl(urlStr, fileName, savePath, null);
     }
 
-    public static String downBiliFromUrl(String urlStr, String fileName, String savePath, String cookie)
-            throws Exception {
-        if (urlStr == null || urlStr.isEmpty() || fileName == null || fileName.isEmpty() ||
-                savePath == null || savePath.isEmpty()) {
+    public static String downBiliFromUrl(String urlStr, String fileName, String savePath, String cookie) throws Exception {
+        if (urlStr == null || urlStr.isEmpty() || fileName == null || fileName.isEmpty()
+                || savePath == null || savePath.isEmpty()) {
             throw new IllegalArgumentException("urlStr, fileName, savePath 不能为空");
         }
 
@@ -319,16 +328,16 @@ public class HttpUtil {
 
         while (retryCount < maxRetries) {
             OkHttpClient client = new OkHttpClient.Builder()
-                    .connectTimeout(5, TimeUnit.SECONDS)
-                    .readTimeout(30, TimeUnit.SECONDS)
-                    .writeTimeout(30, TimeUnit.SECONDS)
+                    .connectTimeout(10, TimeUnit.SECONDS)
+                    .readTimeout(60, TimeUnit.SECONDS)
+                    .writeTimeout(60, TimeUnit.SECONDS)
                     .retryOnConnectionFailure(true)
                     .build();
 
             File saveDir = new File(savePath);
-            File file = new File(saveDir, fileName);
+            File finalFile = new File(saveDir, fileName);
+            File tmpFile = new File(saveDir, fileName + ".downloading");
             long downloaded = 0;
-            long lastReadTime = System.currentTimeMillis();
             boolean needRetry = false;
 
             try {
@@ -350,100 +359,80 @@ public class HttpUtil {
                 try (Response response = client.newCall(request).execute()) {
                     if (!response.isSuccessful()) {
                         logger.info("下载失败: " + response.code());
-                        logger.info("----------------打印调试参数-------------------");
                         logger.info(urlStr);
                         logger.info(fileName);
-                        logger.info("----------------打印调试参数-------------------");
                         return "1";
                     }
 
                     long fileLength = response.body().contentLength();
-                    if (file.exists() && fileLength > 0 && file.length() == fileLength) {
-                        logger.info("文件已存在且大小相同,跳过下载: {}", fileName);
+                    if (finalFile.exists() && fileLength > 0 && finalFile.length() == fileLength) {
+                        logger.info("文件已存在且大小一致，跳过: {}", fileName);
                         return "0";
                     }
 
                     try (BufferedInputStream bis = new BufferedInputStream(response.body().byteStream());
-                            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file))) {
+                         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tmpFile))) {
 
                         byte[] buffer = new byte[32 * 1024];
                         int len;
                         long startTime = System.currentTimeMillis();
-                        long lastProgressTime = startTime;
+                        long lastLogTime = startTime;
 
                         while ((len = bis.read(buffer)) != -1) {
                             bos.write(buffer, 0, len);
                             downloaded += len;
-                            long currentTime = System.currentTimeMillis();
-                            lastReadTime = currentTime;
 
-                            if (fileLength > 0 && currentTime - lastProgressTime >= 1000) {
+                            long now = System.currentTimeMillis();
+                            if (fileLength > 0 && now - lastLogTime >= 1000) {
                                 int progress = (int) (downloaded * 100 / fileLength);
                                 if (progress % 10 == 0) {
-                                    double speed = (downloaded / 1024.0) / ((currentTime - startTime) / 1000.0);
-                                    if (LoggerFactory.getLogger(HttpUtil.class).isDebugEnabled()) {
-                                        LoggerFactory.getLogger(HttpUtil.class).debug(
-                                                "下载进度: {}%, 速度: {:.2f} KB/s, 文件: {}", progress, speed, fileName);
+                                    double speed = (downloaded / 1024.0) / ((now - startTime) / 1000.0);
+                                    if (logger.isDebugEnabled()) {
+                                        logger.debug("下载进度: {}%, 速度: {:.2f} KB/s, 文件: {}", progress, speed, fileName);
                                     }
                                 }
-                                lastProgressTime = currentTime;
-                            }
-
-                            if (currentTime - lastReadTime > 30000) {
-                                logger.info("读取超时");
-                                logger.info("----------------打印调试参数-------------------");
-                                logger.info(urlStr);
-                                logger.info(fileName);
-                                logger.info("----------------打印调试参数-------------------");
-                                return "1";
+                                lastLogTime = now;
                             }
                         }
                         bos.flush();
-
-                        if (fileLength > 0 && file.length() != fileLength) {
-                            logger.info("文件下载不完整");
-                            logger.info("----------------打印调试参数-------------------");
-                            logger.info(urlStr);
-                            logger.info(fileName);
-                            logger.info("----------------打印调试参数-------------------");
-                            return "1";
-                        }
-
-                        logger.info("文件下载完成: {}", fileName);
-                        return "0";
                     }
+
+                    // 文件大小校验
+                    if (fileLength > 0 && tmpFile.length() != fileLength) {
+                        logger.info("文件大小不匹配，下载失败");
+                        return "1";
+                    }
+
                 }
+
+                // 下载成功后尝试重命名
+                Files.move(tmpFile.toPath(), finalFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+                logger.info("文件下载完成: {}", finalFile.getAbsolutePath());
+                return "0";
+
             } catch (SocketTimeoutException e) {
-                logger.warn("下载超时(第 {} 次重试): {}", retryCount + 1, fileName);
+                logger.warn("下载超时: 第{}次: {}", retryCount + 1, fileName);
                 needRetry = true;
             } catch (IOException e) {
-                logger.error("下载出错: {}", e.getMessage(), e);
-                logger.info("----------------打印调试参数-------------------");
-                logger.info(urlStr);
-                logger.info(fileName);
-                logger.info("----------------打印调试参数-------------------");
+                logger.error("下载异常: {}", e.getMessage(), e);
                 return "1";
             } finally {
-                if (needRetry && file.exists()) {
-                    file.delete();
+                if (needRetry && tmpFile.exists()) {
+                    tmpFile.delete();
                 }
             }
 
             retryCount++;
             if (retryCount < maxRetries) {
-                try {
-                    Thread.sleep(retryDelay);
-                } catch (InterruptedException ignored) {
-                }
+                Thread.sleep(retryDelay);
             }
         }
-        logger.info("----------------打印调试参数-------------------");
-        logger.info(urlStr);
-        logger.info(fileName);
-        logger.info("----------------打印调试参数-------------------");
-        logger.error("下载失败，已重试多次: " + fileName);
+
+        logger.error("下载失败，重试多次: {}", fileName);
         return "1";
     }
+
 
     @SuppressWarnings("unused")
     private static class InputStreamWithProgress extends FilterInputStream {
@@ -622,17 +611,15 @@ public class HttpUtil {
         throw new IOException("下载失败，已重试多次: " + fileName);
     }
 
-    public static String downloadFileWithOkHttp(String urlStr, String fileName, String savePath,
-            Map<String, String> headers)
-            throws IOException {
-        if (urlStr == null || urlStr.isEmpty() || fileName == null || fileName.isEmpty() ||
-                savePath == null || savePath.isEmpty()) {
+    public static String downloadFileWithOkHttp(String urlStr, String fileName, String savePath, Map<String, String> headers) throws IOException {
+        if (urlStr == null || urlStr.isEmpty() || fileName == null || fileName.isEmpty() || savePath == null || savePath.isEmpty()) {
             logger.info("----------------打印调试参数-------------------");
             logger.info(urlStr);
             logger.info(fileName);
             logger.info("----------------打印调试参数-------------------");
             throw new IllegalArgumentException("urlStr, fileName, savePath 不能为空");
         }
+
         int maxRetries = 3;
         int retryCount = 0;
         long retryDelay = 5000;
@@ -646,9 +633,10 @@ public class HttpUtil {
 
         while (retryCount < maxRetries) {
             File saveDir = new File(savePath);
-            File file = new File(saveDir, fileName);
+            File finalFile = new File(saveDir, fileName);
+            File tmpFile = new File(saveDir, fileName + ".downloading");
+
             long downloaded = 0;
-            long lastReadTime = System.currentTimeMillis();
             boolean needRetry = false;
 
             try {
@@ -666,80 +654,9 @@ public class HttpUtil {
                     }
                 }
 
-                Response response = client.newCall(requestBuilder.build()).execute();
-                if (!response.isSuccessful()) {
-                    // 此处被风控了 更换另一个链接下载 如果另一个链接 还是这样 则终止本次下载
-                    logger.info("下载失败: " + response.code());
-                    logger.info("----------------打印调试参数-------------------");
-                    logger.info(urlStr);
-                    logger.info(fileName);
-                    logger.info("----------------打印调试参数-------------------");
-                    return "1";
-                }
-                long fileLength = response.body().contentLength();
-                if (file.exists() && fileLength > 0 && file.length() == fileLength) {
-                    logger.info("文件已存在且大小相同,跳过下载: {}", fileName);
-                    return "0";
-                }
-
-                try (BufferedInputStream bis = new BufferedInputStream(response.body().byteStream());
-                        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file))) {
-
-                    byte[] buffer = new byte[16 * 1024];
-                    int len;
-                    long startTime = System.currentTimeMillis();
-                    long lastProgressTime = startTime;
-                    long lastBytesRead = 0;
-
-                    while ((len = bis.read(buffer)) != -1) {
-                        bos.write(buffer, 0, len);
-                        downloaded += len;
-                        long currentTime = System.currentTimeMillis();
-                        lastReadTime = currentTime;
-
-                        if (fileLength > 0 && currentTime - lastProgressTime >= 15000) {
-                            int progress = (int) (downloaded * 100 / fileLength);
-
-                            // 计算平均速度
-                            double averageSpeed = (downloaded / 1024.0) /
-                                    Math.max(1, (currentTime - startTime) / 1000.0);
-
-                            // 计算实时速度
-                            double instantSpeed = ((downloaded - lastBytesRead) / 1024.0) /
-                                    Math.max(1, (currentTime - lastProgressTime) / 1000.0);
-
-                            // 计算剩余时间
-                            long remainingBytes = fileLength - downloaded;
-                            long remainingTime = averageSpeed > 0 ? (long) (remainingBytes / (averageSpeed * 1024)) : 0;
-
-                            logger.info("下载进度: {}%, 平均速度: {} KB/s, 实时速度: {} KB/s, 剩余时间: {} 秒, 文件: {}",
-                                    progress,
-                                    String.format("%.2f", averageSpeed),
-                                    String.format("%.2f", instantSpeed),
-                                    remainingTime,
-                                    fileName);
-
-                            lastProgressTime = currentTime;
-                            lastBytesRead = downloaded;
-                            /*
-                             * if (instantSpeed < averageSpeed * 0.3 && averageSpeed > 0) { throw new
-                             * SocketTimeoutException("下载速度严重下降"); }
-                             */
-                        }
-
-                        if (currentTime - lastReadTime > 30000) {
-                            logger.info("读取超时");
-                            logger.info("----------------打印调试参数-------------------");
-                            logger.info(urlStr);
-                            logger.info(fileName);
-                            logger.info("----------------打印调试参数-------------------");
-                            return "1";
-                        }
-                    }
-
-                    bos.flush();
-                    if (fileLength > 0 && file.length() != fileLength) {
-                        logger.info("文件下载不完整");
+                try (Response response = client.newCall(requestBuilder.build()).execute()) {
+                    if (!response.isSuccessful()) {
+                        logger.info("下载失败: " + response.code());
                         logger.info("----------------打印调试参数-------------------");
                         logger.info(urlStr);
                         logger.info(fileName);
@@ -747,14 +664,70 @@ public class HttpUtil {
                         return "1";
                     }
 
-                    logger.info("文件下载完成: {}", fileName);
-                    return "0";
-                }
+                    long fileLength = response.body().contentLength();
+                    if (finalFile.exists() && fileLength > 0 && finalFile.length() == fileLength) {
+                        logger.info("文件已存在且大小相同,跳过下载: {}", fileName);
+                        return "0";
+                    }
 
+                    long startTime = System.currentTimeMillis();
+                    long lastProgressTime = startTime;
+                    long lastBytesRead = 0;
+
+                    boolean downloadSuccess = false;
+
+                    try (BufferedInputStream bis = new BufferedInputStream(response.body().byteStream());
+                         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tmpFile))) {
+
+                        byte[] buffer = new byte[16 * 1024];
+                        int len;
+
+                        while ((len = bis.read(buffer)) != -1) {
+                            bos.write(buffer, 0, len);
+                            downloaded += len;
+
+                            long currentTime = System.currentTimeMillis();
+
+                            if (fileLength > 0 && currentTime - lastProgressTime >= 15000) {
+                                int progress = (int) (downloaded * 100 / fileLength);
+                                double averageSpeed = (downloaded / 1024.0) / Math.max(1, (currentTime - startTime) / 1000.0);
+                                double instantSpeed = ((downloaded - lastBytesRead) / 1024.0) / Math.max(1, (currentTime - lastProgressTime) / 1000.0);
+                                long remainingBytes = fileLength - downloaded;
+                                long remainingTime = averageSpeed > 0 ? (long) (remainingBytes / (averageSpeed * 1024)) : 0;
+
+                                logger.info("下载进度: {}%, 平均速度: {} KB/s, 实时速度: {} KB/s, 剩余时间: {} 秒, 文件: {}",
+                                        progress,
+                                        String.format("%.2f", averageSpeed),
+                                        String.format("%.2f", instantSpeed),
+                                        remainingTime,
+                                        fileName);
+
+                                lastProgressTime = currentTime;
+                                lastBytesRead = downloaded;
+                            }
+                        }
+
+                        bos.flush();
+                        if (fileLength > 0 && tmpFile.length() != fileLength) {
+                            logger.info("文件下载不完整");
+                            return "1";
+                        }
+
+                        downloadSuccess = true;
+                    }
+
+                    // ⬇️ 下载成功，关闭流之后执行重命名
+                    if (downloadSuccess) {
+                    	Files.move(tmpFile.toPath(), finalFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                        logger.info("文件下载完成: {}", fileName);
+                        return "0";
+                    }
+
+                }
             } catch (SocketTimeoutException e) {
                 logger.warn("下载超时(第 {} 次重试): {}", retryCount + 1, fileName);
                 needRetry = true;
-            } catch (IOException e) {
+            } catch (IOException  e) {
                 logger.error("下载出错: {}", e.getMessage(), e);
                 logger.info("----------------打印调试参数-------------------");
                 logger.info(urlStr);
@@ -762,8 +735,8 @@ public class HttpUtil {
                 logger.info("----------------打印调试参数-------------------");
                 return "1";
             } finally {
-                if (needRetry && file.exists()) {
-                    file.delete();
+                if (needRetry && tmpFile.exists()) {
+                    tmpFile.delete();
                 }
             }
 
@@ -775,12 +748,220 @@ public class HttpUtil {
                 }
             }
         }
+
         logger.info("----------------打印调试参数-------------------");
         logger.info(urlStr);
         logger.info(fileName);
         logger.info("----------------打印调试参数-------------------");
         logger.error("下载失败，已重试多次: " + fileName);
         return "1";
+    }
+
+
+    public static String downloadFileWithOkHttp(String urlStr, String fileName, String savePath, Map<String, String> headers, int threadCount)
+            throws IOException, InterruptedException {
+        if (urlStr == null || urlStr.isEmpty() || fileName == null || fileName.isEmpty() || savePath == null || savePath.isEmpty()) {
+            logger.info("----------------打印调试参数-------------------");
+            logger.info(urlStr);
+            logger.info(fileName);
+            logger.info("----------------打印调试参数-------------------");
+            throw new IllegalArgumentException("urlStr, fileName, savePath 不能为空");
+        }
+
+        OkHttpClient client = new OkHttpClient.Builder()
+                .protocols(Collections.singletonList(Protocol.HTTP_1_1))
+                .connectTimeout(20, TimeUnit.SECONDS)
+                .readTimeout(60, TimeUnit.SECONDS)
+                .writeTimeout(60, TimeUnit.SECONDS)
+                .retryOnConnectionFailure(true)
+                .build();
+
+        File saveDir = new File(savePath);
+        if (!saveDir.exists()) {
+            saveDir.mkdirs();
+        }
+
+        File tmpFile = new File(saveDir, fileName + ".tmp");
+        File finalFile = new File(saveDir, fileName);
+
+        // 探测文件大小（请求0-0字节）
+        Request.Builder rangeBuilder = new Request.Builder()
+                .url(urlStr)
+                .addHeader("Range", "bytes=0-0")
+                .addHeader("Connection", "keep-alive");
+        if (headers != null) {
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                rangeBuilder.addHeader(entry.getKey(), entry.getValue());
+            }
+        }
+
+        Response rangeResponse = client.newCall(rangeBuilder.build()).execute();
+        if (!rangeResponse.isSuccessful()) {
+            logger.error("探测文件大小失败: {}", rangeResponse.code());
+            return "1";
+        }
+
+        String contentRange = rangeResponse.header("Content-Range"); // 例如 "bytes 0-0/123456"
+        rangeResponse.close();
+
+        long totalLength = -1;
+        if (contentRange != null && contentRange.contains("/")) {
+            try {
+                totalLength = Long.parseLong(contentRange.split("/")[1]);
+            } catch (Exception e) {
+                logger.error("无法解析 Content-Range: {}", contentRange);
+            }
+        }
+
+        if (totalLength <= 0) {
+            logger.error("无法获取文件长度，可能不支持分片下载");
+            return "1";
+        }
+
+        logger.info("开始多线程下载: {}, 大小: {} 字节, 分片数: {}", fileName, totalLength, threadCount);
+
+        // 预分配文件空间
+        try (RandomAccessFile raf = new RandomAccessFile(tmpFile, "rw")) {
+            raf.setLength(totalLength);
+        }
+
+        long partSize = totalLength / threadCount;
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        CountDownLatch latch = new CountDownLatch(threadCount);
+
+        AtomicLong[] downloadedBytes = new AtomicLong[threadCount];
+        boolean[] finished = new boolean[threadCount]; // 标记分片是否下载完成
+        for (int i = 0; i < threadCount; i++) {
+            downloadedBytes[i] = new AtomicLong(0);
+            finished[i] = false;
+        }
+
+        ScheduledExecutorService progressExecutor = Executors.newSingleThreadScheduledExecutor();
+        final long[] lastBytes = new long[threadCount];
+
+        final long finalTotalLength = totalLength;
+        final long finalPartSize = partSize;
+
+        // 定时打印所有分片进度（15秒一次）
+        progressExecutor.scheduleAtFixedRate(() -> {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < threadCount; i++) {
+                if (finished[i]) {
+                    sb.append(String.format("分片 %d 已完成; ", i));
+                    continue;
+                }
+
+                long current = downloadedBytes[i].get();
+                long thisPartSize = (i == threadCount - 1) ? (finalTotalLength - finalPartSize * i) : finalPartSize;
+
+                // 限制当前已下载不超过分片大小，避免进度超过100%
+                if (current > thisPartSize) {
+                    current = thisPartSize;
+                    downloadedBytes[i].set(thisPartSize);
+                }
+
+                long diff = current - lastBytes[i];
+                lastBytes[i] = current;
+
+                double speedKBs = diff / 1024.0 / 15.0;
+                double progressPercent = Math.min((current * 100.0) / thisPartSize, 100.0);
+
+                sb.append(String.format("分片 %d 进度: %.2f%%, 速度: %.2f KB/s; ", i, progressPercent, speedKBs));
+            }
+            logger.info(sb.toString());
+        }, 15, 15, TimeUnit.SECONDS);
+
+        // 启动分片下载任务
+        for (int i = 0; i < threadCount; i++) {
+            final int part = i;
+            final long start = part * partSize;
+            final long end = (part == threadCount - 1) ? totalLength - 1 : (start + partSize - 1);
+
+            executor.execute(() -> {
+                try {
+                    Thread.sleep(part * 2500L); // 延迟启动，防止同时请求过多
+                } catch (InterruptedException e) {
+                    logger.warn("分片 {} 启动延迟被中断", part);
+                }
+
+                final int maxRetry = 5;
+                int retry = 0;
+                boolean success = false;
+
+                while (retry < maxRetry && !success) {
+                    try {
+                        Request.Builder requestBuilder = new Request.Builder()
+                                .url(urlStr)
+                                .addHeader("Range", "bytes=" + start + "-" + end)
+                                .addHeader("Connection", "keep-alive");
+
+                        if (headers != null) {
+                            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                                requestBuilder.addHeader(entry.getKey(), entry.getValue());
+                            }
+                        }
+
+                        try (Response response = client.newCall(requestBuilder.build()).execute()) {
+                            if (!response.isSuccessful()) {
+                                logger.error("5秒后重试当前分片,分片下载失败: part {} code {}", part, response.code());
+                                retry++;
+                                Thread.sleep(5000);
+                                continue;
+                            }
+
+                            try (BufferedInputStream bis = new BufferedInputStream(response.body().byteStream());
+                                 RandomAccessFile raf = new RandomAccessFile(tmpFile, "rw")) {
+                                raf.seek(start);
+                                byte[] buffer = new byte[16 * 1024];
+                                int len;
+                                while ((len = bis.read(buffer)) != -1) {
+                                    raf.write(buffer, 0, len);
+                                    downloadedBytes[part].addAndGet(len);
+                                }
+                            }
+                            success = true;
+                            finished[part] = true; // 标记该分片下载完成
+                            logger.info("分片 {} 下载完成 [{} - {}]", part, start, end);
+                        }
+                    } catch (IOException | InterruptedException e) {
+                        logger.error("分片 {} 下载异常: {}", part, e.getMessage());
+                        retry++;
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ex) {
+                            logger.warn("分片 {} 重试等待被中断", part);
+                        }
+                    }
+                }
+
+                if (!success) {
+                    logger.error("分片 {} 下载最终失败", part);
+                }
+                latch.countDown();
+            });
+        }
+
+        latch.await();
+        executor.shutdown();
+        progressExecutor.shutdown();
+
+        // 校验文件大小
+        if (!tmpFile.exists() || tmpFile.length() != totalLength) {
+            logger.error("文件长度校验失败，预期: {}, 实际: {}", totalLength, tmpFile.length());
+            return "1";
+        }
+
+        // 重命名临时文件为最终文件
+        if (finalFile.exists()) {
+            finalFile.delete();
+        }
+        if (!tmpFile.renameTo(finalFile)) {
+            logger.error("重命名文件失败: {} -> {}", tmpFile.getName(), finalFile.getName());
+            return "1";
+        }
+
+        logger.info("文件下载完成: {}", finalFile.getName());
+        return "0";
     }
 
 }

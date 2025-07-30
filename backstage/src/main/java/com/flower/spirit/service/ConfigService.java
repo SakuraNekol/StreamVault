@@ -66,6 +66,9 @@ public class ConfigService {
 		if(null!=configEntity.getFrontend() && !"".equals(configEntity.getFrontend())) {
 			Global.frontend = configEntity.getFrontend();
 		}
+		if(null!=configEntity.getRangenum() && !"".equals(configEntity.getRangenum())) {
+			Global.RangeNumber = Integer.valueOf(configEntity.getRangenum());
+		}
 		return new AjaxEntity(Global.ajax_option_success, "操作成功", configEntity);
 	}
 

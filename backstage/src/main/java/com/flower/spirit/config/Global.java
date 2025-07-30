@@ -116,6 +116,8 @@ public class Global {
 
 	public static String encoder = "libx264";
 	
+	public static int RangeNumber = 1;
+	
 	public static String frontend = "blank";
 
 	@Value("${file.save}")

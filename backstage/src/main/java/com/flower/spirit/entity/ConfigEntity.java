@@ -55,6 +55,8 @@ public class ConfigEntity implements Serializable {
 	private String ytdlpmode;
 	
 	private String nfonetaddr;
+	
+	private String rangenum;
 
 	public Integer getId() {
 		return id;
@@ -174,6 +176,14 @@ public class ConfigEntity implements Serializable {
 
 	public void setNfonetaddr(String nfonetaddr) {
 		this.nfonetaddr = nfonetaddr;
+	}
+
+	public String getRangenum() {
+		return rangenum;
+	}
+
+	public void setRangenum(String rangenum) {
+		this.rangenum = rangenum;
 	}
 
 	
