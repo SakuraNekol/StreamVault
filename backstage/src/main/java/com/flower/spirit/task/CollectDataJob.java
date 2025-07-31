@@ -46,7 +46,7 @@ public class CollectDataJob implements Job {
             // 获取任务详情
             Optional<CollectDataEntity> taskOpt = collectDataService.findById(taskId);
             if (!taskOpt.isPresent()) {
-                logger.warn("任务不存在", taskName);
+            	logger.warn("任务不存在：{}", taskName);
                 return;
             }
             CollectDataEntity collectDataEntity = taskOpt.get();

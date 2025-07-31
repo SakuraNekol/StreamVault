@@ -1,5 +1,23 @@
 ### 更新记录
 
+```
+2025/07/31  Tagged the version as 250801 on Docker Hub. Merged the 250801 tag into the latest tag.
+同步 yt-dlp 最新代码
+将定时任务从 Spring Task 迁移至 Spring Boot Starter Quartz
+
+需要调整任务队列最大容量的 请frok之后 修改application-docker.properties  中的
+spring.quartz.properties.org.quartz.threadPool.threadCount=2
+自行编译
+
+新收藏任务支持独立 cron 表达式 在添加任务时填写  支持Quartz和常规spring类型表达式
+支持非监控类任务手动触发执行
+剥离提交时创建任务和执行任务的逻辑  现在创建任务之后不再默认执行一次,请手动执行
+后台新增分片下载设置，目前支持 Douyin 平台分片下载
+增强内置 HTTP 下载函数
+其他已知问题修复
+如本次变动出现任务类型错误 请提交对应错误信息  然后将版本先回滚动标签250724版本  理论上没有问题 没有长时间测试
+```
+
 
 ```
 2025/07/24  Tagged the version as 250724 on Docker Hub. Merged the 250724 tag into the latest tag.
