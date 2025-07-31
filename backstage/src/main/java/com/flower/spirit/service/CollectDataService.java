@@ -842,17 +842,25 @@ public class CollectDataService {
 	}
 
 
-	public AjaxEntity execCollectData(CollectDataEntity collectDataEntity) {
+	public AjaxEntity execCollectData(CollectDataEntity collectDataEntity){
 		//先判断 任务存不存在
 		boolean taskExists = quartzTaskService.isTaskExists(collectDataEntity.getId());
 		if(taskExists) {
-			quartzTaskService.triggerTask(collectDataEntity.getId());
+			//判断是否在运行
+			boolean taskRunning = quartzTaskService.isTaskRunning(collectDataEntity.getId());
+			if(!taskRunning) {
+				quartzTaskService.triggerTask(collectDataEntity.getId());
+			}else {
+				return new AjaxEntity(Global.ajax_success, "当前任务已在运行,请勿重复提交", null);
+			}
+			
 		}else {
 			//不存在 需要先查询 然后注册  在触发
 			Optional<CollectDataEntity> byId = collectdDataDao.findById(collectDataEntity.getId());
 			if(byId.isPresent()) {
 				CollectDataEntity db = byId.get();
 				quartzTaskService.scheduleTask(db);
+				try {Thread.sleep(2000);} catch (InterruptedException e) {}
 				quartzTaskService.triggerTask(db.getId());
 			}
 		}
