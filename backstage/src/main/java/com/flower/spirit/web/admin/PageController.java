@@ -162,7 +162,6 @@ public class PageController {
 	
 	@RequestMapping(value = "/collectDataList")
 	public String collectDataList(Model model) {
-		model.addAttribute("tasknexttime", Global.tasknexttime);
 		return "admin/collectDataList";
 	}
 	

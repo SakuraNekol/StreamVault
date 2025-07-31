@@ -22,9 +22,9 @@
 		th:nth-child(1) { width: 3%; }  /* 编号 */
 		th:nth-child(2) { width: 12%; } /* 任务名称 */
 		th:nth-child(3) { width: 15%; } /* 源地址 */
-		th:nth-child(4) { width: 5%; }  /* 来源平台 */
+		th:nth-child(4) { width: 3%; }  /* 来源平台 */
 		th:nth-child(5) { width: 5%; }  /* 是否监控 */
-		th:nth-child(6) { width: 8%; }  /* 任务状态 */
+		th:nth-child(6) { width: 5%; }  /* 任务状态 */
 		th:nth-child(7) { width: 5%; }  /* 总任务数 */
 		th:nth-child(8) { width: 5%; }  /* 已完成 */
 		th:nth-child(9) { width: 10%; } /* 提交时间 */
@@ -58,21 +58,11 @@
 		<main class="lyear-layout-content">
 
 			<div class="container-fluid">
-
-
-
 				<div class="row">
 					<div class="col-lg-12">
 						<div class="card">
 							<div class="card-header bg-light">
 								<div class="row align-items-center">
-									<div class="col">
-										<!-- <h5 class="card-title mb-0">搜索</h5> -->
-										<small class="text-muted">
-											<i class="mdi mdi-clock-outline"></i> 下次任务: <span th:text="${tasknexttime}"></span>
-										</small>
-										<br /><br />
-									</div>
 									<div class="col-auto">
 										<div class="btn-group">
 											<a class="btn btn-primary btn-sm searchData" href="#">
@@ -119,11 +109,11 @@
 											<th>编号</th>
 											<th>任务名称</th>
 											<th>源地址</th>
-											<th>来源平台</th>
+											<th>平台</th>
 											<th>是否监控</th>
-											<th>任务状态</th>
-											<th>本次任务数</th>
-											<th>已完成(累计)</th>
+											<th>状态</th>
+											<th>本次/累计</th>
+											<th>Cron</th>
 											<th>提交时间</th>
 											<th>结束时间</th>
 											<th>操作</th>
@@ -700,8 +690,8 @@
 									+'<td title="'+list[i].platform+'">'+list[i].platform+'</td>'
 									+'<td><span class="'+monitorClass+'">'+monitorText+'</span></td>'
 									+'<td><span class="'+statusClass+'">'+statusText+'</span></td>'
-									+'<td>'+list[i].count+'</td>'
-									+'<td>'+list[i].carriedout+'</td>'
+									+'<td>'+textnone(list[i].count)+'/'+textnone(list[i].carriedout)+'</td>'
+									+'<td>'+textnone(list[i].taskcron)+'</td>'
 									+'<td>'+list[i].createtime+'</td>'
 									+'<td>'+textnone(list[i].endtime)+'</td>'
 									+'<td>'
