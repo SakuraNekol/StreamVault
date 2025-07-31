@@ -632,9 +632,10 @@
         if(videoplatform != "" ){
             option['videoplatform']= videoplatform;
         }
+        layer.load();
         $.post("/admin/api/findVideoDataList",option,
             function(data,status){
-                console.log(data,status);
+               	layer.closeAll();
                 if(data.resCode==="000001"){
                     var record = data.record;
                     var html = "";

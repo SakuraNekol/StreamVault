@@ -3,20 +3,25 @@ package com.flower.spirit.service;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.io.File;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.transaction.Transactional;
 
+import org.quartz.CronTrigger;
+import org.quartz.JobDataMap;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobKey;
+import org.quartz.SchedulerException;
+import org.quartz.Trigger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,10 +35,12 @@ import com.alibaba.fastjson.JSONObject;
 import com.flower.spirit.common.AjaxEntity;
 import com.flower.spirit.config.Global;
 import com.flower.spirit.dao.CollectdDataDao;
+import com.flower.spirit.dao.CollectdDataDetailDao;
 import com.flower.spirit.dao.VideoDataDao;
 import com.flower.spirit.entity.CollectDataDetailEntity;
 import com.flower.spirit.entity.CollectDataEntity;
 import com.flower.spirit.entity.VideoDataEntity;
+import com.flower.spirit.task.QuartzTaskService;
 import com.flower.spirit.utils.Aria2Util;
 import com.flower.spirit.utils.BiliUtil;
 import com.flower.spirit.utils.CommandUtil;
@@ -49,13 +56,14 @@ import com.flower.spirit.utils.sendNotify;
 @Service
 public class CollectDataService {
 
-	private ExecutorService exec = Executors.newSingleThreadExecutor();
-
 	@Autowired
 	private CollectdDataDao collectdDataDao;
 
 	@Autowired
 	private CollectDataDetailService collectDataDetailService;
+
+	@Autowired
+	private CollectdDataDetailDao collectDataDetailDao;
 
 	@Autowired
 	private VideoDataService videoDataService;
@@ -64,6 +72,9 @@ public class CollectDataService {
 	private VideoDataDao videoDataDao;
 
 	private Logger logger = LoggerFactory.getLogger(CollectDataService.class);
+
+	@Autowired
+	private QuartzTaskService quartzTaskService;
 
 	/**
 	 * 文件储存真实路径
@@ -76,21 +87,14 @@ public class CollectDataService {
 	 */
 	@Value("${file.save}")
 	private String savefile;
-
-	public void findMonitor() {
-		List<CollectDataEntity> list = collectdDataDao.findByMonitoring("Y");
-		if (list.size() == 0) {
-			logger.info("未设置监控收藏夹");
-			return;
-		}
-		for (CollectDataEntity data : list) {
-			// 开始执行
-			// 删除以前的 记录 2025/04/25 先不删了 想优化通知问题
-//			 collectDataDetailService.deleteDataid(data.getId());
-			this.submitCollectData(data, "Y");
-		}
-
-	}
+	
+    @Transactional
+    public AjaxEntity saveCollectData(CollectDataEntity entity) {
+        collectdDataDao.save(entity);
+        quartzTaskService.scheduleTask(entity);
+    	return new AjaxEntity(Global.ajax_success, "任务创建成功", entity);
+    }
+    
 
 	@SuppressWarnings("serial")
 	public AjaxEntity findPage(CollectDataEntity res) {
@@ -121,8 +125,19 @@ public class CollectDataService {
 	}
 
 	public AjaxEntity deleteCollectData(CollectDataEntity collectDataEntity) {
-		collectdDataDao.deleteById(collectDataEntity.getId());
-		return new AjaxEntity(Global.ajax_success, "操作成功", null);
+		try {
+			if (quartzTaskService.isTaskRunning(collectDataEntity.getId())) {
+				return new AjaxEntity(Global.ajax_uri_error, "任务正在执行中，请稍后再试", null);
+			}
+			quartzTaskService.deleteTask(collectDataEntity.getId());
+			collectDataDetailService.deleteDataid(collectDataEntity.getId());
+			collectdDataDao.deleteById(collectDataEntity.getId());
+
+			return new AjaxEntity(Global.ajax_success, "操作成功", null);
+		} catch (Exception e) {
+			logger.error("删除失败：{}", collectDataEntity.getTaskname(), e);
+			return new AjaxEntity(Global.ajax_uri_error, "删除失败", null);
+		}
 	}
 
 	/**
@@ -162,26 +177,18 @@ public class CollectDataService {
 					collectDataEntity.setTaskstatus("已提交待处理");
 					collectDataEntity.setCreatetime(DateUtils.formatDateTime(new Date()));
 					collectDataEntity.setCount("0");
-//					collectDataEntity.setCarriedout("0"); // 归零
+					// collectDataEntity.setCarriedout("0"); // 归零
 					CollectDataEntity save = collectdDataDao.save(collectDataEntity);
-					// 提交线程
-					// this.createDyData(save);
-					if (monitor.equals("N")) {
-						exec.execute(() -> {
-							try {
-								this.createDyData(save, "N");
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-						});
-					} else {
-						try {
-							this.createDyData(save, "Y");
-						} catch (Exception e) {
-							e.printStackTrace();
+					if (null != monitor && monitor.equals("Y")) {
+						this.createDyData(save, "Y");
+						//然后判断字段是不是监控 如果不是 删除这个触发器
+						String monitoring = collectDataEntity.getMonitoring();
+						if (!"Y".equals(monitoring)) {
+						    quartzTaskService.deleteTask(collectDataEntity.getId());
 						}
+						return new AjaxEntity(Global.ajax_success, "任务启动成功", null);
 					}
-					return new AjaxEntity(Global.ajax_success, "已提交至线程,如填错请删除当前任务并重启容器解决", null);
+					return new AjaxEntity(Global.ajax_success, "任务创建成功", null);
 
 				} catch (Exception e) {
 					logger.error("异常" + e.getMessage());
@@ -196,38 +203,127 @@ public class CollectDataService {
 	}
 
 	/**
-	 * 获取收藏夹处理线程池状态信息
+	 * 获取Quartz任务调度器状态信息
 	 * 
-	 * @return 线程池状态的Map集合
+	 * @return 任务调度器状态的Map集合
 	 */
 	public Map<String, Object> getCollectThreadPoolStatus() {
 		Map<String, Object> status = new HashMap<>();
-		
-		// 收藏夹处理线程池状态
-		if (exec instanceof ThreadPoolExecutor) {
-			ThreadPoolExecutor collectPool = (ThreadPoolExecutor) exec;
-			Map<String, Object> collectStatus = new HashMap<>();
-			collectStatus.put("poolName", "收藏夹处理线程池");
-			collectStatus.put("corePoolSize", collectPool.getCorePoolSize());
-			collectStatus.put("maximumPoolSize", collectPool.getMaximumPoolSize());
-			collectStatus.put("activeCount", collectPool.getActiveCount());
-			collectStatus.put("poolSize", collectPool.getPoolSize());
-			collectStatus.put("taskCount", collectPool.getTaskCount());
-			collectStatus.put("completedTaskCount", collectPool.getCompletedTaskCount());
-			collectStatus.put("queueSize", collectPool.getQueue().size());
-			collectStatus.put("isShutdown", collectPool.isShutdown());
-			collectStatus.put("isTerminated", collectPool.isTerminated());
-			status.put("collect", collectStatus);
-		} else {
-			// 对于单线程池的特殊处理
-			Map<String, Object> collectStatus = new HashMap<>();
-			collectStatus.put("poolName", "收藏夹处理线程池");
-			collectStatus.put("poolType", "SingleThreadExecutor");
-			collectStatus.put("isShutdown", exec.isShutdown());
-			collectStatus.put("isTerminated", exec.isTerminated());
-			collectStatus.put("description", "单线程池");
-			status.put("collect", collectStatus);
+
+		try {
+			// Quartz调度器基本信息
+			Map<String, Object> quartzStatus = new HashMap<>();
+			quartzStatus.put("schedulerName", "收藏任务调度器");
+			quartzStatus.put("schedulerType", "Quartz Scheduler");
+
+			// 获取调度器状态信息，可能抛出SchedulerException
+			try {
+				quartzStatus.put("isStarted", quartzTaskService.getScheduler().isStarted());
+				quartzStatus.put("isShutdown", quartzTaskService.getScheduler().isShutdown());
+				quartzStatus.put("isInStandbyMode", quartzTaskService.getScheduler().isInStandbyMode());
+			} catch (SchedulerException e) {
+				logger.error("获取调度器状态失败", e);
+				quartzStatus.put("isStarted", false);
+				quartzStatus.put("isShutdown", true);
+				quartzStatus.put("isInStandbyMode", false);
+				quartzStatus.put("schedulerError", "调度器状态获取失败：" + e.getMessage());
+			}
+
+			// 获取所有收藏夹任务
+			List<CollectDataEntity> allTasks = collectdDataDao.findByMonitoring("Y");
+			quartzStatus.put("totalTasks", allTasks.size());
+
+			// 统计正在运行的任务
+			int runningCount = 0;
+			List<Map<String, Object>> taskDetails = new ArrayList<>();
+
+			for (CollectDataEntity task : allTasks) {
+				boolean isRunning = quartzTaskService.isTaskRunning(task.getId());
+				if (isRunning) {
+					runningCount++;
+				}
+
+				// 任务详细信息
+				Map<String, Object> taskInfo = new HashMap<>();
+				taskInfo.put("taskId", task.getId());
+				taskInfo.put("taskName", task.getTaskname());
+				taskInfo.put("isRunning", isRunning);
+				taskInfo.put("taskStatus", task.getTaskstatus());
+
+				// 获取任务的cron表达式
+				try {
+					JobKey jobKey = JobKey.jobKey("job-" + task.getId(), "collect");
+					if (quartzTaskService.getScheduler().checkExists(jobKey)) {
+						List<? extends Trigger> triggers = quartzTaskService.getScheduler().getTriggersOfJob(jobKey);
+						if (!triggers.isEmpty() && triggers.get(0) instanceof CronTrigger) {
+							CronTrigger cronTrigger = (CronTrigger) triggers.get(0);
+							taskInfo.put("cronExpression", cronTrigger.getCronExpression());
+							taskInfo.put("nextFireTime", cronTrigger.getNextFireTime());
+							taskInfo.put("previousFireTime", cronTrigger.getPreviousFireTime());
+						}
+					}
+				} catch (SchedulerException e) {
+					logger.warn("获取任务触发器信息失败：{}", task.getId(), e);
+					taskInfo.put("triggerError", "触发器信息获取失败");
+				} catch (Exception e) {
+					logger.warn("获取任务触发器信息失败：{}", task.getId(), e);
+				}
+
+				taskDetails.add(taskInfo);
+			}
+
+			quartzStatus.put("runningTasks", runningCount);
+			quartzStatus.put("idleTasks", allTasks.size() - runningCount);
+			quartzStatus.put("taskDetails", taskDetails);
+
+			// 获取当前正在执行的任务详情
+			List<Map<String, Object>> executingDetails = new ArrayList<>();
+			try {
+				List<JobExecutionContext> executingJobs = quartzTaskService.getScheduler().getCurrentlyExecutingJobs();
+
+				for (JobExecutionContext context : executingJobs) {
+					if ("collect".equals(context.getJobDetail().getKey().getGroup())) {
+						Map<String, Object> execInfo = new HashMap<>();
+						execInfo.put("jobName", context.getJobDetail().getKey().getName());
+						execInfo.put("fireTime", context.getFireTime());
+						execInfo.put("scheduledFireTime", context.getScheduledFireTime());
+						execInfo.put("runTime", context.getJobRunTime());
+						execInfo.put("refireCount", context.getRefireCount());
+
+						// 从JobDataMap获取任务信息
+						JobDataMap dataMap = context.getJobDetail().getJobDataMap();
+						execInfo.put("taskId", dataMap.getInt("taskId"));
+						execInfo.put("taskName", dataMap.getString("taskName"));
+
+						executingDetails.add(execInfo);
+					}
+				}
+			} catch (SchedulerException e) {
+				logger.error("获取正在执行的任务失败", e);
+				// 添加错误信息到执行详情中
+				Map<String, Object> errorInfo = new HashMap<>();
+				errorInfo.put("error", "获取正在执行任务失败：" + e.getMessage());
+				executingDetails.add(errorInfo);
+			}
+
+			quartzStatus.put("executingJobs", executingDetails);
+			quartzStatus.put("executingJobCount", executingDetails.size());
+
+			status.put("quartz", quartzStatus);
+
+			logger.debug("获取Quartz调度器状态成功，总任务数：{}，运行中：{}", allTasks.size(), runningCount);
+
+		} catch (Exception e) {
+			logger.error("获取Quartz调度器状态失败", e);
+
+			// 返回错误信息
+			Map<String, Object> errorStatus = new HashMap<>();
+			errorStatus.put("schedulerName", "Quartz任务调度器");
+			errorStatus.put("error", "获取状态失败：" + e.getMessage());
+			errorStatus.put("isStarted", false);
+			status.put("quartz", errorStatus);
 		}
+
 		return status;
 	}
 
@@ -242,7 +338,7 @@ public class CollectDataService {
 	public void createBiliData(CollectDataEntity entity, JSONArray json, String namepath, String vt) throws Exception {
 		entity.setTaskstatus("已开始处理");
 		collectdDataDao.save(entity);
-		int videoaddcount =0;
+		int videoaddcount = 0;
 		for (int i = 0; i < json.size(); i++) {
 			JSONObject data = json.getJSONObject(i);
 			String bvid = data.getString("bvid");
@@ -254,7 +350,7 @@ public class CollectDataService {
 					String filename = StringUtil.getFileName(map.get("title"), map.get("cid"));
 					String cid = map.get("cid");
 					List<VideoDataEntity> findByVideoid = videoDataService.findByVideoid(cid);
-					//这里判断 视频库 是否存在 存在则不处理
+					// 这里判断 视频库 是否存在 存在则不处理
 					if (findByVideoid.size() == 0) {
 						Map<String, String> findVideoStreaming = BiliUtil.findVideoStreamingNoData(map,
 								Global.bilicookies, map.get("quality"), namepath);
@@ -283,8 +379,8 @@ public class CollectDataService {
 						// 下载up 头像 up头像不参与数据 只参与nfo
 						HttpUtil.downBiliFromUrl(upface, "upcover" + upmid + ".jpg", dir);
 						String uplocal = "upcover" + upmid + ".jpg";
-						if(null!=Global.nfonetaddr && !"".equals(Global.nfonetaddr)) {
-							uplocal = Global.nfonetaddr+codir+uplocal+"?apptoken="+Global.readonlytoken;
+						if (null != Global.nfonetaddr && !"".equals(Global.nfonetaddr)) {
+							uplocal = Global.nfonetaddr + codir + uplocal + "?apptoken=" + Global.readonlytoken;
 						}
 						String piclocal = filename + ".jpg";
 						map.put("upname", upname);
@@ -302,12 +398,13 @@ public class CollectDataService {
 				} else {
 					status = "视频异常下载失败";
 				}
-				//这里应该判断一下CollectDataDetailEntity记录是否存在 存在 则不处理  因为已经不预删除了
+				// 这里应该判断一下CollectDataDetailEntity记录是否存在 存在 则不处理 因为已经不预删除了
 				CollectDataDetailEntity collectDataDetailEntity = new CollectDataDetailEntity();
 				collectDataDetailEntity.setVideoid(map == null ? bvid : map.get("cid"));
 				collectDataDetailEntity.setDataid(entity.getId());
-				CollectDataDetailEntity byVideoAndDataid = collectDataDetailService.findByVideoAndDataid(collectDataDetailEntity.getVideoid(), collectDataDetailEntity.getDataid());
-				if(byVideoAndDataid== null) {
+				CollectDataDetailEntity byVideoAndDataid = collectDataDetailService.findByVideoAndDataid(
+						collectDataDetailEntity.getVideoid(), collectDataDetailEntity.getDataid());
+				if (byVideoAndDataid == null) {
 					collectDataDetailEntity.setVideoname(map.get("title"));
 					collectDataDetailEntity.setOriginaladdress(bvid);
 					collectDataDetailEntity.setStatus(status);
@@ -320,12 +417,11 @@ public class CollectDataService {
 					collectdDataDao.save(entity);
 					videoaddcount++;
 				}
-				
 
 				Thread.sleep(2500);
 			}
 		}
-		if(videoaddcount>0) {
+		if (videoaddcount > 0) {
 			sendNotify.sendMessage(videoaddcount, entity.getTaskname());
 		}
 		entity.setTaskstatus("处理完成");
@@ -423,11 +519,13 @@ public class CollectDataService {
 								null);
 						videofile = FileUtil.generateDir(true, Global.platform.douyin.name(), false, filename, taskname,
 								null);
-						String downloadFileWithOkHttp ="";
-						if(Global.RangeNumber==1) {
-							downloadFileWithOkHttp = HttpUtil.downloadFileWithOkHttp(videoplay, filename + ".mp4", videofile, header);
-						}else {
-							downloadFileWithOkHttp = HttpUtil.downloadFileWithOkHttp(videoplay, filename + ".mp4", videofile, header,Global.RangeNumber);
+						String downloadFileWithOkHttp = "";
+						if (Global.RangeNumber == 1) {
+							downloadFileWithOkHttp = HttpUtil.downloadFileWithOkHttp(videoplay, filename + ".mp4",
+									videofile, header);
+						} else {
+							downloadFileWithOkHttp = HttpUtil.downloadFileWithOkHttp(videoplay, filename + ".mp4",
+									videofile, header, Global.RangeNumber);
 						}
 						if (downloadFileWithOkHttp.equals("1")) {
 							logger.info(aweme_detail.toJSONString());
@@ -444,15 +542,19 @@ public class CollectDataService {
 					if (Global.getGeneratenfo) {
 						String nickname = aweme_detail.getString("nickname");
 						String uid = aweme_detail.getString("uid");
-						String publisher = nickname+"-"+uid+".png";
-						String coverdir = FileUtil.generateDir(true, Global.platform.douyin.name(), false, filename, taskname, null);
-						HttpUtil.downloadFileWithOkHttp(aweme_detail.getString("avatar_thumb"), publisher, coverdir, header);
-						if(null!=Global.nfonetaddr && !"".equals(Global.nfonetaddr)) {
-							String publisherdir = FileUtil.generateDir(false, Global.platform.douyin.name(), false, filename, taskname, null);
-							//System.out.println(publisherdir);
-							publisher = Global.nfonetaddr+publisherdir+"/"+publisher+"?apptoken="+Global.readonlytoken;
+						String publisher = nickname + "-" + uid + ".png";
+						String coverdir = FileUtil.generateDir(true, Global.platform.douyin.name(), false, filename,
+								taskname, null);
+						HttpUtil.downloadFileWithOkHttp(aweme_detail.getString("avatar_thumb"), publisher, coverdir,
+								header);
+						if (null != Global.nfonetaddr && !"".equals(Global.nfonetaddr)) {
+							String publisherdir = FileUtil.generateDir(false, Global.platform.douyin.name(), false,
+									filename, taskname, null);
+							// System.out.println(publisherdir);
+							publisher = Global.nfonetaddr + publisherdir + "/" + publisher + "?apptoken="
+									+ Global.readonlytoken;
 						}
-						
+
 						Map<String, String> map = new HashMap<String, String>();
 						map.put("title", desc);
 						map.put("desc", desc);
@@ -471,13 +573,14 @@ public class CollectDataService {
 				if (status.equals("")) {
 					status = findByVideoid.size() == 0 ? "已完成" : "已完成(未下载已存在)";
 				}
-				
-				//这里应该判断一下CollectDataDetailEntity记录是否存在 存在 则不处理  因为已经不预删除了
+
+				// 这里应该判断一下CollectDataDetailEntity记录是否存在 存在 则不处理 因为已经不预删除了
 				CollectDataDetailEntity collectDataDetailEntity = new CollectDataDetailEntity();
 				collectDataDetailEntity.setDataid(entity.getId());
 				collectDataDetailEntity.setVideoid(awemeId);
-				CollectDataDetailEntity byVideoAndDataid = collectDataDetailService.findByVideoAndDataid(collectDataDetailEntity.getVideoid(), collectDataDetailEntity.getDataid());
-				if(byVideoAndDataid== null) {
+				CollectDataDetailEntity byVideoAndDataid = collectDataDetailService.findByVideoAndDataid(
+						collectDataDetailEntity.getVideoid(), collectDataDetailEntity.getDataid());
+				if (byVideoAndDataid == null) {
 					collectDataDetailEntity.setVideoname(desc);
 					collectDataDetailEntity.setOriginaladdress(awemeId);
 					collectDataDetailEntity.setStatus(status);
@@ -493,7 +596,7 @@ public class CollectDataService {
 
 			}
 		}
-		if(videoaddcount >0) {
+		if (videoaddcount > 0) {
 			sendNotify.sendMessage(videoaddcount, entity.getTaskname());
 		}
 		entity.setTaskstatus("处理完成");
@@ -512,10 +615,17 @@ public class CollectDataService {
 		String sec_user_id = entity.getOriginaladdress().replaceAll("post", "").replaceAll("like", "");
 		int maxc = 80;
 
-		if ("N".equals(monitor)) {
-			maxc = null!= entity.getOmaxcur() ?entity.getOmaxcur():80;
-		} else if ("Y".equals(monitor)) {
-			maxc = null!= entity.getMaxcur() ?entity.getMaxcur():80;
+		// if ("N".equals(monitor)) {
+		// maxc = null!= entity.getOmaxcur() ?entity.getOmaxcur():80;
+		// } else if ("Y".equals(monitor)) {
+		// maxc = null!= entity.getMaxcur() ?entity.getMaxcur():80;
+		// }
+
+		long countByDataid = collectDataDetailDao.countByDataid(entity.getId());
+		if (countByDataid > 0) {
+			maxc = null != entity.getMaxcur() ? entity.getMaxcur() : 80;
+		} else {
+			maxc = null != entity.getOmaxcur() ? entity.getOmaxcur() : 80;
 		}
 
 		if (entity.getOriginaladdress().startsWith("post")) {
@@ -616,7 +726,7 @@ public class CollectDataService {
 		// 收藏夹 修改 支持 分类目录
 		String newod = collectDataEntity.getOriginaladdress().replaceAll("bili-fav-", "");
 		String info = "https://api.bilibili.com/x/v3/fav/folder/info?media_id=" + newod;
-//		System.out.println(newod);
+		// System.out.println(newod);
 		String infobili = HttpUtil.httpGetBili(info, "UTF-8", Global.bilicookies);
 		// 收藏夹介绍
 		JSONObject object = JSONObject.parseObject(infobili);
@@ -638,81 +748,34 @@ public class CollectDataService {
 			// 进线程前创建collectDataEntity
 			collectDataEntity.setTaskstatus("已提交待处理");
 			collectDataEntity.setCreatetime(DateUtils.formatDateTime(new Date()));
-			collectDataEntity.setCount(String.valueOf(jsonArray.size()));  //收藏夹肯定是全量 这里无所谓  count怎么处理
-//			collectDataEntity.setCarriedout("0"); // 归零
+			collectDataEntity.setCount(String.valueOf(jsonArray.size())); // 收藏夹肯定是全量 这里无所谓 count怎么处理
+			// collectDataEntity.setCarriedout("0"); // 归零
 			CollectDataEntity save = collectdDataDao.save(collectDataEntity);
 			// 提交线程
-			if (monitor.equals("N")) {
-				exec.execute(() -> {
-					try {
-						this.createBiliData(save, jsonArray, namepath, "收藏夹");
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				});
-			} else {
+			if (null != monitor && monitor.equals("Y")) {
 				try {
 					this.createBiliData(save, jsonArray, namepath, "收藏夹");
+					return new AjaxEntity(Global.ajax_success, "任务启动成功", null);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
-			return new AjaxEntity(Global.ajax_success, "已提交至线程,如填错请删除当前任务并重启容器解决", null);
+			return new AjaxEntity(Global.ajax_success, "任务创建成功", null);
 		}
 		return new AjaxEntity(Global.ajax_uri_error, "数据为空 请检查收藏ID", null);
 	}
 
 	public AjaxEntity createBillArc(CollectDataEntity collectDataEntity, String monitor) {
 		String newod = collectDataEntity.getOriginaladdress().replaceAll("bili-arc-", "");
-		if (monitor.equals("N")) {
-			// 此处为第一次提交 不是走定时器监控
-			exec.execute(() -> {
-				try {
-					Integer maxc =null!=collectDataEntity.getOmaxcur()?collectDataEntity.getOmaxcur():300;
-					JSONArray arcSearch = BiliUtil.ArcSearch(newod, maxc); // 根据omaxcur获取数据
-					if (null != arcSearch && arcSearch.size() > 0) {
-						JSONObject ddd = arcSearch.getJSONObject(0);
-						String namepath = ddd.getString("author");
-						collectDataEntity.setTaskstatus("已提交待处理");
-						collectDataEntity.setCreatetime(DateUtils.formatDateTime(new Date()));
-						collectDataEntity.setCount(String.valueOf(arcSearch.size())); //这里不高了 就这样吧 count 不参考总数 参考Carriedout吧
-//						collectDataEntity.setCarriedout("0"); // 归零
-						CollectDataEntity save = collectdDataDao.save(collectDataEntity);
-
-						JSONObject infobili = new JSONObject();
-						JSONObject data = new JSONObject();
-						String cover = "";
-						try {
-							 cover = ddd.getJSONObject("meta").getString("cover");
-						} catch (Exception e) {
-							logger.error(ddd.toJSONString());
-						}
-						
-						data.put("title", namepath + "的投稿");
-						data.put("intro", namepath + "的投稿");
-						data.put("cover", cover);
-						data.put("ctime", DateUtils.getDate());
-						infobili.put("data", data);
-						// 创建
-						String temporaryDirectory = FileUtil.generateDir(true, Global.platform.bilibili.name(), false,
-								null, namepath, null);
-						if (Global.getGeneratenfo) {
-							// 防止重复写问题
-							if (!(new File(temporaryDirectory + File.separator + "tvshow.nfo").exists())) {
-								// 文件不存在
-								EmbyMetadataGenerator.createFavoriteNfo(infobili.toJSONString(), temporaryDirectory);
-							}
-						}
-
-						this.createBiliData(save, arcSearch, namepath, "投稿");
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			});
-		} else {
+		if (null != monitor && monitor.equals("Y")) {
 			try {
-				Integer maxc =null!=collectDataEntity.getMaxcur()?collectDataEntity.getMaxcur():300;
+				Integer maxc = 300;
+				long countByDataid = collectDataDetailDao.countByDataid(collectDataEntity.getId());
+				if (countByDataid > 0) {
+					maxc = null != collectDataEntity.getMaxcur() ? collectDataEntity.getMaxcur() : 300;
+				} else {
+					maxc = null != collectDataEntity.getOmaxcur() ? collectDataEntity.getOmaxcur() : 300;
+				}
 				JSONArray arcSearch = BiliUtil.ArcSearch(newod, maxc); // 根据maxcur获取数据
 				if (null != arcSearch && arcSearch.size() > 0) {
 					JSONObject ddd = arcSearch.getJSONObject(0);
@@ -720,14 +783,14 @@ public class CollectDataService {
 					collectDataEntity.setTaskstatus("已提交待处理");
 					collectDataEntity.setCreatetime(DateUtils.formatDateTime(new Date()));
 					collectDataEntity.setCount(String.valueOf(arcSearch.size()));
-//					collectDataEntity.setCarriedout("0"); // 归零
+					// collectDataEntity.setCarriedout("0"); // 归零
 					CollectDataEntity save = collectdDataDao.save(collectDataEntity);
 
 					JSONObject infobili = new JSONObject();
 					JSONObject data = new JSONObject();
 					String cover = "";
 					try {
-						 cover = ddd.getJSONObject("meta").getString("cover");
+						cover = ddd.getJSONObject("meta").getString("cover");
 					} catch (Exception e) {
 						logger.error(ddd.toJSONString());
 					}
@@ -748,12 +811,13 @@ public class CollectDataService {
 					}
 
 					this.createBiliData(save, arcSearch, namepath, "投稿");
+					return new AjaxEntity(Global.ajax_success,"任务启动成功", null);
 				}
 			} catch (Exception e2) {
 				e2.printStackTrace();
 			}
 		}
-		return new AjaxEntity(Global.ajax_success, "已提交至线程,如填错请删除当前任务并重启容器解决,如果没有正在进行的任务,页面可能需要等待15秒才会显示已经填的数据,如果有正在进行的任务需要处理完之后才会处理本次提交.不要重复提交", null);
+		return new AjaxEntity(Global.ajax_success,"任务创建成功", null);
 	}
 
 	public AjaxEntity fixBiliFav(String id) {
@@ -771,5 +835,27 @@ public class CollectDataService {
 	public Long countTotal() {
 		Long collectDataTotal = collectdDataDao.countTotal();
 		return collectDataTotal;
+	}
+
+	public Optional<CollectDataEntity> findById(Integer taskId) {
+		return collectdDataDao.findById(taskId);
+	}
+
+
+	public AjaxEntity execCollectData(CollectDataEntity collectDataEntity) {
+		//先判断 任务存不存在
+		boolean taskExists = quartzTaskService.isTaskExists(collectDataEntity.getId());
+		if(taskExists) {
+			quartzTaskService.triggerTask(collectDataEntity.getId());
+		}else {
+			//不存在 需要先查询 然后注册  在触发
+			Optional<CollectDataEntity> byId = collectdDataDao.findById(collectDataEntity.getId());
+			if(byId.isPresent()) {
+				CollectDataEntity db = byId.get();
+				quartzTaskService.scheduleTask(db);
+				quartzTaskService.triggerTask(db.getId());
+			}
+		}
+		return new AjaxEntity(Global.ajax_success, "任务启动成功", null);
 	}
 }

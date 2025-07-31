@@ -21,6 +21,8 @@ public interface CollectdDataDetailDao extends PagingAndSortingRepository<Collec
 
 	public List<CollectDataDetailEntity> findByVideoidAndDataid(String videoid, Integer dataid);
 
+	public long countByDataid(Integer dataid);
+
 	
 
 }

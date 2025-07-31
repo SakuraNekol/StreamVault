@@ -148,11 +148,87 @@
             return html;
         }
         
+        /**
+         * 创建收藏夹任务监控卡片
+         * 适配Quartz调度器监控数据
+         */
         function createCollectCard(collectData) {
-            if (collectData.collect) {
-                return createThreadPoolCard(collectData.collect, 'warning');
+            if (collectData.quartz) {
+                return createQuartzCard(collectData.quartz, 'warning');
             }
             return '';
+        }
+        
+        /**
+         * 创建Quartz调度器监控卡片
+         */
+        function createQuartzCard(quartzData, cardType) {
+            const isStarted = quartzData.isStarted;
+            const hasError = quartzData.error || quartzData.schedulerError;
+            const statusClass = hasError ? 'text-danger' : (isStarted ? 'text-success' : 'text-warning');
+            const statusText = hasError ? '错误' : (isStarted ? '运行中' : '已停止');
+            
+            let statusItems = `
+                <div class="status-item">
+                    <span class="status-label">调度器类型:</span>
+                    <span class="status-value">${quartzData.schedulerType || 'Quartz Scheduler'}</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">调度器状态:</span>
+                    <span class="status-value ${statusClass}">${statusText}</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">总任务数:</span>
+                    <span class="status-value">${quartzData.totalTasks || 0}</span>
+                </div>
+                <div class="status-item">
+	                <span class="status-label">最大同时运行(固定):</span>
+	                <span class="status-value">2</span>
+           		 </div>
+                <div class="status-item">
+                    <span class="status-label">运行中任务:</span>
+                    <span class="status-value status-active">${quartzData.runningTasks || 0}</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">空闲任务:</span>
+                    <span class="status-value status-idle">${quartzData.idleTasks || 0}</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">正在执行:</span>
+                    <span class="status-value">${quartzData.executingJobCount || 0} 个任务</span>
+                </div>`;
+            
+            // 如果有错误信息，显示错误详情
+            if (hasError) {
+                const errorMsg = quartzData.error || quartzData.schedulerError;
+                statusItems += `
+                <div class="status-item">
+                    <span class="status-label">错误信息:</span>
+                    <span class="status-value text-danger">${errorMsg}</span>
+                </div>`;
+            }
+            
+            // 如果有待机模式信息，显示待机状态
+            if (quartzData.isInStandbyMode !== undefined) {
+                statusItems += `
+                <div class="status-item">
+                    <span class="status-label">待机模式:</span>
+                    <span class="status-value">${quartzData.isInStandbyMode ? '是' : '否'}</span>
+                </div>`;
+            }
+            
+            return `
+                <div class="col-lg-6 col-md-12">
+                    <div class="status-card">
+                        <div class="status-header">
+                            <h5 class="text-${cardType}">
+                                <i class="mdi mdi-clock-outline"></i> ${quartzData.schedulerName || '收藏夹任务调度器'}
+                            </h5>
+                        </div>
+                        ${statusItems}
+                    </div>
+                </div>
+            `;
         }
         
         function createThreadPoolCard(poolData, cardType) {

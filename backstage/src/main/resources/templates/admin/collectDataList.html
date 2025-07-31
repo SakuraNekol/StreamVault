@@ -244,6 +244,16 @@
 							</select>
 						</div>
 					</div>
+					<div class="col-md-6 taskcron-line">
+						<div class="form-group">
+							<label>独立Cron 
+								<a href="https://calctools.online/zh/time/cron#quartz" target="_blank" class="text-info" title="Cron表达式填写指南">
+									<i class="mdi mdi-help-circle-outline"></i>
+								</a>
+							</label>
+							<input type="text" class="max-fetch form-control taskcron" placeholder="不填默认按全局">
+						</div>
+					</div>
 <!-- 					<div class="col-md-6">
 						<div class="form-group">
 							<label>是否生成NFO</label>
@@ -313,6 +323,15 @@
 		$('.searchData').click(function () {
 			findList(1)
 		})
+		$('.monitoring').change(function(){
+		    var val = $(this).val();
+		    if (val === 'N') {
+		        $('.taskcron-line').hide();
+		    } else {
+		        $('.taskcron-line').show();
+		    }
+		}).trigger('change');
+
 
 		// 平台选择切换
 		$('#platformSelect').change(function(){
@@ -443,7 +462,8 @@
 				platform: platform,
 				originaladdress: originaladdress,
 				monitoring: $('.monitoring').val(),
-				taskname: $('.taskname').val()
+				taskname: $('.taskname').val(),
+				taskcron:$(".taskcron").val()
 			};
 			
 			// 如果是抖音，添加最大获取数参数
@@ -464,9 +484,22 @@
 			$.post("/admin/api/submitCollectData", option, function(data,status){
 				if(data.resCode == "000001"){
 					layer.closeAll();
-					layer.alert(data.message,function(){
+					// 询问是否立即启动任务
+					layer.confirm('任务保存成功！是否立即启动任务？', {
+						btn: ['立即启动','稍后启动'] // 按钮
+					}, function(){
+						// 用户点击立即启动，复用startTask的逻辑
+						var taskId = data.record.id;
+						if(taskId){
+							execTaskById(taskId);
+						}else{
+							layer.msg('无法获取任务ID！', {icon: 2});
+							window.location.reload();
+						}
+					}, function(){
+						// 用户点击稍后启动
 						window.location.reload();
-					})
+					});
 				}else{
 					layer.closeAll();
 					layer.alert(data.message);
@@ -516,6 +549,39 @@
 			});
 		})
 
+	}
+	/**
+	 * 执行任务的通用函数
+	 * @param {string} taskId 任务ID
+	 */
+	function execTaskById(taskId){
+		//调用接口开始任务
+		layer.load();
+		$.get("/admin/api/execCollectData?id="+taskId,function(res){
+			if(res.resCode =="000001"){
+				layer.msg('任务启动成功！', {icon: 1});
+				setTimeout(function(){
+					window.location.reload();
+				},1500)
+			}else{
+				layer.msg('任务启动失败：' + res.message, {icon: 2});
+			}
+		}).fail(function(){
+			layer.msg('任务启动请求失败！', {icon: 2});
+		});
+	}
+	
+	/**
+	 * 开始任务按钮点击事件处理
+	 */
+	function startTask(){
+		$('.startTask').click(function () {
+			var id = $(this).attr('data-id');
+			layer.confirm("确定要开始执行此任务吗？", function(index){
+				execTaskById(id);
+				layer.close(index);
+			});
+		})
 	}
 	function textnone(str){
 		if(str == null || str == undefined){
@@ -640,6 +706,7 @@
 									+'<td>'+textnone(list[i].endtime)+'</td>'
 									+'<td>'
 									+'<div class="btn-group">'
+									+'<a data-id="'+list[i].id+'" class="btn btn-xs btn-success startTask" href="#!" title="开始任务" data-toggle="tooltip">开始任务</a>'
 									+'<a data-id="'+list[i].id+'" class="btn btn-xs btn-default viewProcesses" href="#!" title="查看进程" data-toggle="tooltip">查看进程</a>'
 									+'<a data-id="'+list[i].id+'" class="btn btn-xs btn-default deleteProcesses" href="#!" title="删除" data-toggle="tooltip">删除</a>'
 									+(list[i].platform === '哔哩' && !list[i].originaladdress.startsWith('bili-fav-') && !list[i].originaladdress.startsWith('bili-arc-') ? 
@@ -649,8 +716,9 @@
 						}
 
 						$('.tableData').html(html)
-						viewProcesses();
-						deleteProcesses();
+					viewProcesses();
+					deleteProcesses();
+					startTask();
 						laypage({
 							cont: 'pager',
 							pages: record.totalPages,

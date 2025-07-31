@@ -61,6 +61,8 @@ public class CollectDataEntity   extends DataEntity<CollectDataEntity> implement
 	private Integer omaxcur;
 	
 	private String generatenfo;
+	
+	private String taskcron;
 
 	public Integer getId() {
 		return id;
@@ -189,6 +191,23 @@ public class CollectDataEntity   extends DataEntity<CollectDataEntity> implement
 
 	public void setGeneratenfo(String generatenfo) {
 		this.generatenfo = generatenfo;
+	}
+
+	public String getTaskcron() {
+		return taskcron;
+	}
+
+	public void setTaskcron(String taskcron) {
+		this.taskcron = taskcron;
+	}
+
+	@Override
+	public String toString() {
+		return "CollectDataEntity [id=" + id + ", taskid=" + taskid + ", platform=" + platform + ", taskname="
+				+ taskname + ", taskstatus=" + taskstatus + ", createtime=" + createtime + ", endtime=" + endtime
+				+ ", count=" + count + ", carriedout=" + carriedout + ", originaladdress=" + originaladdress
+				+ ", monitoring=" + monitoring + ", lastCheckTime=" + lastCheckTime + ", lastid=" + lastid + ", maxcur="
+				+ maxcur + ", omaxcur=" + omaxcur + ", generatenfo=" + generatenfo + ", taskcron=" + taskcron + "]";
 	}
 
 	

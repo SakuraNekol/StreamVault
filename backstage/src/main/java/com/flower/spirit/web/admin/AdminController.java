@@ -331,8 +331,21 @@ public class AdminController {
 	 */
 	@PostMapping(value = "/submitCollectData")
 	public AjaxEntity submitCollectData(CollectDataEntity collectDataEntity,HttpServletRequest request) {
-		return collectDataService.submitCollectData(collectDataEntity,"N");
+		return collectDataService.saveCollectData(collectDataEntity);
 	}
+	
+	
+	/**
+	 * 手动/创建之后立即执行任务
+	 * @param collectDataEntity
+	 * @param request
+	 * @return
+	 */
+	@GetMapping(value = "/execCollectData")
+	public AjaxEntity execCollectData(CollectDataEntity collectDataEntity,HttpServletRequest request) {
+		return collectDataService.execCollectData(collectDataEntity);
+	}
+	
 	//updateTikTokConfig
 	/**
 	 * 更新抖音相关下载配置
