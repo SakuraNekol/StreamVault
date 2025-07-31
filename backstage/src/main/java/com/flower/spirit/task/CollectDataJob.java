@@ -50,10 +50,10 @@ public class CollectDataJob implements Job {
                 return;
             }
             CollectDataEntity collectDataEntity = taskOpt.get();
+            collectDataService.submitCollectData(collectDataEntity, "Y");
             if (!"Y".equals(collectDataEntity.getMonitoring())) {
                 quartzTaskService.removeTaskSchedule(taskId);
             }
-            collectDataService.submitCollectData(collectDataEntity, "Y");
             logger.info("收藏夹任务执行完成：{}", taskName);
             
         } catch (Exception e) {

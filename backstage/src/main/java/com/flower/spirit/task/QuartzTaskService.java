@@ -87,8 +87,6 @@ public class QuartzTaskService {
                     .build();
 
             scheduler.scheduleJob(jobDetail, trigger);
-            logger.info("成功调度任务：{}, cron: {}", task.getTaskname(), cron);
-
         } catch (Exception e) {
             logger.error("调度任务失败：{}", task.getTaskname(), e);
         }
