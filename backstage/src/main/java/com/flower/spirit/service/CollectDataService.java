@@ -233,49 +233,6 @@ public class CollectDataService {
 			List<CollectDataEntity> allTasks = collectdDataDao.findByMonitoring("Y");
 			quartzStatus.put("totalTasks", allTasks.size());
 
-			// 统计正在运行的任务
-			int runningCount = 0;
-			List<Map<String, Object>> taskDetails = new ArrayList<>();
-
-			for (CollectDataEntity task : allTasks) {
-				boolean isRunning = quartzTaskService.isTaskRunning(task.getId());
-				if (isRunning) {
-					runningCount++;
-				}
-
-				// 任务详细信息
-				Map<String, Object> taskInfo = new HashMap<>();
-				taskInfo.put("taskId", task.getId());
-				taskInfo.put("taskName", task.getTaskname());
-				taskInfo.put("isRunning", isRunning);
-				taskInfo.put("taskStatus", task.getTaskstatus());
-
-				// 获取任务的cron表达式
-				try {
-					JobKey jobKey = JobKey.jobKey("job-" + task.getId(), "collect");
-					if (quartzTaskService.getScheduler().checkExists(jobKey)) {
-						List<? extends Trigger> triggers = quartzTaskService.getScheduler().getTriggersOfJob(jobKey);
-						if (!triggers.isEmpty() && triggers.get(0) instanceof CronTrigger) {
-							CronTrigger cronTrigger = (CronTrigger) triggers.get(0);
-							taskInfo.put("cronExpression", cronTrigger.getCronExpression());
-							taskInfo.put("nextFireTime", cronTrigger.getNextFireTime());
-							taskInfo.put("previousFireTime", cronTrigger.getPreviousFireTime());
-						}
-					}
-				} catch (SchedulerException e) {
-					logger.warn("获取任务触发器信息失败：{}", task.getId(), e);
-					taskInfo.put("triggerError", "触发器信息获取失败");
-				} catch (Exception e) {
-					logger.warn("获取任务触发器信息失败：{}", task.getId(), e);
-				}
-
-				taskDetails.add(taskInfo);
-			}
-
-			quartzStatus.put("runningTasks", runningCount);
-			quartzStatus.put("idleTasks", allTasks.size() - runningCount);
-			quartzStatus.put("taskDetails", taskDetails);
-
 			// 获取当前正在执行的任务详情
 			List<Map<String, Object>> executingDetails = new ArrayList<>();
 			try {
@@ -310,8 +267,6 @@ public class CollectDataService {
 			quartzStatus.put("executingJobCount", executingDetails.size());
 
 			status.put("quartz", quartzStatus);
-
-			logger.debug("获取Quartz调度器状态成功，总任务数：{}，运行中：{}", allTasks.size(), runningCount);
 
 		} catch (Exception e) {
 			logger.error("获取Quartz调度器状态失败", e);

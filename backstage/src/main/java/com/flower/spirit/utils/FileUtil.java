@@ -8,6 +8,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -40,7 +43,7 @@ public class FileUtil {
 
     
     public static String generateDir(boolean real,String platform,String filename,String favname,String ext,int index) {
-    	String datepath = DateUtils.getDate("yyyy");
+    	String datepath = DateUtils.getDate("yyyyMM");
     	String resdir ="";
     	if(real) {
     		resdir = resdir+uploadRealPath+System.getProperty("file.separator");
@@ -79,7 +82,7 @@ public class FileUtil {
      * @return  /cos/bili/odd/2025   /cos/bili/collection/fav
      */
     public static String generateDir(boolean real,String platform,boolean odd,String filename,String favname,String ext) {
-    	String datepath = DateUtils.getDate("yyyy");
+    	String datepath = DateUtils.getDate("yyyyMM");
     	String resdir ="";
     	if(real) {
     		resdir = resdir+uploadRealPath+System.getProperty("file.separator");
@@ -121,7 +124,7 @@ public class FileUtil {
     
     
     public static String generateDir(String down,String platform,boolean odd,String filename,String favname,String ext) {
-    	String datepath = DateUtils.getDate("yyyy")+System.getProperty("file.separator");
+    	String datepath = DateUtils.getDate("yyyyMM")+System.getProperty("file.separator");
     	String resdir ="";
     	resdir = resdir+down+System.getProperty("file.separator");
     	//拼接平台
@@ -161,7 +164,7 @@ public class FileUtil {
 	 */
     @Deprecated
 	public static String createDirFile(String directory,String ext,String filename,String platform) {
-		String datepath = DateUtils.getDate("yyyy")+System.getProperty("file.separator");
+		String datepath = DateUtils.getDate("yyyyMM")+System.getProperty("file.separator");
 		String path =directory
 					+System.getProperty("file.separator")
 					+platform
@@ -176,7 +179,7 @@ public class FileUtil {
     
     @Deprecated
 	public  static String createTemporaryDirectory(String platform,String filename,String directory) {
-		String datepath = DateUtils.getDate("yyyy")+System.getProperty("file.separator");
+		String datepath = DateUtils.getDate("yyyyMM")+System.getProperty("file.separator");
 		String videofile = directory+System.getProperty("file.separator")
 						   +platform
 						   +System.getProperty("file.separator")
@@ -195,7 +198,7 @@ public class FileUtil {
 	 */
 	@Deprecated
 	public  static String createTemporaryDirectory(String platform,String filename) {
-		String datepath = DateUtils.getDate("yyyy")+System.getProperty("file.separator");
+		String datepath = DateUtils.getDate("yyyyMM")+System.getProperty("file.separator");
 		String videofile = uploadRealPath
 						   +platform
 						   +System.getProperty("file.separator")
@@ -207,7 +210,7 @@ public class FileUtil {
 	
 	@Deprecated
 	public  static String createTemporaryDirectoryFav(String platform,String filename,String fav) {
-		String datepath = DateUtils.getDate("yyyy")+System.getProperty("file.separator");
+		String datepath = DateUtils.getDate("yyyyMM")+System.getProperty("file.separator");
 		String videofile = uploadRealPath
 						   +platform
 						   +System.getProperty("file.separator")
@@ -224,7 +227,7 @@ public class FileUtil {
 	 * **/
 	@Deprecated
 	public  static String createTemporaryDirectoryFav(String platform,String filename,String directory,String fav) {
-		String datepath = DateUtils.getDate("yyyy")+System.getProperty("file.separator");
+		String datepath = DateUtils.getDate("yyyyMM")+System.getProperty("file.separator");
 		String videofile = directory+System.getProperty("file.separator")
 						   +platform
 						   +System.getProperty("file.separator")
@@ -238,7 +241,7 @@ public class FileUtil {
 	
 	@Deprecated
 	public static String createDirFileFav(String directory,String ext,String filename,String platform,String fav) {
-		String datepath = DateUtils.getDate("yyyy")+System.getProperty("file.separator");
+		String datepath = DateUtils.getDate("yyyyMM")+System.getProperty("file.separator");
 		String path =directory
 					+System.getProperty("file.separator")
 					+platform
@@ -344,6 +347,17 @@ public class FileUtil {
         }
     }
     
+    public static JSONArray readJsonFromFile(String filePath) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(filePath));
+        StringBuilder jsonContent = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            jsonContent.append(line);
+        }
+        reader.close();
+        return JSON.parseArray(jsonContent.toString());
+    }
+    
     public static String readJson(String filePath) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(filePath));
         StringBuilder jsonContent = new StringBuilder();
@@ -355,17 +369,20 @@ public class FileUtil {
         return jsonContent.toString();
     }
     
-    
-    public static JSONArray readJsonFromFile(String filePath) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(filePath));
-        StringBuilder jsonContent = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            jsonContent.append(line);
-//            System.out.println(line);
+    public static boolean safeMoveFile(File source, File target, int maxRetries, long delayMillis) {
+        int attempt = 0;
+        while (attempt < maxRetries) {
+            try {
+                Files.move(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                return true;
+            } catch (IOException e) {
+                attempt++;
+                try {
+                    Thread.sleep(delayMillis);
+                } catch (InterruptedException ignored) {}
+            }
         }
-        reader.close();
-        return JSON.parseArray(jsonContent.toString());
+        return false;
     }
     
 }
