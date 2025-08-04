@@ -3,7 +3,7 @@
 		<!-- 视频播放区域 -->
 		<view class="video-section">
 			<video 
-				:src="videoInfo.videounrealaddr" 
+				:src="encodeURI(videoInfo.videounrealaddr)" 
 				class="video-player"
 				:controls="true"
 				:show-center-play-btn="true"
