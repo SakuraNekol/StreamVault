@@ -7,7 +7,7 @@
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/lemon8866/StreamVault)
 [![Docker Pulls](https://img.shields.io/docker/pulls/qingfeng2336/stream-vault)](https://hub.docker.com/r/qingfeng2336/stream-vault)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-1.8+-red.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.7.x-brightgreen.svg)](https://spring.io/projects/spring-boot)
 ![Build Status](https://github.com/lemon8866/StreamVault/actions/workflows/docker-image.yml/badge.svg)
@@ -190,6 +190,7 @@ javascript:(function(){
 
 > ⚠️ **注意**: 通过接口获取的视频播放链接或缩略图，访问时需追加 `?apptoken=xxxx` 参数，否则无法访问。
 
+
 ## 🙏 致谢
 
 项目参考及使用了以下优秀的开源项目：
@@ -200,12 +201,17 @@ javascript:(function(){
 - [Light-Year-Admin-Template](https://gitee.com/yinqi/Light-Year-Admin-Template)
 - [yt-dlp](https://github.com/yt-dlp/yt-dlp)
 
-## 📄 许可证
+---
 
-MIT License
+## 📄 LICENSE
+
+本项目主体代码采用 [Apache License 2.0](./LICENSE) 授权。
+
+> **注意**：
+> - 由于 `bilibili-API-collect` 代码的非商业限制（CC BY-NC 4.0 协议），包含该部分代码的版本 **禁止商业使用**。  
+> - 使用本项目时，需同时遵守上述第三方项目的许可证条款。
 
 <div align="center">
-
-### 🌟 欢迎 Star & Fork
-
+感谢所有开源项目的贡献者！
 </div>
+
