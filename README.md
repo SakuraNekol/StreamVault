@@ -18,14 +18,12 @@
 >
 > 1. 如Docker Hub镜像版本不包含环境变量需要使用的参数（例如：代理、掩码、时区等），建议自行修改Dockerfile并编译。编译文件位于`backstage/src/main/docker/buildx`，已包含所有必要文件,编译后的jar文件不在上传,建议使用actions编译。
 > 2. 更多详细部署方式和配置说明，请先查看[旧版文档](doc/README.md)和[更新日志](doc/updaterecords.md)，部署方式等可以参考旧版方式。
-> 3. 更多详细细节待补充，敬请期待。
+> 3. 已经借助AI之力完成了本项目的wiki，具体使用可以参考[项目Wiki](https://github.com/lemon8866/StreamVault/wiki)
 > 4. 所有配套客户端及源码可在 `app` 文件夹下找到
 > 5. 本项目相对于其他项目来说  使用的java语言  docker部署时建议添加内存限制
 > 6. 本项目没有做项目拆分为多个仓库  所以本仓库包含 uniapp tauri electron java 浏览器扩展 每个平台源码
 > 7. `backstage为后台服务端 java`  `app/uniapp  手机端源码`   `app/extend  浏览器扩展`  `app/desktop  桌面端客户端源码`
-> 8. 维护者比较懒 故本库没有详细部署文档 更多详细内容 请自行部署体验 也欢迎各位大佬提交部署PR到doc目录
-> 9. 大部分站点都支持文件的分片下载,本项目暂未开启分片下载 视风控情况后续考虑开启分片下载
-> 10. 已经借助AI之力完成了本项目的wiki，具体使用可以参考[项目Wiki](https://github.com/lemon8866/StreamVault/wiki)
+
 
 ## ⚠️ 声明
 
@@ -37,13 +35,13 @@
 
 ## 🌟 项目简介
 
-StreamVault（原名：spirit）是一个视频资源管理与下载平台，支持多平台视频解析和下载，提供便捷的资源管理功能。
+StreamVault（原名：spirit）是一个视频资源管理与下载平台，支持多平台视频解析和下载，提供便捷的资源管理功能。支持API提交视频地址等
 
 ## ✨ 主要特性
 
 ### 🚀 核心功能
 
-- 🎥 单视频下载
+- 🎥 API推送单视频地址下载
 - ⬇️ 多种下载方式支持（HTTP、Aria2）
 - 📚 哔哩哔哩收藏夹下载与监控
 - ❤️ 抖音作品与喜欢列表下载与监控 
