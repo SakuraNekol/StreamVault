@@ -150,7 +150,8 @@ public class PageController {
 	 * @return
 	 */
 	@RequestMapping(value = "/videoDataList")
-	public String videoDataList() {
+	public String videoDataList(Model model) {
+		model.addAttribute("readtoken", Global.readonlytoken);
 		return "admin/videoDataList";
 	}
 	

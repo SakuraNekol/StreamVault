@@ -86,6 +86,9 @@ public class VideoDataService {
 				if(seachDate != null && StringUtil.isString(seachDate.getVideoplatform())) {
 					predicate.getExpressions().add(criteriaBuilder.like(root.get("videoplatform"), "%"+seachDate.getVideoplatform()+"%"));
 				}
+				if(seachDate != null && StringUtil.isString(seachDate.getVideotag())) {
+					predicate.getExpressions().add(criteriaBuilder.like(root.get("videotag"), "%"+seachDate.getVideotag()+"%"));
+				}
 				query.orderBy(criteriaBuilder.desc(root.get("id")));
 				return predicate;
 			}};
@@ -121,11 +124,10 @@ public class VideoDataService {
 	 */
 	public AjaxEntity updateVideoData(VideoDataEntity data) {
 		Optional<VideoDataEntity> findById = videoDataDao.findById(data.getId());
-		if(findById.isPresent()) {
+		if (findById.isPresent()) {
 			VideoDataEntity videoDataEntity = findById.get();
-			videoDataEntity.setVideoname(data.getVideoname());
-			videoDataEntity.setVideodesc(data.getVideodesc());
-			videoDataEntity.setVideoplatform(data.getVideoplatform());
+			videoDataEntity.setVideoprivacy(data.getVideoprivacy());
+			videoDataEntity.setVideotag(data.getVideotag());
 			videoDataDao.save(videoDataEntity);
 		}
 		return new AjaxEntity(Global.ajax_success, "操作成功", null);

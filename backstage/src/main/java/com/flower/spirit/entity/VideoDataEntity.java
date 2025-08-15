@@ -46,6 +46,10 @@ public class VideoDataEntity  extends DataEntity<VideoDataEntity> implements Ser
 	
 	private String videodesc;
 	
+	private String videoprivacy;  //视频是否隐私模式  隐私模式 则不会直接显示 图片
+	
+	private String videotag;     //视频tag
+	
 	private String videoplatform;
 	
 	private String videocover;
@@ -132,6 +136,22 @@ public class VideoDataEntity  extends DataEntity<VideoDataEntity> implements Ser
 
 	public void setVideodesc(String videodesc) {
 		this.videodesc = videodesc;
+	}
+
+	public String getVideoprivacy() {
+		return videoprivacy;
+	}
+
+	public void setVideoprivacy(String videoprivacy) {
+		this.videoprivacy = videoprivacy;
+	}
+
+	public String getVideotag() {
+		return videotag;
+	}
+
+	public void setVideotag(String videotag) {
+		this.videotag = videotag;
 	}
 
 	public String getVideounrealaddr() {

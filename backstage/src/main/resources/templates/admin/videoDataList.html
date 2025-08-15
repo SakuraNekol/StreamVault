@@ -95,6 +95,99 @@
         .delete-progress .progress-item.pending {
             color: #6c757d;
         }
+
+        .tags-input-wrapper {
+            background: #fff;
+            border-radius: 4px;
+        }
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 5px 0;
+        }
+        .tag-item {
+            background: #e9ecef;
+            border-radius: 3px;
+            padding: 2px 8px;
+            display: inline-flex;
+            align-items: center;
+            font-size: 14px;
+        }
+        .tag-item .remove-tag {
+            margin-left: 5px;
+            cursor: pointer;
+            color: #666;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .tag-item .remove-tag:hover {
+            color: #dc3545;
+        }
+
+        /* 标签样式优化 */
+        .video-tag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px 8px;
+            margin: 2px 4px;
+            border-radius: 15px;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #fff;
+            background: #007bff;
+            transition: all 0.2s ease;
+            min-height: 22px;
+        }
+        .video-tag:nth-child(3n+1) {
+            background: #28a745;
+        }
+        .video-tag:nth-child(3n+2) {
+            background: #17a2b8;
+        }
+        .video-tag:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+        .tags-wrapper {
+            padding: 4px;
+            min-height: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        /* 隐私图片样式 */
+        .thumbnail-private {
+            position: relative;
+        }
+        
+        .thumbnail-private::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 1;
+            border-radius: 4px;
+        }
+        
+        .thumbnail-private::after {
+            content: '\F0425';
+            font-family: 'Material Design Icons';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            color: #666;
+            z-index: 2;
+        }
         .video-container {
             position: relative;
             width: 100%;
@@ -171,9 +264,6 @@
                             <div class="card">
                                 <div class="card-header bg-light">
                                     <div class="row align-items-center">
-                                        <div class="col">
-                                            <h5 class="card-title mb-0">搜索</h5>
-                                        </div>
                                         <div class="col-auto">
                                             <a class="btn btn-primary btn-sm searchData" href="#">
                                                 <i class="mdi mdi-magnify"></i> 搜索
@@ -194,6 +284,12 @@
                                                 <div class="form-group">
                                                     <label class="control-label">视频简介</label>
                                                     <input type="text" class="form-control videodesc" name="videodesc" placeholder="视频简介" />
+                                                </div>
+                                            </div>
+                                                                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                    <label class="control-label">视频标签</label>
+                                                    <input type="text" class="form-control videotag" name="videotag" placeholder="视频标签" />
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
@@ -249,6 +345,7 @@
                                             <th style="width: 60px">编号</th>
                                             <th style="width: 100px">封面</th>
                                             <th>视频信息</th>
+                                            <th style="width: 150px">标签</th>
                                             <th style="width: 100px">平台</th>
                                             <th style="width: 150px">下载时间</th>
                                             <th style="width: 120px">操作</th>
@@ -275,21 +372,26 @@
     </div>
 
 <!--    模态框 start-->
-    <div class="updateData layui-form" style="display: none;padding: 20px;">
+    <div class="updateData" style="display: none;padding: 20px;">
         <input class="optionid" type="hidden">
-        <div class="layui-inline">
-            <label class="layui-form-label">视频名称</label>
-            <div class="layui-input-inline">
-                <input  type="text" name="videoname"  autocomplete="off" class="videoname layui-input">
+        <div class="form-group mb-4">
+            <label>隐私设置</label>
+            <select class="form-control videoprivacy">
+                <option value="0">正常</option>
+                <option value="1">隐私保护</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>视频标签</label>
+            <div class="tags-input-wrapper">
+                <div class="tags-container mb-2"></div>
+                <input type="text" class="form-control videotag-input" placeholder="输入标签后按空格或回车添加">
+                <input type="hidden" class="videotag" name="videotag">
             </div>
         </div>
-        <div class="layui-inline">
-            <label class="layui-form-label">视频简介</label>
-            <div class="layui-input-inline">
-                <input  type="text" name="videodesc"  autocomplete="off" class="videodesc layui-input">
-            </div>
+        <div class="text-right mt-4">
+            <button type="button" class="btn btn-primary save-btn">保存修改</button>
         </div>
-        <div class="buttondiv" style=" padding-left: 5%; padding-top: 5%; "><button type="button" class="layui-btn">保存信息</button></div>
     </div>
 
 <!--    模态框end-->
@@ -299,7 +401,7 @@
     <h5>批量删除进度</h5>
     <div class="progress-list"></div>
 </div>
-
+<div id="readtoken" th:data-readtoken="${readtoken}" style="display: none"></div>
 <script type="text/javascript" src="../static/js/jquery.min.js"></script>
 <script type="text/javascript" src="../static/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="../static/js/perfect-scrollbar.min.js"></script>
@@ -307,6 +409,7 @@
 <script type="text/javascript" src="../static/js/laypage.js"></script>
 <script src="../static/js/layer/layer.js" type="text/javascript"></script>
 <script type="text/javascript">
+	var readtoken = document.getElementById('readtoken').dataset.readtoken;
     $(function(){
         findList(1);
         $('.searchData').click(function () {
@@ -386,10 +489,117 @@
             });
         });
     });
-    function  updateData(){
+    function updateData(){
         $('.editData').click(function (){
-            layer.alert("暂时移除了编辑功能,后期会重做");
-        })
+            var $btn = $(this);
+            var id = $btn.data('id');
+            var videoprivacy = $btn.data('videoprivacy') || '0';
+            var videotag = $btn.data('videotag') || '';
+            
+            // 打开编辑框
+            layer.open({
+                type: 1,
+                title: '编辑视频信息',
+                area: ['500px', '400px'],
+                content: $('.updateData'),
+                success: function(){
+                    // 设置表单值
+                    $('.optionid').val(id);
+                    $('.videoprivacy').val(videoprivacy);
+                    
+                    // 初始化标签
+                    var $tagsContainer = $('.tags-container').empty();
+                    var $tagInput = $('.videotag-input');
+                    var $hiddenInput = $('.videotag');
+                    
+                    // 如果有已存在的标签，添加它们
+                    if(videotag) {
+                        videotag.split('|').forEach(function(tag) {
+                            if(tag) addTag(tag.trim());
+                        });
+                    }
+                    
+                    // 更新隐藏输入框的值
+                    function updateHiddenInput() {
+                        var tags = [];
+                        $('.tag-item').each(function() {
+                            tags.push($(this).data('value'));
+                        });
+                        $hiddenInput.val(tags.join('|'));
+                    }
+                    
+                    // 添加标签的函数
+                    function addTag(text) {
+                        text = text.trim();
+                        if(!text) return;
+                        
+                        // 检查标签是否已存在
+                        var exists = false;
+                        $('.tag-item').each(function() {
+                            if($(this).data('value') === text) {
+                                exists = true;
+                                return false;
+                            }
+                        });
+                        
+                        if(!exists) {
+                            var $tag = $('<span class="tag-item" data-value="' + text + '">' + 
+                                       text + '<span class="remove-tag">&times;</span></span>');
+                            $tagsContainer.append($tag);
+                            updateHiddenInput();
+                        }
+                    }
+                    
+                    // 绑定标签输入事件
+                    $tagInput.on('keydown', function(e) {
+                        if(e.key === ' ' || e.key === 'Enter') {
+                            e.preventDefault();
+                            var text = $(this).val();
+                            if(text) {
+                                addTag(text);
+                                $(this).val('');
+                            }
+                        }
+                    });
+                    
+                    // 绑定删除标签事件
+                    $tagsContainer.on('click', '.remove-tag', function() {
+                        $(this).parent().remove();
+                        updateHiddenInput();
+                    });
+                    
+                    // 绑定保存按钮事件
+                    $('.save-btn').off('click').on('click', function(){
+                        var formData = {
+                            id: $('.optionid').val(),
+                            videoprivacy: $('.videoprivacy').val(),
+                            videotag: $('.videotag').val()
+                        };
+                        
+                        var loadIndex = layer.load(1, {shade: [0.3,'#000']});
+                        $.ajax({
+                            url: '/admin/api/updateVideoData',
+                            type: 'POST',
+                            data: formData,
+                            success: function(res){
+                                layer.close(loadIndex);
+                                if(res.resCode === "000001"){
+                                    layer.msg(res.message);
+                                    layer.closeAll();
+                                    findList($('#pager').find('.laypage_curr').text() || 1);
+                                } else {
+                                    layer.msg(res.message || '保存失败');
+                                }
+                            },
+                            error: function(){
+                                layer.close(loadIndex);
+                                layer.msg('网络错误，请重试');
+                            }
+                        });
+                    });
+                }
+            });
+        });
     }
     function transferName(str){
         var obj=str.lastIndexOf("/");
@@ -402,7 +612,9 @@
             var id = $(this).attr('data-id');
             layer.confirm("删除后下载的资源将一并删除,是否删除", function(index){
                 //调用接口删除
+                var loadIndex = layer.load(1, {shade: [0.3,'#000']});
                 $.get("/admin/api/deleteVideoData?id="+id,function(res){
+                    layer.close(loadIndex);
                     if(res.resCode =="000001"){
                         layer.msg(res.message)
                         setTimeout(function(){
@@ -411,6 +623,9 @@
                     }else{
                         layer.alert(res.message);
                     }
+                }).fail(function(){
+                    layer.close(loadIndex);
+                    layer.msg('网络错误，请重试');
                 })
                 layer.close(index);
             });
@@ -500,7 +715,14 @@
             });
         });
     }
-    function getImage(url) {
+    function getImage(url, isPrivate) {
+        if(isPrivate) {
+            return '<div class="thumbnail-container">' +
+                   '<div class="thumbnail-private">' +
+                   '<img src="'+(url || '/static/images/noimage.jpg')+'" class="img-thumbnail" style="max-width: 80px; max-height: 60px;" onerror="this.src=\'/static/images/noimage.jpg\'">' +
+                   '</div>' +
+                   '</div>';
+        }
         if(url) {
             return '<div class="thumbnail-container">' +
                    '<img src="'+url+'" class="img-thumbnail" style="max-width: 80px; max-height: 60px;" ' +
@@ -562,57 +784,186 @@
     function formatVideoInfo(item) {
         var html = '<div class="video-info">';
         
-        // 解析originaladdress
-        var addressType = '';
-        var addressValue = '';
-        var cc ="badge-info";
-        if(item.videoplatform === '抖音') {
-            if(item.originaladdress.startsWith('post')) {
-            	cc ="badge-primary";
-                addressType = '作品';
-                addressValue = item.originaladdress.substring(4);
-            } else if(item.originaladdress.startsWith('like')) {
-            	cc ="badge-success";
-                addressType = '喜欢';
-                addressValue = item.originaladdress.substring(4);
-            } else if(item.originaladdress.startsWith('recommend')) {
-            	cc ="badge-secondary";
-                addressType = '首页推荐';
-                addressValue = item.originaladdress.substring(9);
-            } else if(item.originaladdress.startsWith('fav-')) {
-            	cc ="badge-danger";
-                addressType = '收藏夹';
-                var parts = item.originaladdress.split('-');
-                addressValue = parts[1] + ' (' + parts[2].substring(3) + ')';
-            } else if(item.originaladdress.startsWith('https://v.douyin.com/')) {
-            	cc ="badge-warning";
-            	addressType = '分享链接';
-                addressValue = item.originaladdress;
-            }
-        } else if(item.videoplatform === '哔哩') {
-            if(item.originaladdress.startsWith('bili-fav-')) {
-                addressType = '收藏夹';
-                addressValue = item.originaladdress.substring(9);
-            } else if(item.originaladdress.startsWith('bili-arc-')) {
-                addressType = '投稿';
-                addressValue = item.originaladdress.substring(9);
-            } else {
-                addressType = '分享链接';
-                addressValue = item.originaladdress;
-            }
-        } else {
-            addressType = '其他';
-            addressValue = item.originaladdress;
+        // 判断是否为隐私模式
+        var isPrivate = item.videoprivacy === '1';
+        var displayName = isPrivate ? '******' : item.videoname;
+        var displayDesc = isPrivate ? '******' : item.videodesc;
+        
+        html += '<div class="font-weight-bold text-truncate content-field" data-id="'+item.id+'" title="'+(isPrivate ? '' : item.videoname)+'">'+displayName+'</div>';
+        html += '<div class="small text-muted text-truncate content-field" data-id="'+item.id+'" title="'+(isPrivate ? '' : item.videodesc)+'">'+displayDesc+'</div>';
+        
+        // 只在非隐私模式下显示地址信息
+        if(!isPrivate) {
+            var addressInfo = getAddressInfo(item);
+            html += '<div class="small">';
+            html += '<span class="badge '+addressInfo.cc+'">'+addressInfo.type+'</span> ';
+            html += '<span class="text-muted">'+addressInfo.value+'</span>';
+            html += '</div>';
         }
-
-        html += '<div class="font-weight-bold text-truncate" title="'+item.videoname+'">'+item.videoname+'</div>';
-        html += '<div class="small text-muted text-truncate" title="'+item.videodesc+'">'+item.videodesc+'</div>';
-        html += '<div class="small">';
-        html += '<span class="badge '+cc+'\">'+addressType+'</span> ';
-        html += '<span class="text-muted">'+addressValue+'</span>';
-        html += '</div>';
+        
         html += '</div>';
         return html;
+    }
+    
+    function formatTags(tags) {
+        if(!tags) return '<div class="tags-wrapper"></div>';
+        var html = '<div class="tags-wrapper">';
+        tags.split('|').forEach(function(tag) {
+            if(tag) {
+                html += '<span class="video-tag">'+tag.trim()+'</span>';
+            }
+        });
+        html += '</div>';
+        return html;
+    }
+    
+    // 辅助函数：获取地址类型
+    function getAddressType(item) {
+        if(item.videoplatform === '抖音') {
+            if(item.originaladdress.startsWith('post')) return '作品';
+            if(item.originaladdress.startsWith('like')) return '喜欢';
+            if(item.originaladdress.startsWith('recommend')) return '首页推荐';
+            if(item.originaladdress.startsWith('fav-')) return '收藏夹';
+            if(item.originaladdress.startsWith('https://v.douyin.com/')) return '分享链接';
+        } else if(item.videoplatform === '哔哩') {
+            if(item.originaladdress.startsWith('bili-fav-')) return '收藏夹';
+            if(item.originaladdress.startsWith('bili-arc-')) return '投稿';
+            return '分享链接';
+        }
+        return '其他';
+    }
+    
+    // 辅助函数：获取地址值
+    function getAddressValue(item) {
+        if(item.videoplatform === '抖音') {
+            if(item.originaladdress.startsWith('post')) return item.originaladdress.substring(4);
+            if(item.originaladdress.startsWith('like')) return item.originaladdress.substring(4);
+            if(item.originaladdress.startsWith('recommend')) return item.originaladdress.substring(9);
+            if(item.originaladdress.startsWith('fav-')) {
+                var parts = item.originaladdress.split('-');
+                return parts[1] + ' (' + parts[2].substring(3) + ')';
+            }
+        } else if(item.videoplatform === '哔哩') {
+            if(item.originaladdress.startsWith('bili-fav-')) return item.originaladdress.substring(9);
+            if(item.originaladdress.startsWith('bili-arc-')) return item.originaladdress.substring(9);
+        }
+        return item.originaladdress;
+    }
+    
+    // 辅助函数：获取完整地址信息
+    function getAddressInfo(item) {
+        var cc = "badge-info";
+        if(item.videoplatform === '抖音') {
+            if(item.originaladdress.startsWith('post')) cc = "badge-primary";
+            else if(item.originaladdress.startsWith('like')) cc = "badge-success";
+            else if(item.originaladdress.startsWith('recommend')) cc = "badge-secondary";
+            else if(item.originaladdress.startsWith('fav-')) cc = "badge-danger";
+            else if(item.originaladdress.startsWith('https://v.douyin.com/')) cc = "badge-warning";
+        }
+        return {
+            type: getAddressType(item),
+            value: getAddressValue(item),
+            cc: cc
+        };
+    }
+    
+    // 修改显示/隐藏切换事件处理
+    $(document).on('click', '.toggle-privacy', function(e) {
+        e.preventDefault();
+        var $btn = $(this);
+        var isShowing = $btn.data('show') === true;
+        
+        if(isShowing) {
+            // 直接执行隐藏操作
+            hideContent($btn);
+        } else {
+            // 显示密码输入框
+            layer.prompt({
+                title: '请输入只读Token解锁',
+                formType: 1,
+                btn: ['确定', '取消']
+            }, function(value, index){
+                if(value === readtoken) {
+                    layer.close(index);
+                    showContent($btn);
+                } else {
+                    layer.msg('密码错误');
+                }
+            });
+        }
+    });
+
+    // 隐藏内容的函数
+    function hideContent($btn) {
+        var id = $btn.data('id');
+        var $contentFields = $('.content-field[data-id="'+id+'"]');
+        var $row = $btn.closest('tr');
+        
+        $contentFields.each(function() {
+            var $field = $(this);
+            if($field.hasClass('badge')) {
+                $field.text('****');
+            } else {
+                $field.text('******').attr('title', '');
+            }
+        });
+        // 恢复默认图片和毛玻璃效果
+        var $imgContainer = $row.find('.thumbnail-container');
+        $imgContainer.find('img').attr('src', '/static/images/noimage.jpg')
+            .off('mouseenter mouseleave');
+        // 重新添加毛玻璃效果
+        if(!$imgContainer.find('.thumbnail-private').length) {
+            $imgContainer.html('<div class="thumbnail-private"><img src="'+$btn.data('cover')+'" class="img-thumbnail" style="max-width: 80px; max-height: 60px;" onerror="this.src=\'/static/images/noimage.jpg\'"></div>');
+        }
+        // 隐藏地址信息
+        $row.find('.video-info .small:last-child').hide();
+        
+        $btn.html('<i class="mdi mdi-eye"></i>').attr('title', '显示内容');
+        $btn.data('show', false);
+    }
+
+    // 显示内容的函数
+    function showContent($btn) {
+        var id = $btn.data('id');
+        var $contentFields = $('.content-field[data-id="'+id+'"]');
+        var $row = $btn.closest('tr');
+        
+        $contentFields.each(function() {
+            var $field = $(this);
+            if($field.hasClass('badge')) {
+                $field.text($btn.data('platform'));
+            } else if($field.hasClass('text-muted')) {
+                $field.text($btn.data('desc')).attr('title', $btn.data('desc'));
+            } else {
+                $field.text($btn.data('name')).attr('title', $btn.data('name'));
+            }
+        });
+        // 恢复原始图片
+        var $img = $row.find('.thumbnail-container img');
+        var originalSrc = $btn.data('cover');
+        if(originalSrc) {
+            // 移除毛玻璃效果
+            $row.find('.thumbnail-private').removeClass('thumbnail-private');
+            $img.attr('src', originalSrc)
+                .on('mouseenter', function() { showPreview(this); })
+                .on('mouseleave', function() { hidePreview(); });
+        }
+        // 显示地址信息
+        var addressInfo = getAddressInfo({
+            videoplatform: $btn.data('platform'),
+            originaladdress: $btn.data('address')
+        });
+        var $addressDiv = $row.find('.video-info .small:last-child');
+        if($addressDiv.length === 0) {
+            $addressDiv = $('<div class="small">')
+                .appendTo($row.find('.video-info'));
+        }
+        $addressDiv.html('<span class="badge '+addressInfo.cc+'">'+addressInfo.type+'</span> ' +
+                       '<span class="text-muted">'+addressInfo.value+'</span>')
+                  .show();
+        
+        $btn.html('<i class="mdi mdi-eye-off"></i>').attr('title', '隐藏内容');
+        $btn.data('show', true);
     }
 
     function  findList(page){
@@ -632,26 +983,46 @@
         if(videoplatform != "" ){
             option['videoplatform']= videoplatform;
         }
-        layer.load();
+        var videotag = $('.videotag').val();
+        if(videotag != "" ){
+            option['videotag']= videotag;
+        }
+        
+        var loadIndex = layer.load(1, {shade: [0.3,'#000']});
         $.post("/admin/api/findVideoDataList",option,
             function(data,status){
-               	layer.closeAll();
+                layer.close(loadIndex);
+                console.log(data,status);
                 if(data.resCode==="000001"){
                     var record = data.record;
                     var html = "";
                     var list = record.content;
                     for(var i = 0;i<list.length;i++){
+                        var isPrivate = list[i].videoprivacy === '1';
                         html += '<tr>';
                         html += '<td><div class="custom-control custom-checkbox"><input type="checkbox" class="custom-control-input" id="check-'+list[i].id+'" data-id="'+list[i].id+'"><label class="custom-control-label" for="check-'+list[i].id+'"></label></div></td>';
                         html += '<td>'+list[i].id+'</td>';
-                        html += '<td>'+getImage(list[i].videocover)+'</td>';
+                        html += '<td>'+getImage(list[i].videocover, isPrivate)+'</td>';
                         html += '<td>'+formatVideoInfo(list[i])+'</td>';
-                        html += '<td><span class="badge badge-info">'+list[i].videoplatform+'</span></td>';
+                        html += '<td>'+formatTags(list[i].videotag)+'</td>';
+                        html += '<td><span class="badge badge-info content-field" data-id="'+list[i].id+'">'+(isPrivate ? '****' : list[i].videoplatform)+'</span></td>';
                         html += '<td>'+formatTime(list[i].createtime)+'</td>';
                         html += '<td>';
                         html += '<div class="btn-group btn-group-sm">';
-                        html += '<a data-id="'+list[i].id+'" class="btn btn-outline-primary editData" href="#!" title="编辑" data-toggle="tooltip"><i class="mdi mdi-pencil"></i></a>';
-                        html += '<a data-id="'+list[i].id+'" data-video="'+list[i].videounrealaddr+'" class="btn btn-outline-success playVideo" href="#!" title="播放" data-toggle="tooltip"><i class="mdi mdi-play"></i></a>';
+                        html += '<a data-id="'+list[i].id+'" data-videoprivacy="'+list[i].videoprivacy+'" data-videotag="'+list[i].videotag+'" class="btn btn-outline-primary editData" href="#!" title="编辑" data-toggle="tooltip"><i class="mdi mdi-pencil"></i></a>';
+                        if(isPrivate) {
+                            html += '<a href="#!" class="btn btn-outline-info toggle-privacy" ' +
+                                   'data-id="'+list[i].id+'" ' +
+                                   'data-show="false" ' +
+                                   'data-name="'+list[i].videoname+'" ' +
+                                   'data-desc="'+list[i].videodesc+'" ' +
+                                   'data-platform="'+list[i].videoplatform+'" ' +
+                                   'data-cover="'+list[i].videocover+'" ' +
+                                   'data-address="'+list[i].originaladdress+'" ' +
+                                   'title="显示内容" data-toggle="tooltip">' +
+                                   '<i class="mdi mdi-eye"></i></a>';
+                        }
+                        html += '<a data-id="'+list[i].id+'" data-video="'+list[i].videounrealaddr+'" data-videoprivacy="'+list[i].videoprivacy+'" class="btn btn-outline-success playVideo" href="#!" title="播放" data-toggle="tooltip"><i class="mdi mdi-play"></i></a>';
                         html += '<a data-id="'+list[i].id+'" class="btn btn-outline-danger deleteData" href="#!" title="删除" data-toggle="tooltip"><i class="mdi mdi-delete"></i></a>';
                         html += '</div>';
                         html += '</td>';
@@ -672,7 +1043,12 @@
                             }
                         }
                     })
+                } else {
+                    layer.msg('加载数据失败');
                 }
+            }).fail(function(){
+                layer.close(loadIndex);
+                layer.msg('网络错误，请重试');
             })
     }
 </script>
