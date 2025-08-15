@@ -1,5 +1,14 @@
 ### 更新记录
 
+
+```
+2025/08/15  Tagged the version as 250815 on Docker Hub. Merged the 250815 tag into the latest tag.
+同步 yt-dlp 最新代码
+视频新增标签字段  可自定义视频标签 
+视频列表新增videotag搜索字段可搜索标签
+新增视频列表隐私模式  设置为隐私模式后  视频封面 名称 将隐藏 但不影响播放 输入只读token后解锁显示
+```
+
 ```
 2025/07/31  Tagged the version as 250801 on Docker Hub. Merged the 250801 tag into the latest tag.
 同步 yt-dlp 最新代码
