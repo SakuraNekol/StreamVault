@@ -128,7 +128,33 @@ docker run --name stream-vault -d -p 28083:28081 \
 
 ## 📸 功能展示
 
-[待补充项目截图]
+> 以下为 部分 系统功能截图，更多界面可在实际使用中体验，仅供示例参考。
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="https://i.imgur.com/AvyHgcZ.png" alt="配置页面" width="100%"><br/>
+      <sub>⚙️ 配置页面</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="https://i.imgur.com/i2DMGXq.png" alt="收藏添加" width="100%"><br/>
+      <sub>📚 收藏添加</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <img src="https://i.imgur.com/s4eWADU.png" alt="合并功能" width="100%"><br/>
+      <sub>🔄 合并功能</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="https://i.imgur.com/RB260MS.png" alt="后台首页" width="100%"><br/>
+      <sub>🏠 后台首页</sub>
+    </td>
+  </tr>
+</table>
+
+> 提示：点击图片可查看原图细节。
+
 
 ## 📝 更新日志
 
