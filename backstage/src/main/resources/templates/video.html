@@ -426,23 +426,9 @@
                         <input type="text" id="siteTitle" class="w-full px-3 py-2 border rounded" placeholder="请输入网站标题">
                     </div>
                     
-                    <!-- 服务器列表 -->
                     <div class="mb-4">
-                        <div class="flex justify-between items-center mb-2">
-                            <label class="text-gray-700 text-sm font-bold">服务器列表</label>
-                            <button onclick="addServer()" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">添加服务器</button>
-                        </div>
-                        <div id="serverList" class="space-y-4">
-                            <!-- 服务器配置项会动态插入这里 -->
-                        </div>
-                    </div>
-
-                    <!-- 当前选中的服务器 -->
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">当前使用的服务器</label>
-                        <select id="currentServer" class="w-full px-3 py-2 border rounded">
-                            <option value="">请选择服务器</option>
-                        </select>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Token</label>
+                        <input type="text" id="serverToken" class="w-full px-3 py-2 border rounded" placeholder="请输入Token">
                     </div>
                 </div>
                 <div class="p-4 border-t flex justify-end space-x-2">
@@ -492,8 +478,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     </svg>
-                    <h2 class="text-xl font-semibold text-gray-900 mb-2">未配置服务器</h2>
-                    <p class="text-gray-600 text-center mb-4">请先配置服务器地址和Token</p>
+                    <h2 class="text-xl font-semibold text-gray-900 mb-2">未配置Token</h2>
+                    <p class="text-gray-600 text-center mb-4">请先配置Token</p>
                     <button onclick="openSettings()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                         前往设置
                     </button>
@@ -596,9 +582,7 @@
         let currentSearch = '';
         let currentPlatform = '';
         let currentVideoId = null;
-        let serverConfig = null;
-        let servers = [];
-        let currentServerIndex = 0;
+        let serverToken = null;
         let observer = null;
 
         
@@ -669,101 +653,19 @@
                 document.title = savedTitle;
             }
             
-            // 加载服务器配置
-            const savedServers = localStorage.getItem('servers');
-            if (savedServers) {
-                servers = JSON.parse(savedServers);
+            // 加载Token配置
+            const savedToken = localStorage.getItem('serverToken');
+            if (savedToken) {
+                serverToken = savedToken;
             }
-            
-            const savedCurrentServer = localStorage.getItem('currentServer');
-            if (savedCurrentServer) {
-                currentServerIndex = parseInt(savedCurrentServer);
-                if (servers[currentServerIndex]) {
-                    serverConfig = servers[currentServerIndex];
-                }
-            }
-            
-            updateServerList();
         }
         
-        // 服务器配置管理
-        function updateServerList() {
-            const serverListEl = document.getElementById('serverList');
-            const currentServerEl = document.getElementById('currentServer');
-            
-            serverListEl.innerHTML = '';
-            currentServerEl.innerHTML = '<option value="">请选择服务器</option>';
-            
-            servers.forEach((server, index) => {
-                // 添加到服务器列表
-                const serverDiv = document.createElement('div');
-                serverDiv.className = 'border rounded p-3';
-                serverDiv.innerHTML = `
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="font-medium">服务器 ${index + 1}</span>
-                        <button onclick="removeServer(${index})" class="text-red-500 hover:text-red-700">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                        </button>
-                    </div>
-                    <div class="space-y-2">
-                        <input type="text" placeholder="服务器名称" value="${server.name}" 
-                               onchange="updateServerName(${index}, this.value)" 
-                               class="w-full px-2 py-1 border rounded text-sm">
-                        <input type="text" placeholder="服务器地址" value="${server.url}" 
-                               onchange="updateServerUrl(${index}, this.value)" 
-                               class="w-full px-2 py-1 border rounded text-sm">
-                        <input type="text" placeholder="Token (可选)" value="${server.token || ''}" 
-                               onchange="updateServerToken(${index}, this.value)" 
-                               class="w-full px-2 py-1 border rounded text-sm">
-                    </div>
-                `;
-                serverListEl.appendChild(serverDiv);
-                
-                // 添加到选择下拉框
-                const option = document.createElement('option');
-                option.value = index;
-                option.textContent = server.name || `服务器 ${index + 1}`;
-                option.selected = index === currentServerIndex;
-                currentServerEl.appendChild(option);
-            });
-        }
-        
-        function addServer() {
-            servers.push({
-                name: `服务器 ${servers.length + 1}`,
-                url: '',
-                token: ''
-            });
-            updateServerList();
-        }
-        
-        function removeServer(index) {
-            servers.splice(index, 1);
-            if (currentServerIndex >= servers.length) {
-                currentServerIndex = 0;
-                serverConfig = servers[0] || null;
-            }
-            updateServerList();
-        }
-        
-        function updateServerName(index, name) {
-            servers[index].name = name;
-        }
-        
-        function updateServerUrl(index, url) {
-            servers[index].url = url;
-        }
-        
-        function updateServerToken(index, token) {
-            servers[index].token = token;
-        }
+
         
         // 设置保存
         function saveSettings() {
             const siteTitle = document.getElementById('siteTitle').value;
-            const selectedServer = document.getElementById('currentServer').value;
+            const token = document.getElementById('serverToken').value;
             
             if (siteTitle) {
                 localStorage.setItem('siteTitle', siteTitle);
@@ -772,12 +674,9 @@
                 document.title = siteTitle;
             }
             
-            localStorage.setItem('servers', JSON.stringify(servers));
-            
-            if (selectedServer !== '') {
-                currentServerIndex = parseInt(selectedServer);
-                serverConfig = servers[currentServerIndex];
-                localStorage.setItem('currentServer', currentServerIndex.toString());
+            if (token) {
+                localStorage.setItem('serverToken', token);
+                serverToken = token;
             }
             
             closeSettingsModal();
@@ -982,7 +881,7 @@
         
         // 加载视频列表
         async function loadVideoList() {
-            if (!serverConfig || !serverConfig.token) {
+            if (!serverToken) {
                 hideSkeleton();
                 hideEmptyState();
                 hideVideoList();
@@ -1095,10 +994,7 @@
                 params.append('videoplatform', currentPlatform);
             }
             
-            const baseUrl = serverConfig.url && serverConfig.url !== '/' 
-            	  ? serverConfig.url.replace(/\/+$/, '') 
-            	  : '';
-            const url = addTokenToUrl(`${baseUrl}/api/findVideos?${params.toString()}`);
+            const url = addTokenToUrl(`/api/findVideos?${params.toString()}`);
 
             console.log('请求URL:', url);
             
@@ -1156,9 +1052,8 @@
             const platformClass = getPlatformClass(platform);
             const formattedDate = formatDate(createTime);
             
-            // 拼接服务器地址和缩略图路径，添加token参数
-			const baseUrl = getBaseUrl(serverConfig);
-			const coverUrl = addAppTokenToUrl(`${baseUrl}${cover}`);
+            // 拼接缩略图路径，添加token参数
+			const coverUrl = addAppTokenToUrl(cover);
             card.innerHTML = `
                 <div class="video-thumbnail">
                     <img src="${coverUrl}" 
@@ -1233,27 +1128,20 @@
         
         // URL添加token
         function addTokenToUrl(url) {
-            if (serverConfig && serverConfig.token) {
+            if (serverToken) {
                 const separator = url.includes('?') ? '&' : '?';
-                return `${url}${separator}token=${encodeURIComponent(serverConfig.token)}`;
+                return `${url}${separator}token=${encodeURIComponent(serverToken)}`;
             }
             return url;
         }
 
         // URL添加apptoken（用于缩略图和视频地址）
         function addAppTokenToUrl(url) {
-            if (serverConfig && serverConfig.token) {
+            if (serverToken) {
                 const separator = url.includes('?') ? '&' : '?';
-                return `${url}${separator}apptoken=${encodeURIComponent(serverConfig.token)}`;
+                return `${url}${separator}apptoken=${encodeURIComponent(serverToken)}`;
             }
             return url;
-        }
-        function getBaseUrl(serverConfig) {
-        	  if (!serverConfig) return '';
-        	  if (serverConfig.url && serverConfig.url !== '/') {
-        	    return serverConfig.url.replace(/\/+$/, ''); // 去掉末尾 /
-        	  }
-        	  return ''; // 为空或 "/" 时走相对路径
         }
         // 设置弹窗
         function openSettings() {
@@ -1333,9 +1221,9 @@
             console.log('隐藏加载更多触发器');
         }
         
-        // 获取服务器配置
+        // 获取服务器配置（已废弃，保留兼容性）
         function getServerConfig() {
-            return serverConfig;
+            return { token: serverToken };
         }
         
         // 剪贴板监听
@@ -1411,22 +1299,17 @@
         
         // 提交视频URL
         async function submitVideoUrl(url) {
-        	if (!serverConfig.token) {
-        		  showMessage('请先配置服务器 Token', 'error');
+        	if (!serverToken) {
+        		  showMessage('请先配置 Token', 'error');
         		  return;
         	}
             
             try {
-            	const baseUrl = serverConfig.url && serverConfig.url !== '/'
-            		  ? serverConfig.url.replace(/\/+$/, '')
-            		  : '';
-            	const submitUrl = `${baseUrl}/api/processingVideos`;
+            	const submitUrl = '/api/processingVideos';
                 
                 const formData = new URLSearchParams();
                 formData.append('video', url);
-                if (serverConfig && serverConfig.token) {
-                    formData.append('token', serverConfig.token);
-                }
+                formData.append('token', serverToken);
                 
                 await axios.post(submitUrl, formData, {
                     timeout: 30000,
@@ -1454,8 +1337,8 @@
          * @param {HTMLElement} card - 视频卡片DOM元素
          */
         function playVideoFromCard(card) {
-            if (!serverConfig || !serverConfig.token) {
-                showMessage('请先配置服务器Token', 'error');
+            if (!serverToken) {
+                showMessage('请先配置Token', 'error');
                 return;
             }
             
@@ -1501,8 +1384,8 @@
          * @param {string} videoId - 视频ID
          */
         function playVideo(videoId) {
-            if (!serverConfig || !serverConfig.token) {
-                showMessage('请先配置服务器', 'error');
+            if (!serverToken) {
+                showMessage('请先配置Token', 'error');
                 return;
             }
             
@@ -1547,9 +1430,8 @@
             
             // 设置视频播放器
             const videoFrame = document.getElementById('videoFrame');
-            // 使用videounrealaddr拼接服务器地址作为视频播放地址，添加token参数
-            const baseUrl = getBaseUrl(serverConfig);
-			const videoUrl = addAppTokenToUrl(`${baseUrl}${videoInfo.videounrealaddr}`);
+            // 使用videounrealaddr作为视频播放地址，添加token参数
+			const videoUrl = addAppTokenToUrl(videoInfo.videounrealaddr);
             videoFrame.src = videoUrl;
             
             // 检测视频比例并调整容器
