@@ -982,7 +982,7 @@
         
         // 加载视频列表
         async function loadVideoList() {
-            if (!serverConfig || !serverConfig.url) {
+            if (!serverConfig || !serverConfig.token) {
                 hideSkeleton();
                 hideEmptyState();
                 hideVideoList();
@@ -1157,8 +1157,8 @@
             const formattedDate = formatDate(createTime);
             
             // 拼接服务器地址和缩略图路径，添加token参数
-            const coverUrl = serverConfig && serverConfig.url ? addAppTokenToUrl(`${serverConfig.url}${cover}`) : cover;
-            
+			const baseUrl = getBaseUrl(serverConfig);
+			const coverUrl = addAppTokenToUrl(`${baseUrl}${cover}`);
             card.innerHTML = `
                 <div class="video-thumbnail">
                     <img src="${coverUrl}" 
@@ -1248,7 +1248,13 @@
             }
             return url;
         }
-        
+        function getBaseUrl(serverConfig) {
+        	  if (!serverConfig) return '';
+        	  if (serverConfig.url && serverConfig.url !== '/') {
+        	    return serverConfig.url.replace(/\/+$/, ''); // 去掉末尾 /
+        	  }
+        	  return ''; // 为空或 "/" 时走相对路径
+        }
         // 设置弹窗
         function openSettings() {
             document.getElementById('siteTitle').value = localStorage.getItem('siteTitle') || '';
@@ -1448,8 +1454,8 @@
          * @param {HTMLElement} card - 视频卡片DOM元素
          */
         function playVideoFromCard(card) {
-            if (!serverConfig || !serverConfig.url) {
-                showMessage('请先配置服务器', 'error');
+            if (!serverConfig || !serverConfig.token) {
+                showMessage('请先配置服务器Token', 'error');
                 return;
             }
             
@@ -1495,7 +1501,7 @@
          * @param {string} videoId - 视频ID
          */
         function playVideo(videoId) {
-            if (!serverConfig || !serverConfig.url) {
+            if (!serverConfig || !serverConfig.token) {
                 showMessage('请先配置服务器', 'error');
                 return;
             }
@@ -1542,7 +1548,8 @@
             // 设置视频播放器
             const videoFrame = document.getElementById('videoFrame');
             // 使用videounrealaddr拼接服务器地址作为视频播放地址，添加token参数
-            const videoUrl = addAppTokenToUrl(`${serverConfig.url}${videoInfo.videounrealaddr}`);
+            const baseUrl = getBaseUrl(serverConfig);
+			const videoUrl = addAppTokenToUrl(`${baseUrl}${videoInfo.videounrealaddr}`);
             videoFrame.src = videoUrl;
             
             // 检测视频比例并调整容器
