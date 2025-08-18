@@ -1095,7 +1095,11 @@
                 params.append('videoplatform', currentPlatform);
             }
             
-            const url = addTokenToUrl(`${serverConfig.url}/api/findVideos?${params.toString()}`);
+            const baseUrl = serverConfig.url && serverConfig.url !== '/' 
+            	  ? serverConfig.url.replace(/\/+$/, '') 
+            	  : '';
+            const url = addTokenToUrl(`${baseUrl}/api/findVideos?${params.toString()}`);
+
             console.log('请求URL:', url);
             
             const response = await axios.get(url, {
@@ -1401,15 +1405,17 @@
         
         // 提交视频URL
         async function submitVideoUrl(url) {
-            if (!serverConfig || !serverConfig.url) {
-                showMessage('请先配置服务器', 'error');
-                return;
-            }
+        	if (!serverConfig.token) {
+        		  showMessage('请先配置服务器 Token', 'error');
+        		  return;
+        	}
             
             try {
-                const submitUrl = `${serverConfig.url}/api/processingVideos`;
+            	const baseUrl = serverConfig.url && serverConfig.url !== '/'
+            		  ? serverConfig.url.replace(/\/+$/, '')
+            		  : '';
+            	const submitUrl = `${baseUrl}/api/processingVideos`;
                 
-                // 使用 application/x-www-form-urlencoded 格式
                 const formData = new URLSearchParams();
                 formData.append('video', url);
                 if (serverConfig && serverConfig.token) {
