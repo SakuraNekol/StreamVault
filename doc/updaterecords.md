@@ -1,5 +1,11 @@
 ### 更新记录
 
+```
+2025/08/18  fix 补丁
+优化video.html页面 axios cdn源 加载问题
+优化video.html页面 服务器地址问题  可为空  为空是直接使用自身地址
+```
+
 
 ```
 2025/08/15  Tagged the version as 250815 on Docker Hub. Merged the 250815 tag into the latest tag.
