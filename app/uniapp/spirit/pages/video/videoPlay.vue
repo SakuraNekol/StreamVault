@@ -94,10 +94,10 @@
 		methods: {
 			handleVideoError(err) {
 				console.error('视频播放错误:', err);
-				uni.showToast({
-					title: '视频加载失败',
-					icon: 'none'
-				});
+				// uni.showToast({
+				// 	title: '视频加载失败',
+				// 	icon: 'none'
+				// });
 			},
 			formatTime(timestamp) {
 				if (!timestamp) return '';
