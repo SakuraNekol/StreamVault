@@ -1,6 +1,6 @@
 FROM alpine
 ENV TZ=Asia/Shanghai
-ARG BUILD_VERSION=2025.08.15.012726
+ARG BUILD_VERSION=2025.08.21.022253
 ENV YT_DLP_VERSION=$BUILD_VERSION
 RUN apk upgrade --update-cache && \
     apk add openjdk8 && \

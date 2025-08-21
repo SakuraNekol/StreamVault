@@ -788,6 +788,23 @@
 	text-align: center;
 }
 
+.privacy-cover {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(255, 255, 255, 0.3);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 15;
+	border-radius: 8rpx;
+	border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
 .play-btn {
 		position: absolute;
 		top: 50%;
