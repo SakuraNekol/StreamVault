@@ -1011,8 +1011,8 @@
                 
                 return {
                     data: response.data.record.content,
-                    totalPages: response.data.record.totalPages,
-                    totalElements: response.data.record.totalElements,
+                    totalPages: response.data.record.page.totalPages,
+                    totalElements: response.data.record.page.totalElements,
                     hasMore: hasMore
                 };
             }

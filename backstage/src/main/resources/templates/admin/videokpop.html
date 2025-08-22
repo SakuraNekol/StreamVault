@@ -764,10 +764,10 @@ function loadMixList(page = 1) {
             $('#mixList').html(html);
 
             // 只有在有数据时才渲染分页
-            if(data.totalPages > 0) {
+            if(data.page.totalPages > 0) {
                 laypage({
                     cont: 'pager',
-                    pages: data.totalPages,
+                    pages: data.page.totalPages,
                     curr: page,
                     jump: function(obj, first) {
                         if(!first) {

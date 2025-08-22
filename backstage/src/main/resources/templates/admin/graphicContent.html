@@ -1483,9 +1483,9 @@ function copyToClipboard(text) {
 function renderPagination(pageData) {
 	console.log('渲染分页信息:', pageData);
 	
-	var totalPages = pageData.totalPages || 1;
-	var currentPageNum = (pageData.number || 0) + 1; // 后端返回从0开始，前端显示从1开始，需要加1
-	var totalElements = pageData.totalElements || 0;
+	var totalPages = pageData.page.totalPages || 1;
+	var currentPageNum = (pageData.page.number || 0) + 1; // 后端返回从0开始，前端显示从1开始，需要加1
+	var totalElements = pageData.page.totalElements || 0;
 	
 	if (totalPages <= 1) {
 		$('#pager').html('');

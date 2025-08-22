@@ -711,7 +711,7 @@
 					startTask();
 						laypage({
 							cont: 'pager',
-							pages: record.totalPages,
+							pages: record.page.totalPages,
 							curr:page,
 							jump: function(obj,first){
 								if(!first && obj.curr != page){
