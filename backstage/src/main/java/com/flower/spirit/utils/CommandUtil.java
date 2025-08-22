@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -132,54 +134,88 @@ public class CommandUtil {
 
     public static String f2cmd(String cookie, String aid, String fuc, String uid, String cid, Integer maxc,
             String out) {
-        StringBuilder cmd = new StringBuilder("/opt/venv/bin/python3 /home/app/script/douyin.py ");
+
+        List<String> cmdList = new ArrayList<>();
+        cmdList.add("/opt/venv/bin/python3");
+        cmdList.add("/home/app/script/douyin.py");
+
         switch (fuc) {
             case "fetch_video":
-                cmd.append("fetch_video ")
-                        .append("--cookie \"").append(cookie).append("\" ")
-                        .append("--aweme_id \"").append(aid).append("\"");
+                cmdList.add("fetch_video");
+                cmdList.add("--cookie"); cmdList.add(cookie);
+                cmdList.add("--aweme_id"); cmdList.add(aid);
                 break;
 
             case "fetch_user_like_videos":
             case "fetch_user_post_videos":
-                cmd.append(fuc).append(" ")
-                        .append("--cookie \"").append(cookie).append("\" ")
-                        .append("--uid \"").append(uid).append("\" ")
-                        .append("--maxc \"").append(maxc).append("\" ")
-                        .append("--output \"").append(out).append("\"");
+                cmdList.add(fuc);
+                cmdList.add("--cookie"); cmdList.add(cookie);
+                cmdList.add("--uid"); cmdList.add(uid);
+                cmdList.add("--maxc"); cmdList.add(String.valueOf(maxc));
+                cmdList.add("--output"); cmdList.add(out);
                 break;
 
             case "fetch_user_collects":
-                cmd.append("fetch_user_collects ")
-                        .append("--cookie \"").append(cookie).append("\"");
+                cmdList.add("fetch_user_collects");
+                cmdList.add("--cookie"); cmdList.add(cookie);
                 break;
 
             case "fetch_user_collects_videos":
-                cmd.append("fetch_user_collects_videos ")
-                        .append("--cookie \"").append(cookie).append("\" ")
-                        .append("--cid \"").append(cid).append("\" ")
-                        .append("--maxc \"").append(maxc).append("\" ")
-                        .append("--output \"").append(out).append("\"");
+                cmdList.add("fetch_user_collects_videos");
+                cmdList.add("--cookie"); cmdList.add(cookie);
+                cmdList.add("--cid"); cmdList.add(cid);
+                cmdList.add("--maxc"); cmdList.add(String.valueOf(maxc));
+                cmdList.add("--output"); cmdList.add(out);
                 break;
 
             case "fetch_user_feed_videos":
-                cmd.append("fetch_user_feed_videos ")
-                        .append("--cookie \"").append(cookie).append("\" ")
-                        .append("--uid \"").append(uid).append("\" ")
-                        .append("--output \"").append(out).append("\"");
+                cmdList.add("fetch_user_feed_videos");
+                cmdList.add("--cookie"); cmdList.add(cookie);
+                cmdList.add("--uid"); cmdList.add(uid);
+                cmdList.add("--output"); cmdList.add(out);
                 break;
-                
+
             case "fetch_post_data":
-                cmd.append("fetch_post_data ")
-                        .append("--cookie \"").append(cookie).append("\" ")
-                        .append("--aweme_id \"").append(aid).append("\" ")
-                        .append("--output \"").append(out).append("\"");
+                cmdList.add("fetch_post_data");
+                cmdList.add("--cookie"); cmdList.add(cookie);
+                cmdList.add("--aweme_id"); cmdList.add(aid);
+                cmdList.add("--output"); cmdList.add(out);
                 break;
+
             default:
                 throw new IllegalArgumentException("Unsupported function: " + fuc);
         }
 
-        return CommandUtil.commandos(cmd.toString());
+        return runCommandList(cmdList);
+    }
+    
+    private static String runCommandList(List<String> cmdList) {
+        StringBuilder output = new StringBuilder();
+        Process process = null;
+        try {
+            ProcessBuilder pb = new ProcessBuilder(cmdList);
+            pb.redirectErrorStream(true);
+            process = pb.start();
+
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream(), "UTF-8"))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    output.append(line).append("\n");
+                }
+            }
+
+            int exitCode = process.waitFor();
+            logger.info("命令执行完毕，退出码：" + exitCode);
+
+        } catch (IOException | InterruptedException e) {
+            logger.error("命令执行异常：" + e.getMessage(), e);
+        } finally {
+            if (process != null) {
+                process.destroy();
+            }
+        }
+        return output.toString().trim();
     }
 
     public static boolean deleteDirectory(String directoryPath) {
