@@ -1,6 +1,8 @@
 package com.flower.spirit.service;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -40,32 +42,30 @@ public class ProcessHistoryService {
 	}
 
 	 
-	@SuppressWarnings("serial")
 	public AjaxEntity findPage(ProcessHistoryEntity res) {
-		PageRequest of= PageRequest.of(res.getPageNo(), res.getPageSize());
-		Specification<ProcessHistoryEntity> specification = new Specification<ProcessHistoryEntity>() {
+	    PageRequest pageRequest = PageRequest.of(res.getPageNo(), res.getPageSize());
 
-			@Override
-			public Predicate toPredicate(Root<ProcessHistoryEntity> root, CriteriaQuery<?> query,
-					CriteriaBuilder criteriaBuilder) {
-				Predicate predicate=criteriaBuilder.conjunction();
-				ProcessHistoryEntity seachDate = (ProcessHistoryEntity) res;
-				if(seachDate != null && StringUtil.isString(seachDate.getOriginaladdress())) {
-					predicate.getExpressions().add(criteriaBuilder.like(root.get("originaladdress"), "%"+seachDate.getOriginaladdress()+"%"));
-				}
-				if(seachDate != null && StringUtil.isString(seachDate.getVideoplatform())) {
-					predicate.getExpressions().add(criteriaBuilder.like(root.get("videoplatform"), "%"+seachDate.getVideoplatform()+"%"));
-				}
-				if(seachDate != null && StringUtil.isString(seachDate.getStatus())) {
-					predicate.getExpressions().add(criteriaBuilder.like(root.get("status"), "%"+seachDate.getStatus()+"%"));
-				}
-				query.orderBy(criteriaBuilder.desc(root.get("id")));
-				return predicate;
-			}};
-			
-			Page<ProcessHistoryEntity> findAll = processHistoryDao.findAll(specification,of);
-		
-		return new AjaxEntity(Global.ajax_success, "数据获取成功", findAll);
+	    Specification<ProcessHistoryEntity> specification = (root, query, cb) -> {
+	        List<Predicate> predicates = new ArrayList<>();
+
+	        if (res != null) {
+	            if (StringUtil.isString(res.getOriginaladdress())) {
+	                predicates.add(cb.like(root.get("originaladdress"), "%" + res.getOriginaladdress() + "%"));
+	            }
+	            if (StringUtil.isString(res.getVideoplatform())) {
+	                predicates.add(cb.like(root.get("videoplatform"), "%" + res.getVideoplatform() + "%"));
+	            }
+	            if (StringUtil.isString(res.getStatus())) {
+	                predicates.add(cb.like(root.get("status"), "%" + res.getStatus() + "%"));
+	            }
+	        }
+
+	        query.orderBy(cb.desc(root.get("id")));
+	        return cb.and(predicates.toArray(new Predicate[0]));
+	    };
+
+	    Page<ProcessHistoryEntity> findAll = processHistoryDao.findAll(specification, pageRequest);
+	    return new AjaxEntity(Global.ajax_success, "数据获取成功", findAll);
 	}
 
 

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -60,41 +61,40 @@ public class VideoDataService {
 		return videoDataDao.findByVideoid(videoid);
 	}
 	
-
-	@SuppressWarnings("serial")
+	
 	public AjaxEntity findPage(VideoDataEntity res) {
-		PageRequest of= PageRequest.of(res.getPageNo(), res.getPageSize());
-		Specification<VideoDataEntity> specification = new Specification<VideoDataEntity>() {
+	    PageRequest of = PageRequest.of(res.getPageNo(), res.getPageSize());
 
-			@Override
-			public Predicate toPredicate(Root<VideoDataEntity> root, CriteriaQuery<?> query,
-					CriteriaBuilder criteriaBuilder) {
-				Predicate predicate=criteriaBuilder.conjunction();
-				VideoDataEntity seachDate = (VideoDataEntity) res;
-			    if (seachDate != null && StringUtil.isString(seachDate.getVideoname()) && StringUtil.isString(seachDate.getVideodesc())) {
-			        // 同时传入 videoname 和 videodesc，使用 OR 查询
-			        Predicate orPredicate = criteriaBuilder.or(
-			                criteriaBuilder.like(root.get("videoname"), "%" + seachDate.getVideoname() + "%"),
-			                criteriaBuilder.like(root.get("videodesc"), "%" + seachDate.getVideodesc() + "%")
-			        );
-			        predicate.getExpressions().add(orPredicate);
-			    } else if (seachDate != null && StringUtil.isString(seachDate.getVideoname())) {
-			        predicate.getExpressions().add(criteriaBuilder.like(root.get("videoname"), "%" + seachDate.getVideoname() + "%"));
-			    } else if (seachDate != null && StringUtil.isString(seachDate.getVideodesc())) {
-			        predicate.getExpressions().add(criteriaBuilder.like(root.get("videodesc"), "%" + seachDate.getVideodesc() + "%"));
-			    }
-				if(seachDate != null && StringUtil.isString(seachDate.getVideoplatform())) {
-					predicate.getExpressions().add(criteriaBuilder.like(root.get("videoplatform"), "%"+seachDate.getVideoplatform()+"%"));
-				}
-				if(seachDate != null && StringUtil.isString(seachDate.getVideotag())) {
-					predicate.getExpressions().add(criteriaBuilder.like(root.get("videotag"), "%"+seachDate.getVideotag()+"%"));
-				}
-				query.orderBy(criteriaBuilder.desc(root.get("id")));
-				return predicate;
-			}};
-			
-			Page<VideoDataEntity> findAll = videoDataDao.findAll(specification,of);
-			return new AjaxEntity(Global.ajax_success, "数据获取成功", findAll);
+	    Specification<VideoDataEntity> specification = (root, query, cb) -> {
+	        List<Predicate> predicates = new ArrayList<>();
+
+	        if (res != null) {
+	            if (StringUtil.isString(res.getVideoname()) && StringUtil.isString(res.getVideodesc())) {
+	                predicates.add(cb.or(
+	                        cb.like(root.get("videoname"), "%" + res.getVideoname() + "%"),
+	                        cb.like(root.get("videodesc"), "%" + res.getVideodesc() + "%")
+	                ));
+	            } else if (StringUtil.isString(res.getVideoname())) {
+	                predicates.add(cb.like(root.get("videoname"), "%" + res.getVideoname() + "%"));
+	            } else if (StringUtil.isString(res.getVideodesc())) {
+	                predicates.add(cb.like(root.get("videodesc"), "%" + res.getVideodesc() + "%"));
+	            }
+
+	            if (StringUtil.isString(res.getVideoplatform())) {
+	                predicates.add(cb.like(root.get("videoplatform"), "%" + res.getVideoplatform() + "%"));
+	            }
+	            
+	            if (StringUtil.isString(res.getVideotag())) {
+	                predicates.add(cb.like(root.get("videotag"), "%" + res.getVideotag() + "%"));
+	            }
+	        }
+
+	        query.orderBy(cb.desc(root.get("id")));
+	        return cb.and(predicates.toArray(new Predicate[0]));
+	    };
+
+	    Page<VideoDataEntity> findAll = videoDataDao.findAll(specification, of);
+	    return new AjaxEntity(Global.ajax_success, "数据获取成功", findAll);
 	}
 
 	/**

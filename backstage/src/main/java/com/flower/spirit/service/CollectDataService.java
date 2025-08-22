@@ -96,33 +96,29 @@ public class CollectDataService {
     }
     
 
-	@SuppressWarnings("serial")
-	public AjaxEntity findPage(CollectDataEntity res) {
-		PageRequest of = PageRequest.of(res.getPageNo(), res.getPageSize());
-		Specification<CollectDataEntity> specification = new Specification<CollectDataEntity>() {
+    public AjaxEntity findPage(CollectDataEntity res) {
+        PageRequest pageRequest = PageRequest.of(res.getPageNo(), res.getPageSize());
 
-			@Override
-			public Predicate toPredicate(Root<CollectDataEntity> root, CriteriaQuery<?> query,
-					CriteriaBuilder criteriaBuilder) {
-				Predicate predicate = criteriaBuilder.conjunction();
-				CollectDataEntity seachDate = (CollectDataEntity) res;
-				if (seachDate != null && StringUtil.isString(seachDate.getTaskid())) {
-					predicate.getExpressions()
-							.add(criteriaBuilder.like(root.get("taskid"), "%" + seachDate.getTaskid() + "%"));
-				}
-				if (seachDate != null && StringUtil.isString(seachDate.getPlatform())) {
-					predicate.getExpressions()
-							.add(criteriaBuilder.like(root.get("platform"), "%" + seachDate.getPlatform() + "%"));
-				}
+        Specification<CollectDataEntity> specification = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
 
-				query.orderBy(criteriaBuilder.desc(root.get("id")));
-				return predicate;
-			}
-		};
+            if (res != null) {
+                if (StringUtil.isString(res.getTaskid())) {
+                    predicates.add(cb.like(root.get("taskid"), "%" + res.getTaskid() + "%"));
+                }
+                if (StringUtil.isString(res.getPlatform())) {
+                    predicates.add(cb.like(root.get("platform"), "%" + res.getPlatform() + "%"));
+                }
+            }
 
-		Page<CollectDataEntity> findAll = collectdDataDao.findAll(specification, of);
-		return new AjaxEntity(Global.ajax_success, "数据获取成功", findAll);
-	}
+            query.orderBy(cb.desc(root.get("id")));
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Page<CollectDataEntity> findAll = collectdDataDao.findAll(specification, pageRequest);
+        return new AjaxEntity(Global.ajax_success, "数据获取成功", findAll);
+    }
+
 
 	public AjaxEntity deleteCollectData(CollectDataEntity collectDataEntity) {
 		try {

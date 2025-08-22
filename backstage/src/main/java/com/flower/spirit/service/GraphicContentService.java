@@ -1,7 +1,7 @@
 package com.flower.spirit.service;
 
-import java.io.File;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -35,46 +35,41 @@ public class GraphicContentService {
 	
 	
 	
-	@SuppressWarnings("serial")
 	public AjaxEntity findPage(GraphicContentEntity res) {
-		PageRequest of = PageRequest.of(res.getPageNo(), res.getPageSize());
-		Specification<GraphicContentEntity> specification = new Specification<GraphicContentEntity>() {
+	    PageRequest pageRequest = PageRequest.of(res.getPageNo(), res.getPageSize());
 
-			@Override
-			public Predicate toPredicate(Root<GraphicContentEntity> root, CriteriaQuery<?> query,
-					CriteriaBuilder criteriaBuilder) {
-				Predicate predicate = criteriaBuilder.conjunction();
-				GraphicContentEntity seachDate = (GraphicContentEntity) res;
-				if (seachDate != null && StringUtil.isString(seachDate.getTitle())
-						&& StringUtil.isString(seachDate.getContent())) {
-					// 同时传入 videoname 和 videodesc，使用 OR 查询
-					Predicate orPredicate = criteriaBuilder.or(
-							criteriaBuilder.like(root.get("title"), "%" + seachDate.getTitle() + "%"),
-							criteriaBuilder.like(root.get("content"), "%" + seachDate.getContent() + "%"));
-					predicate.getExpressions().add(orPredicate);
-				} else if (seachDate != null && StringUtil.isString(seachDate.getTitle())) {
-					predicate.getExpressions()
-							.add(criteriaBuilder.like(root.get("title"), "%" + seachDate.getTitle() + "%"));
-				} else if (seachDate != null && StringUtil.isString(seachDate.getContent())) {
-					predicate.getExpressions()
-							.add(criteriaBuilder.like(root.get("content"), "%" + seachDate.getContent() + "%"));
-				}
-				if (seachDate != null && StringUtil.isString(seachDate.getPlatform())) {
-					predicate.getExpressions().add(
-							criteriaBuilder.like(root.get("platform"), "%" + seachDate.getPlatform() + "%"));
-				}
-				if (seachDate != null && StringUtil.isString(seachDate.getAuthor())) {
-					predicate.getExpressions().add(
-							criteriaBuilder.like(root.get("author"), "%" + seachDate.getAuthor() + "%"));
-				}
-				query.orderBy(criteriaBuilder.desc(root.get("id")));
-				return predicate;
-			}
-		};
+	    Specification<GraphicContentEntity> specification = (root, query, cb) -> {
+	        List<Predicate> predicates = new ArrayList<>();
 
-		Page<GraphicContentEntity> findAll = graphicContentDao.findAll(specification, of);
-		return new AjaxEntity(Global.ajax_success, "数据获取成功", findAll);
+	        if (res != null) {
+	            // OR 查询 title 和 content
+	            if (StringUtil.isString(res.getTitle()) && StringUtil.isString(res.getContent())) {
+	                predicates.add(cb.or(
+	                        cb.like(root.get("title"), "%" + res.getTitle() + "%"),
+	                        cb.like(root.get("content"), "%" + res.getContent() + "%")
+	                ));
+	            } else if (StringUtil.isString(res.getTitle())) {
+	                predicates.add(cb.like(root.get("title"), "%" + res.getTitle() + "%"));
+	            } else if (StringUtil.isString(res.getContent())) {
+	                predicates.add(cb.like(root.get("content"), "%" + res.getContent() + "%"));
+	            }
+
+	            if (StringUtil.isString(res.getPlatform())) {
+	                predicates.add(cb.like(root.get("platform"), "%" + res.getPlatform() + "%"));
+	            }
+	            if (StringUtil.isString(res.getAuthor())) {
+	                predicates.add(cb.like(root.get("author"), "%" + res.getAuthor() + "%"));
+	            }
+	        }
+
+	        query.orderBy(cb.desc(root.get("id")));
+	        return cb.and(predicates.toArray(new Predicate[0]));
+	    };
+
+	    Page<GraphicContentEntity> findAll = graphicContentDao.findAll(specification, pageRequest);
+	    return new AjaxEntity(Global.ajax_success, "数据获取成功", findAll);
 	}
+
 
 
 

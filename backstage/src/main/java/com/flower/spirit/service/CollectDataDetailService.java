@@ -1,5 +1,6 @@
 package com.flower.spirit.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -29,30 +30,30 @@ public class CollectDataDetailService {
 		return collectdDataDetailDao.save(collectDataDetailEntity);
 	}
 
-	@SuppressWarnings("serial")
 	public AjaxEntity findPage(CollectDataDetailEntity res) {
-		PageRequest of= PageRequest.of(res.getPageNo(), res.getPageSize());
-		Specification<CollectDataDetailEntity> specification = new Specification<CollectDataDetailEntity>() {
+	    PageRequest of = PageRequest.of(res.getPageNo(), res.getPageSize());
 
-			@Override
-			public Predicate toPredicate(Root<CollectDataDetailEntity> root, CriteriaQuery<?> query,
-					CriteriaBuilder criteriaBuilder) {
-				Predicate predicate=criteriaBuilder.conjunction();
-				CollectDataDetailEntity seachDate = (CollectDataDetailEntity) res;
-				if(seachDate != null && seachDate.getDataid() != null) {
-					predicate.getExpressions().add(criteriaBuilder.equal(root.get("dataid"), seachDate.getDataid()));
-				}
-				if(seachDate != null && seachDate.getStatus() != null) {
-					predicate.getExpressions().add(criteriaBuilder.like(root.get("status"), "%"+seachDate.getStatus()+"%"));
-				}
+	    Specification<CollectDataDetailEntity> specification = (root, query, cb) -> {
+	        List<Predicate> predicates = new ArrayList<>();
 
-				query.orderBy(criteriaBuilder.desc(root.get("id")));
-				return predicate;
-			}};
-			
-			Page<CollectDataDetailEntity> findAll = collectdDataDetailDao.findAll(specification,of);
-			return new AjaxEntity(Global.ajax_success, "数据获取成功", findAll);
+	        if (res != null) {
+	            if (res.getDataid() != null) {
+	                predicates.add(cb.equal(root.get("dataid"), res.getDataid()));
+	            }
+	            if (res.getStatus() != null) {
+	                predicates.add(cb.like(root.get("status"), "%" + res.getStatus() + "%"));
+	            }
+	        }
+
+	        query.orderBy(cb.desc(root.get("id")));
+
+	        return cb.and(predicates.toArray(new Predicate[0]));
+	    };
+
+	    Page<CollectDataDetailEntity> findAll = collectdDataDetailDao.findAll(specification, of);
+	    return new AjaxEntity(Global.ajax_success, "数据获取成功", findAll);
 	}
+
 	public void deleteDataid(Integer dataid) {
 		collectdDataDetailDao.deleteByDataid(dataid);
 	}

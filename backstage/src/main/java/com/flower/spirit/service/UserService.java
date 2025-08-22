@@ -1,6 +1,8 @@
 package com.flower.spirit.service;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -42,26 +44,17 @@ public class UserService {
 	 */  
 	@SuppressWarnings("serial")
 	public AjaxEntity findUserList(RequestEntity res) {
-		int page = res.getPage()==  null ?0:res.getPage();
-		int limit = res.getLimit() == null?15:res.getLimit();
-		Pageable pageable = PageRequest.of(page,limit, Sort.Direction.ASC,"lasttime");
-		Specification<UserEntity> specification = new Specification<UserEntity>() {
+	    int page = res.getPage() == null ? 0 : res.getPage();
+	    int limit = res.getLimit() == null ? 15 : res.getLimit();
+	    Pageable pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.ASC, "lasttime"));
 
-			@Override
-			public Predicate toPredicate(Root<UserEntity> root, CriteriaQuery<?> query,
-					CriteriaBuilder criteriaBuilder) {
-				Predicate predicate=criteriaBuilder.conjunction();
-//				UserEntity seachDate = (UserEntity) res.getSeachDate();
-//				if(seachDate != null && StringUtil.isString(seachDate.getUsername())) {
-//					predicate.getExpressions().add(criteriaBuilder.like(root.get("username"), "%"+seachDate.getUsername()+"%"));
-//				}
-				return predicate;
-			}};
-			
-		Page<UserEntity> findAll = userDao.findAll(specification,pageable);
-		
-		
-		return new AjaxEntity(Global.ajax_success, "数据获取成功", findAll);
+	    Specification<UserEntity> specification = (root, query, cb) -> {
+	        List<Predicate> predicates = new ArrayList<>();
+	        return cb.and(predicates.toArray(new Predicate[0]));
+	    };
+
+	    Page<UserEntity> findAll = userDao.findAll(specification, pageable);
+	    return new AjaxEntity(Global.ajax_success, "数据获取成功", findAll);
 	}
 
 	/**  

@@ -1,5 +1,6 @@
 package com.flower.spirit.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -63,21 +64,19 @@ public class DownloaderService {
 	
 	@SuppressWarnings("serial")
 	public AjaxEntity finddownLoaderList(RequestEntity res) {
-		int page = res.getPage()==  null ?0:res.getPage();
-		int limit = res.getLimit() == null?15:res.getLimit();
-		Pageable pageable = PageRequest.of(page,limit);
-		Specification<DownloaderEntity> specification = new Specification<DownloaderEntity>() {
+	    int page = res.getPage() == null ? 0 : res.getPage();
+	    int limit = res.getLimit() == null ? 15 : res.getLimit();
+	    Pageable pageable = PageRequest.of(page, limit);
 
-			@Override
-			public Predicate toPredicate(Root<DownloaderEntity> root, CriteriaQuery<?> query,
-					CriteriaBuilder criteriaBuilder) {
-				Predicate predicate=criteriaBuilder.conjunction();
-				return predicate;
-			}};
-		
-		Page<DownloaderEntity> findAll = downloaderDao.findAll(specification,pageable);
-		return new AjaxEntity(Global.ajax_success, "数据获取成功", findAll);
+	    Specification<DownloaderEntity> specification = (root, query, cb) -> {
+	        List<Predicate> predicates = new ArrayList<>();
+	        return cb.and(predicates.toArray(new Predicate[0]));
+	    };
+
+	    Page<DownloaderEntity> findAll = downloaderDao.findAll(specification, pageable);
+	    return new AjaxEntity(Global.ajax_success, "数据获取成功", findAll);
 	}
+
 
 	public AjaxEntity delDownLoader(DownloaderEntity downloaderEntity) {
 		downloaderDao.deleteById(downloaderEntity.getId());
