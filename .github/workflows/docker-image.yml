@@ -32,11 +32,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up JDK 8
+      - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
-          java-version: '8'
+          java-version: '17'
           distribution: 'temurin'
+          cache: maven
 
       - name: Cache Maven dependencies
         uses: actions/cache@v3
@@ -49,7 +50,7 @@ jobs:
         run: |
           cd backstage
           mvn clean package -DskipTests
-          cp target/spirit-0.0.1-SNAPSHOT.jar src/main/docker/buildx/
+          cp target/StreamVault-0.0.1-SNAPSHOT.jar src/main/docker/buildx/
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
