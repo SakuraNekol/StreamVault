@@ -8,8 +8,8 @@
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/lemon8866/StreamVault)
 [![Docker Pulls](https://img.shields.io/docker/pulls/qingfeng2336/stream-vault)](https://hub.docker.com/r/qingfeng2336/stream-vault)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Java](https://img.shields.io/badge/Java-1.8+-red.svg)](https://www.oracle.com/java/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.7.x-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![Java](https://img.shields.io/badge/Java-17+-red.svg)](https://www.oracle.com/java/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.x-brightgreen.svg)](https://spring.io/projects/spring-boot)
 ![Build Status](https://github.com/lemon8866/StreamVault/actions/workflows/docker-image.yml/badge.svg)
 
 </div>
@@ -91,7 +91,7 @@ StreamVault（原名：spirit）是一个视频资源管理与下载平台，支
 
 ### 💻 技术栈
 
-- 🛠️ 后端：Spring Boot 2.7.x + JPA + SQLite
+- 🛠️ 后端：Spring Boot 3.5.x + JPA + SQLite
 - 📱 前端：UniApp（支持小程序、APP等多端）
 - 🐳 容器化：Docker多架构支持（AMD64/ARM64）
 
@@ -121,7 +121,7 @@ docker run --name stream-vault -d -p 28083:28081 \
 
 ### 📦 手动部署
 
-- 要求：Java 1.8+
+- 要求：Java 17
 - 详细部署文档待完善
 
 ## 📸 功能展示

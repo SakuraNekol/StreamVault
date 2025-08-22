@@ -1,6 +1,17 @@
 ### 更新记录
 
 ```
+2025/08/22  Tagged the version as 250822 on Docker Hub. Merged the 250822 tag into the latest tag.
+已知问题修复
+spring boot 升级至3.5.5
+升级java8至java17
+更换docker镜像为openjdk:17-alpine
+移除服务端中无用依赖
+下版本预计引入gallery-dl 首先适配instagram
+
+```
+
+```
 2025/08/18  fix 补丁
 优化video.html页面 axios cdn源 加载问题
 优化video.html页面 服务器地址问题  可为空  为空是直接使用自身地址
