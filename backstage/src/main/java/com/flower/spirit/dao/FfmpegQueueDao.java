@@ -2,10 +2,10 @@ package com.flower.spirit.dao;
 
 import java.util.List;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
 import com.flower.spirit.entity.FfmpegQueueEntity;
@@ -13,7 +13,7 @@ import com.flower.spirit.entity.FfmpegQueueEntity;
 
 @Repository
 @Transactional
-public interface FfmpegQueueDao  extends PagingAndSortingRepository<FfmpegQueueEntity, Integer>, JpaSpecificationExecutor<FfmpegQueueEntity>  {
+public interface FfmpegQueueDao  extends JpaRepository<FfmpegQueueEntity, Integer>, JpaSpecificationExecutor<FfmpegQueueEntity>  {
 
 	List<FfmpegQueueEntity> findByVideostatusAndAudiostatus(String string, String string2);
 

@@ -12,13 +12,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.domain.Specification;
-import javax.persistence.criteria.*;
+import jakarta.persistence.criteria.*;
 import org.springframework.transaction.annotation.Transactional;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-
 import com.flower.spirit.entity.VideoMixEntity;
 import com.flower.spirit.entity.VideoMixSegmentEntity;
 import com.flower.spirit.utils.FileUtil;
@@ -28,6 +27,7 @@ import com.flower.spirit.dao.VideoMixSegmentDao;
 import com.flower.spirit.dao.VideoDataDao;
 import com.flower.spirit.common.AjaxEntity;
 import com.flower.spirit.config.Global;
+
 @Service
 public class VideoMixService {
 

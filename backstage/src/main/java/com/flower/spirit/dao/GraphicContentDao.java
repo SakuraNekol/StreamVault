@@ -4,11 +4,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -16,7 +16,7 @@ import com.flower.spirit.entity.GraphicContentEntity;
 
 @Repository
 @Transactional
-public interface GraphicContentDao extends PagingAndSortingRepository<GraphicContentEntity, Integer>,
+public interface GraphicContentDao extends JpaRepository<GraphicContentEntity, Integer>,
 		JpaSpecificationExecutor<GraphicContentEntity> {
 
 	Optional<GraphicContentEntity> findById(Integer id);

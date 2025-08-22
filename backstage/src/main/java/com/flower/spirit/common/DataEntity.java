@@ -1,7 +1,7 @@
 package com.flower.spirit.common;
 
-import javax.persistence.MappedSuperclass;
-import javax.persistence.Transient;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Transient;
 
 @MappedSuperclass
 public class DataEntity<T> {

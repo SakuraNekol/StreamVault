@@ -11,7 +11,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;

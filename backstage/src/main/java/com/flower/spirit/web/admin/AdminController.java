@@ -1,10 +1,9 @@
 package com.flower.spirit.web.admin;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,10 +28,10 @@ import com.flower.spirit.entity.TikTokConfigEntity;
 import com.flower.spirit.entity.UserEntity;
 import com.flower.spirit.entity.VideoDataEntity;
 import com.flower.spirit.entity.VideoMixEntity;
-import com.flower.spirit.service.AnalysisService;
 import com.flower.spirit.service.BiliConfigService;
 import com.flower.spirit.service.CollectDataDetailService;
 import com.flower.spirit.service.CollectDataService;
+import com.flower.spirit.service.AnalysisService;
 import com.flower.spirit.service.ConfigService;
 import com.flower.spirit.service.CookiesConfigService;
 import com.flower.spirit.service.DouYinService;
