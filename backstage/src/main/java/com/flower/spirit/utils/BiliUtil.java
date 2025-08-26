@@ -25,7 +25,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.flower.spirit.config.Global;
 import com.flower.spirit.dao.FfmpegQueueDao;
 import com.flower.spirit.dao.FfmpegQueueDataDao;
-import com.flower.spirit.entity.CollectDataEntity;
 import com.flower.spirit.entity.FfmpegQueueDataEntity;
 import com.flower.spirit.entity.FfmpegQueueEntity;
 
@@ -393,7 +392,10 @@ public class BiliUtil {
 				Map<String, String> data = new HashMap<String, String>();
 				JSONObject jsonObject = jsonArray.getJSONObject(i);
 				String cid = jsonObject.getString("cid");
-				String title = jsonObject.getString("part");
+				String title = chooseVideoTitle(
+					    videoData.getJSONObject("data") != null ? videoData.getJSONObject("data").getString("title") : "",
+					    jsonObject.getString("part") != null ? jsonObject.getString("part") : ""
+				);
 				String pic = videoData.getJSONObject("data").getString("pic");
 				data.put("aid", aid);
 				data.put("bvid", bvid);
@@ -593,4 +595,29 @@ public class BiliUtil {
 		}
 		return null;
 	}
+	
+	
+    public static String chooseVideoTitle(String name1, String name2) {
+        if ((name1 == null || name1.isEmpty()) && (name2 == null || name2.isEmpty())) {
+            return "";
+        }
+        if (isSystemGenerated(name1) && !isSystemGenerated(name2)) return name2;
+        if (isSystemGenerated(name2) && !isSystemGenerated(name1)) return name1;
+        boolean n1HasChinese = hasChinese(name1);
+        boolean n2HasChinese = hasChinese(name2);
+        if (n1HasChinese && !n2HasChinese) return name1;
+        if (n2HasChinese && !n1HasChinese) return name2;
+        if (name2 != null && !name2.isEmpty()) return name2;
+        return name1 != null ? name1 : "";
+    }
+    private static boolean isSystemGenerated(String name) {
+        return name != null && name.matches("studio_video_\\d+");
+    }
+    private static boolean hasChinese(String name) {
+        if (name == null) return false;
+        return name.codePoints().anyMatch(
+                c -> Character.UnicodeScript.of(c) == Character.UnicodeScript.HAN
+        );
+    }
+
 }
