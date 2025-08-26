@@ -70,13 +70,13 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>App token</label>
+                                                <label>App token <i class="mdi mdi-help" style="cursor: pointer; font-size: 12px;" onclick="layer.alert('此Token用于API接口提交视频地址和查看视频信息,如果是公网环境建议设置复杂口令或定期更换') "></i></label>
                                                 <input class="form-control" type="text" id="apptoken" name="apptoken" placeholder="apptoken" th:value="${config.apptoken}">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>只读Token</label>
+                                                <label>只读Token <i class="mdi mdi-help" style="cursor: pointer; font-size: 12px;" onclick="layer.alert('此Token用于API获取视频信息并且免登陆播放资源,如果是公网环境建议设置复杂口令或定期更换') "></i></label>
                                                 <input class="form-control" type="text" id="readonlytoken" name="readonlytoken" placeholder="不能提交单链接只能访问" th:value="${config.readonlytoken}">
                                             </div>
                                         </div>
@@ -91,7 +91,7 @@
                                         </div>
                                        <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>全局cron</label>
+                                                <label>全局cron <i class="mdi mdi-help" style="cursor: pointer; font-size: 12px;" onclick="layer.alert('此处是历史保留,目前新版收藏夹监控每一个任务都支持单独的cron表达式都是独立任务,如果在添加收藏任务时不填对应任务的cron表达式,则会使用这里的全局cron表达式') "></i></label>
                                                 <input class="form-control" type="text" id="taskcron" name="taskcron" placeholder="默认0 0 0/3 * * ?  三小时一次" th:value="${config.taskcron}">
                                             </div>
                                         </div>
@@ -131,7 +131,7 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>分片下载</label>
+                                                <label>分片下载 <i class="mdi mdi-help" style="cursor: pointer; font-size: 12px;" onclick="layer.alert('无特殊情况建议默认为1,不分片') "></i></label>
                                                 <input class="form-control" type="text" id="rangenum" name="rangenum" placeholder="默认为1" th:value="${config.rangenum}">
                                             </div>
                                         </div>
