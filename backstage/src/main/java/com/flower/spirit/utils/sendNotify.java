@@ -31,6 +31,24 @@ public class sendNotify {
     
     
     /**
+     * 异步发送模版类型通知
+     */
+    public static void sendMessage(String title, String p) {
+    	if(Global.notify!= null) {
+            CompletableFuture.runAsync(() -> {
+                try {
+                    String contents = p+"\n"+"发生时间:"+DateUtils.getDate("yyyy-MM-dd HH:mm:ss");
+                    sendNotifyByChannel(title, contents, Global.notify);
+                } catch (Exception e) {
+                    logger.error("[异步通知] 发送失败: {}", e.getMessage());
+                }
+            });
+    	}
+
+    }
+    
+    
+    /**
      * 异步发送通知
      */
     public static void sendMessage(int count, String p) {

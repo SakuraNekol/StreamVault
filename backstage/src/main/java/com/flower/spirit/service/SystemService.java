@@ -1,10 +1,6 @@
 package com.flower.spirit.service;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Date;
-import java.util.UUID;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
@@ -13,18 +9,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.flower.spirit.common.AjaxEntity;
 import com.flower.spirit.config.Global;
 import com.flower.spirit.dao.UserDao;
 import com.flower.spirit.entity.UserEntity;
-import com.flower.spirit.utils.DateUtils;
-import com.flower.spirit.utils.FileUtils;
 import com.flower.spirit.utils.HttpUtil;
 import com.flower.spirit.utils.MD5Util;
 import com.flower.spirit.utils.SecurityUtil;
 import com.flower.spirit.utils.StringUtil;
+import com.flower.spirit.utils.sendNotify;
 
 @Service
 public class SystemService {
@@ -111,6 +104,7 @@ public class SystemService {
 			newSession.setAttribute(Global.user_session_key, findByUsername);
 			// 登录成功，重置失败计数
 			SecurityUtil.resetLoginAttempts(ip);
+			sendNotify.sendMessage("StreamVault通知", "帐号:"+username+"登录成功\n"+"登录IP:"+ip);
 			return new AjaxEntity(Global.ajax_success, Global.ajax_login_success_message, null);
 		}
 
