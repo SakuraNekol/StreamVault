@@ -2,7 +2,6 @@ package com.flower.spirit.service;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +23,7 @@ import com.flower.spirit.config.Global;
 import com.flower.spirit.dao.VideoDataDao;
 import com.flower.spirit.entity.ProcessHistoryEntity;
 import com.flower.spirit.entity.VideoDataEntity;
+import com.flower.spirit.executor.WeiBoExecutor;
 import com.flower.spirit.utils.Aria2Util;
 import com.flower.spirit.utils.BiliUtil;
 import com.flower.spirit.utils.DateUtils;
@@ -60,6 +60,9 @@ public class AnalysisService {
 	private ExecutorService bilibili = new ThreadPoolExecutor(1, 3, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
 
 	private ExecutorService ytdlp = new ThreadPoolExecutor(1, 5, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+	
+	@Autowired
+	private WeiBoExecutor weiBoExecutor;
 
 
 	/**
@@ -94,6 +97,7 @@ public class AnalysisService {
 		platformHandlers.put("instagram", () -> executeTask(ytdlp, () -> this.instagram(platform, url)));
 		platformHandlers.put("twitter", () -> executeTask(ytdlp, () -> this.twitter(platform, url)));
 		platformHandlers.put("快手", () -> executeTask(domestic, () -> this.kuaishou(platform, url)));
+		platformHandlers.put("微博", () -> executeTask(domestic, () -> this.weibo(platform, url)));
 		// 获取并执行对应平台的处理逻辑
 		Runnable handler = platformHandlers.get(platform);
 		if (handler != null) {
@@ -112,6 +116,14 @@ public class AnalysisService {
 				});
 			}
 
+		}
+	}
+
+	private void weibo(String platform, String url) {
+		try {
+			weiBoExecutor.dataExecutor(url);
+		} catch (IOException e) {
+			logger.error("weibo url 解析错误,请提交对应日志 到issues");
 		}
 	}
 
@@ -681,6 +693,9 @@ public class AnalysisService {
 		}
 		if (input.contains(".kuaishou.com")) {
 			return "快手";
+		}
+		if (input.contains(".weibo.com")) {
+			return "微博";
 		}
 		return URLUtil.urlAnalysis(input);
 	}

@@ -33,6 +33,9 @@ public class URLUtil {
 		List<String> twitter = new ArrayList<String>();
 		twitter.add("twitter.com");
 		twitter.add("https://x.com/");
+	
+		List<String> weibo = new ArrayList<String>();
+		weibo.add("weibo.com");
 		
 		put("tiktok", tiktok);
 		put("哔哩", bili);
@@ -40,6 +43,7 @@ public class URLUtil {
 		put("YouTube", youtube);
 		put("instagram", instagram);
 		put("twitter", twitter);
+		put("微博", weibo);
 	}};;
 
 	/**

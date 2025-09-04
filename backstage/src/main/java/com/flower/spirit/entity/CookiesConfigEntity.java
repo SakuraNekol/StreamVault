@@ -28,6 +28,8 @@ public class CookiesConfigEntity implements Serializable{
 	private String twittercookies;
 	
 	private String kuaishouCookie;
+	
+	private String weibocookie;
 
 	public Integer getId() {
 		return id;
@@ -61,9 +63,12 @@ public class CookiesConfigEntity implements Serializable{
 		this.kuaishouCookie = kuaishouCookie;
 	}
 
-	
-	
-	
-	
+	public String getWeibocookie() {
+		return weibocookie;
+	}
+
+	public void setWeibocookie(String weibocookie) {
+		this.weibocookie = weibocookie;
+	}	
 
 }

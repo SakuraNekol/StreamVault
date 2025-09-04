@@ -57,7 +57,7 @@ StreamVault（原名：spirit）是一个视频资源管理与下载平台，支
 - ~~⚡ 应用瘦身及http下载 高可用低占用(已实现)~~
 - 🔧 yt-dlp内置更新方式
 - Twitter主页或收藏监控
-- 将weibo从yt-dlp中剥离 适配到图文模块
+- ~~将weibo从yt-dlp中剥离 适配到图文模块~~
 ### 🎯 平台支持
 
 状态说明：
@@ -78,7 +78,7 @@ StreamVault（原名：spirit）是一个视频资源管理与下载平台，支
 | Instagram | ✅     | 🤔             | 仅支持yt-dlp | 备注① |
 | TikTok    | ✅      | 🤔             | 暂时通过yt-dlp|                                                   |
 | 快手      | ✅     | 🤔             | HTTP/Aria2   |备注② |
-| 微博      | ✅     | 🤔             | 暂时通过yt-dlp |                                                   |
+| 微博      | ✅     | 🤔             | HTTP  |  备注④                                                   |
 | 红薯      | ✅     | 🤔             | 暂时通过yt-dlp |                                                   |
 | 通用平台  | ✅     | ❌            |  仅支持yt-dlp| 备注③ |
 
@@ -89,6 +89,7 @@ StreamVault（原名：spirit）是一个视频资源管理与下载平台，支
 * 备注①： docker版自带 避免产生过多ts文件 还需要合并 麻烦
 * 备注②： 未测试Aria2,同时如果出现captcha 自行去APP或web验证后在测试 本处不处理captcha
 * 备注③： docker版自带 不接受issues 具体支持地址参考yt-dlp仓库
+* 备注④:  由于部分平台属于社交平台 视频并不属于长视频 所以目前一律划入图文模块  图文模块支持视频
 
 ### 💻 技术栈
 

@@ -85,7 +85,8 @@ public class Global {
 		youtube,
 		instagram,
 		twitter,
-		kuaishou;
+		kuaishou,
+		weibo;
 	};
 
 	// 文件映射和保存路径
