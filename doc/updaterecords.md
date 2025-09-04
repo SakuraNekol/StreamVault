@@ -1,6 +1,15 @@
 ### 更新记录
 
 ```
+2025/09/05  Tagged the version as 250905 on Docker Hub. Merged the 250905 tag into the latest tag.
+新增登录成功之后 发送webhook通知
+同步 yt-dlp 最新源码
+从yt-dlp中剥离微博平台的支持
+适配微博平台支持 划入图文模块管理
+微博平台 支持图文类型/视频类型 推文
+```
+
+```
 2025/08/22  Tagged the version as 250822 on Docker Hub. Merged the 250822 tag into the latest tag.
 已知问题修复
 spring boot 升级至3.5.5
