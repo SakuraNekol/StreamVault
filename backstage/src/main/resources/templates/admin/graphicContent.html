@@ -972,7 +972,7 @@ function generateMediaGrid(mediaList, cardId) {
 			html += `
 				<div class="media-item">
 					${typeIndicator}
-					<video class="preview-video" data-src="${mediaUrl}" style="cursor: pointer;">
+					<video class="preview-video" data-src="${mediaUrl}" style="cursor: pointer;" preload="none" loading="lazy">
 						<source src="${mediaUrl}" type="video/mp4">
 						您的浏览器不支持视频播放
 					</video>
@@ -981,7 +981,7 @@ function generateMediaGrid(mediaList, cardId) {
 		} else {
 			html += `
 				<div class="media-item">
-					<img src="${mediaUrl}" alt="图片" class="preview-image" data-src="${mediaUrl}">
+					<img src="${mediaUrl}" alt="图片" class="preview-image" data-src="${mediaUrl}" loading="lazy">
 				</div>
 			`;
 		}
