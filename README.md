@@ -58,6 +58,8 @@ StreamVault（原名：spirit）是一个视频资源管理与下载平台，支
 - 🔧 yt-dlp内置更新方式
 - Twitter主页或收藏监控
 - ~~将weibo从yt-dlp中剥离 适配到图文模块~~
+- bilibli 合集类支持
+- bilibili 弹幕支持
 ### 🎯 平台支持
 
 状态说明：
