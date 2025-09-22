@@ -256,6 +256,49 @@ public class HttpUtil {
         return responseStr;
     }
     
+    public static byte[] httpGetBiliBytes(String url, String cookie, String origin, String referer) {
+        String ua = (Global.useragent != null && !"".equals(Global.useragent))
+                ? Global.useragent
+                : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36";
+
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .readTimeout(5, TimeUnit.SECONDS)
+                .build();
+
+        Request.Builder requestBuilder = new Request.Builder()
+                .url(url)
+                .get()
+                .header("User-Agent", ua);
+
+        if (origin != null && !origin.isEmpty()) {
+            requestBuilder.header("Origin", origin);
+        }
+        if (referer != null && !referer.isEmpty()) {
+            requestBuilder.header("Referer", referer);
+        }
+        if (cookie != null && !cookie.isEmpty()) {
+            requestBuilder.header("Cookie", cookie);
+        }
+
+        Request request = requestBuilder.build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                System.err.println("请求出错: " + response.code() + " - " + response.message());
+                return null;
+            }
+            ResponseBody body = response.body();
+            if (body != null) {
+                return body.bytes(); // 直接返回原始字节
+            }
+        } catch (IOException e) {
+            System.out.println("发生网络异常!");
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     
     
     

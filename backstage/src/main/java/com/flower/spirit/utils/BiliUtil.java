@@ -1,8 +1,10 @@
 package com.flower.spirit.utils;
 
 import java.io.File;
-
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,10 +21,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.flower.spirit.config.Global;
+import com.flower.spirit.danmu.bilibili.DanmakuSeg.DanmakuElem;
+import com.flower.spirit.danmu.bilibili.DanmakuSeg.DmSegMobileReply;
+import com.flower.spirit.danmu.bilibili.DanmuToAssConverter;
 import com.flower.spirit.dao.FfmpegQueueDao;
 import com.flower.spirit.dao.FfmpegQueueDataDao;
 import com.flower.spirit.entity.FfmpegQueueDataEntity;
@@ -121,7 +125,9 @@ public class BiliUtil {
 				String cid = videoInfo.get("cid");
 				String title = videoInfo.get("title");
 				String quality = videoInfo.get("quality");
-
+				String duration = videoInfo.get("duration");
+				String width = videoInfo.get("width");
+				String height = videoInfo.get("height");
 				if (aid == null || cid == null || title == null) {
 					logger.warn("视频数据不完整: aid={}, cid={}, title={}", aid, cid, title);
 					continue;
@@ -151,9 +157,10 @@ public class BiliUtil {
 					// 处理普通格式视频
 					processedVideo = processNormalVideo(videoData, videoInfo, filename);
 				}
-
+				processedVideo.put("duration", duration);
+				processedVideo.put("width", width);
+				processedVideo.put("height", height);
 				result.add(processedVideo);
-
 				// 如果是DASH格式，通常只有一个视频
 				if (isDashFormat) {
 					return result;
@@ -385,9 +392,7 @@ public class BiliUtil {
 			JSONObject dimension = videoData.getJSONObject("data").getJSONObject("dimension");
 			Integer width = dimension.getInteger("width");
 			Integer height = dimension.getInteger("height");
-
 			JSONArray jsonArray = videoData.getJSONObject("data").getJSONArray("pages");
-
 			for (int i = 0; i < jsonArray.size(); i++) {
 				Map<String, String> data = new HashMap<String, String>();
 				JSONObject jsonObject = jsonArray.getJSONObject(i);
@@ -408,9 +413,13 @@ public class BiliUtil {
 				if (null == pic) {
 					pic = jsonObject.getString("first_frame");
 				}
+				String duration = jsonObject.getString("duration");
 				data.put("cid", cid);
 				data.put("title", title);
 				data.put("pic", pic);
+				data.put("duration", duration);
+				data.put("width", Integer.toString(width));
+				data.put("height", Integer.toString(height));
 				data.put("owner", videoData.getJSONObject("data").getString("owner"));
 				data.put("ctime", videoData.getJSONObject("data").getString("ctime"));
 				res.add(data);
@@ -619,5 +628,48 @@ public class BiliUtil {
                 c -> Character.UnicodeScript.of(c) == Character.UnicodeScript.HAN
         );
     }
+    public static void biliDanmaku(String type, String oid, String aid, int duration,String filename,String w,String h,String title)  {
+        int segmentLength = 360;
+        int segmentCount = (int) Math.ceil(duration / (double) segmentLength);
+//        List<String> assLines = new ArrayList<>();
+        List<DanmakuElem> dm = new ArrayList<DanmakuElem>();
+        for (int i = 1; i <= segmentCount; i++) {
+            TreeMap<String, Object> params = new TreeMap<>();
+            params.put("type", "1");           
+            params.put("oid", oid);         
+            params.put("pid", aid);
+            params.put("segment_index", String.valueOf(i));
+
+            String wbiUrl = WbiUtil.buildWbiUrl(params);
+            try {
+            	String url = "https://api.bilibili.com/x/v2/dm/wbi/web/seg.so?" + wbiUrl;
+//            	System.out.println(url);
+            	byte[] result = HttpUtil.httpGetBiliBytes(url, Global.bilicookies, "https://www.bilibili.com", "https://www.bilibili.com/video/" + oid);
+//            	System.out.println("Received data length: " + result.length);
+            	if (result != null) {
+            		  DmSegMobileReply danmakuSeg = DmSegMobileReply.parseFrom(result);
+            		  dm.addAll(danmakuSeg.getElemsList());
+                }
+              
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        File outputFile = new File(filename);
+
+        try {
+			DanmuToAssConverter.convertToAss(dm, outputFile, title);
+		} catch (IOException e) {
+		
+			e.printStackTrace();
+		}
+        
+
+     
+    }
+    
+
+
+
 
 }

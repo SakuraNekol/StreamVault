@@ -228,6 +228,7 @@ javascript:(function(){
 - [f2](https://github.com/Johnserf-Seed/f2)
 - [Light-Year-Admin-Template](https://gitee.com/yinqi/Light-Year-Admin-Template)
 - [yt-dlp](https://github.com/yt-dlp/yt-dlp)
+- [danmu2ass](https://github.com/gwy15/danmu2ass)
 
 ---
 

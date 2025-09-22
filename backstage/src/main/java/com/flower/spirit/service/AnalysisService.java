@@ -483,11 +483,14 @@ public class AnalysisService {
 			logger.info("找到{}个视频流", videoStreams.size());
 			for (Map<String, String> videoInfo : videoStreams) {
 				String cid = videoInfo.get("cid");
+				String aid = videoInfo.get("aid");
 				String title = videoInfo.get("title");
 				String desc = videoInfo.get("desc");
 				String pic = videoInfo.get("pic");
 				String videoPath = videoInfo.get("video");
-
+				String duration = videoInfo.get("duration"); //视频秒数
+				String width = videoInfo.get("width"); //视频秒数
+				String height = videoInfo.get("height"); //视频秒数
 				if (cid == null || cid.isEmpty() || title == null || title.isEmpty()) {
 					logger.warn("视频信息不完整: cid={}, title={}", cid, title);
 					continue;
@@ -525,6 +528,7 @@ public class AnalysisService {
 					}
 					EmbyMetadataGenerator.createBillNfo(upname, uplocal, upmid, ctime, cid, title, desc,
 							filename + ".jpg", dir);
+					BiliUtil.biliDanmaku("1", cid, aid, Integer.valueOf(duration), dir + File.separator+filename+".ass",width,height,title);
 				}
 				// 建档
 				VideoDataEntity videoDataEntity = new VideoDataEntity(cid, title, desc, platform, coverunaddr,
