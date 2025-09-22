@@ -650,7 +650,7 @@ public class BiliUtil {
             		  DmSegMobileReply danmakuSeg = DmSegMobileReply.parseFrom(result);
             		  dm.addAll(danmakuSeg.getElemsList());
                 }
-              
+               Thread.sleep(2222);
             } catch (Exception e) {
                 e.printStackTrace();
             }

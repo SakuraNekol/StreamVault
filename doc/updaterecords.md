@@ -1,6 +1,17 @@
 ### 更新记录
 
 ```
+2025/09/22  Tagged the version as 250922 on Docker Hub. Merged the 250922 tag into the latest tag.
+同步 yt-dlp 最新源码
+引入java protobuf  
+下载弹幕功能(测试) 仅 bilibili
+bilibili单链接模式下在开启NFO的模式下支持下载弹幕 ASS格式
+目前暂不支持仅开启NFO并关闭弹幕下载
+目前仅支持单链接 后续稳定后考虑合并到收藏夹和作品下
+```
+
+
+```
 2025/09/05  Tagged the version as 250905 on Docker Hub. Merged the 250905 tag into the latest tag.
 新增登录成功之后 发送webhook通知
 同步 yt-dlp 最新源码
