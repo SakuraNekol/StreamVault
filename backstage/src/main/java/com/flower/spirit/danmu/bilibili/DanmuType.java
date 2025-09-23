@@ -1,6 +1,9 @@
 package com.flower.spirit.danmu.bilibili;
 /**
  * 弹幕类型枚举
+ * 实现来自 
+ *    danmu2ass
+ *    https://github.com/gwy15/danmu2ass
  */
 public enum DanmuType {
     /**

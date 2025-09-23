@@ -1,6 +1,9 @@
 package com.flower.spirit.danmu.bilibili;
 /**
  * 绘制效果类
+ * 实现来自 
+ *    danmu2ass
+ *    https://github.com/gwy15/danmu2ass
  */
 public abstract class DrawEffect {
     

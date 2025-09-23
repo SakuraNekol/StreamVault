@@ -3,6 +3,9 @@ import java.util.*;
 
 /**
  * 画布类，负责弹幕布局和碰撞检测
+ * 实现来自 
+ *    danmu2ass
+ *    https://github.com/gwy15/danmu2ass
  */
 public class Canvas {
     private CanvasConfig config;

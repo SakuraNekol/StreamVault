@@ -7,6 +7,9 @@ import com.flower.spirit.danmu.bilibili.DanmakuSeg.DanmakuElem;
 /**
  * 弹幕转ASS转换器
  * 主要的转换逻辑类，整合所有组件
+ * 实现来自 
+ *    danmu2ass
+ *    https://github.com/gwy15/danmu2ass
  */
 public class DanmuToAssConverter {
     

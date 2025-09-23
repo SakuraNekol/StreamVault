@@ -4,6 +4,9 @@ import com.flower.spirit.danmu.bilibili.DanmakuSeg.DanmakuElem;
 
 /**
  * 弹幕数据模型
+ * 实现来自 
+ *    danmu2ass
+ *    https://github.com/gwy15/danmu2ass
  */
 public class Danmu {
     /**

@@ -1,6 +1,9 @@
 package com.flower.spirit.danmu.bilibili;
 /**
  * 画布配置类
+ * 实现来自 
+ *    danmu2ass
+ *    https://github.com/gwy15/danmu2ass
  */
 public class CanvasConfig {
     /**

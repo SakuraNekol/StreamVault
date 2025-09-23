@@ -4,6 +4,9 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * ASS文件写入器
+ * 实现来自 
+ *    danmu2ass
+ *    https://github.com/gwy15/danmu2ass
  */
 public class AssWriter implements Closeable {
     private BufferedWriter writer;
