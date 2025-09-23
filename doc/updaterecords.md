@@ -1,6 +1,14 @@
 ### 更新记录
 
 ```
+2025/09/23  Tagged the version as 250923 on Docker Hub. Merged the 250923 tag into the latest tag.
+拆分了 **NFO** 和 **弹幕下载** 功能：
+弹幕下载功能现已独立设置，默认处于关闭状态。
+新增了 **视频列表中刷新弹幕** 功能。
+移除了 **Webhook** 配置中的 **钉钉** 配置项。
+```
+
+```
 2025/09/22  Tagged the version as 250922 on Docker Hub. Merged the 250922 tag into the latest tag.
 同步 yt-dlp 最新源码
 引入java protobuf  
