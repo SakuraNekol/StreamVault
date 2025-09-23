@@ -495,4 +495,15 @@ public class AdminController {
 			return new AjaxEntity(Global.ajax_uri_error, "获取数据统计失败: " + e.getMessage(), null);
 		}
 	}
+	
+	/**
+	 * 删除视频缓存信息及视频文件
+	 * @param downloaderEntity
+	 * @param request
+	 * @return
+	 */
+	@GetMapping(value = "/refreshDanmu")
+	public AjaxEntity refreshDanmu(VideoDataEntity downloaderEntity,HttpServletRequest request) {
+		return videoDataService.refreshDanmu(downloaderEntity);
+	}
 }

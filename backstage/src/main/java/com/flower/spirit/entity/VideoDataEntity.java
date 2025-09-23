@@ -60,6 +60,7 @@ public class VideoDataEntity  extends DataEntity<VideoDataEntity> implements Ser
 	
 	private Date createtime;
 
+	private String videoinfo;
 	
 	
 	
@@ -176,6 +177,14 @@ public class VideoDataEntity  extends DataEntity<VideoDataEntity> implements Ser
 
 	public void setVideoid(String videoid) {
 		this.videoid = videoid;
+	}
+
+	public String getVideoinfo() {
+		return videoinfo;
+	}
+
+	public void setVideoinfo(String videoinfo) {
+		this.videoinfo = videoinfo;
 	}
 	
 	

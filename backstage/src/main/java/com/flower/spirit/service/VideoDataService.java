@@ -34,10 +34,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import com.alibaba.fastjson.JSONObject;
 import com.flower.spirit.common.AjaxEntity;
 import com.flower.spirit.config.Global;
 import com.flower.spirit.dao.VideoDataDao;
 import com.flower.spirit.entity.VideoDataEntity;
+import com.flower.spirit.utils.BiliUtil;
 import com.flower.spirit.utils.CommandUtil;
 import com.flower.spirit.utils.StringUtil;
 
@@ -237,6 +239,29 @@ public class VideoDataService {
 		calendar.add(Calendar.DAY_OF_MONTH, 1);
 		Date endDate = calendar.getTime();
 		return videoDataDao.countTodayAdded(startDate, endDate);
+	}
+
+
+	/**
+	 * 刷新弹幕
+	 * @param data
+	 * @return
+	 */
+	public AjaxEntity refreshDanmu(VideoDataEntity data) {
+		Optional<VideoDataEntity> findById = videoDataDao.findById(data.getId());
+		if(findById.isPresent()) {
+			VideoDataEntity videoDataEntity = findById.get();
+			String videoinfo = videoDataEntity.getVideoinfo();
+			if(null !=videoinfo && !"".equals(videoinfo)) {
+				String videoaddr = videoDataEntity.getVideoaddr();
+				JSONObject video = JSONObject.parseObject(videoinfo);
+				String filepathname = videoaddr.substring(0, videoaddr.lastIndexOf(".")) + ".ass";
+				BiliUtil.biliDanmaku("1", videoDataEntity.getVideoid(), video.getString("aid"), Integer.valueOf(video.getString("duration")), filepathname,videoDataEntity.getVideoname());
+				return new AjaxEntity(Global.ajax_success, "刷新成功", null);
+			}
+		}
+		return new AjaxEntity(Global.ajax_uri_error, "当前视频未旧版数据,暂时不支持刷新弹幕", null);
+
 	}
 
 }

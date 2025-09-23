@@ -530,12 +530,18 @@ public class AnalysisService {
 							filename + ".jpg", dir);
 					
 				}
-				if(Global.danmudown) {
-					BiliUtil.biliDanmaku("1", cid, aid, Integer.valueOf(duration), dir + File.separator+filename+".ass",width,height,title);
-				}
-				// 建档
 				VideoDataEntity videoDataEntity = new VideoDataEntity(cid, title, desc, platform, coverunaddr,
 						videoPath, videounaddr, video);
+				if(Global.danmudown) {
+					BiliUtil.biliDanmaku("1", cid, aid, Integer.valueOf(duration), dir + File.separator+filename+".ass",title);
+				    JSONObject videoInfoJson = new JSONObject();
+			        videoInfoJson.put("aid", aid);
+			        videoInfoJson.put("duration", duration);
+			        videoDataEntity.setVideoinfo(videoInfoJson.toJSONString());
+					
+				}
+				// 建档
+				
 				videoDataDao.save(videoDataEntity);
 				logger.info("视频 {} 处理完成", title);
 				sendNotify.sendNotifyData(title, video, platform);

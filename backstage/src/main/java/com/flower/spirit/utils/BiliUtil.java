@@ -628,7 +628,7 @@ public class BiliUtil {
                 c -> Character.UnicodeScript.of(c) == Character.UnicodeScript.HAN
         );
     }
-    public static void biliDanmaku(String type, String oid, String aid, int duration,String filename,String w,String h,String title)  {
+    public static void biliDanmaku(String type, String oid, String aid, int duration,String filename,String title)  {
         int segmentLength = 360;
         int segmentCount = (int) Math.ceil(duration / (double) segmentLength);
         List<DanmakuElem> dm = new ArrayList<DanmakuElem>();
