@@ -104,6 +104,9 @@ public class AppConfig {
 			logger.info("已启动yt-dlp网络代理,代理地址:"+Global.proxyinfo);
 			   
 		}
+		if(data.getDanmudown()!= null && data.getDanmudown().equals("1")) {
+			Global.danmudown =  true;
+		}
 		//清空 ffmpeg 队列
 		ffmpegQueueService.clearTask();
 		logger.info("ffmpeg队列已清空");

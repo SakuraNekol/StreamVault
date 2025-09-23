@@ -39,6 +39,9 @@ public class ConfigService {
 		if(configEntity.getGeneratenfo()!= null && configEntity.getGeneratenfo().equals("1")) {
 			Global.getGeneratenfo =  true;
 		}
+		if(configEntity.getDanmudown()!= null && configEntity.getDanmudown().equals("1")) {
+			Global.danmudown =  true;
+		}
 		if (configEntity.getAgenttype() != null && !configEntity.getAgenttype().trim().isEmpty() &&
 				configEntity.getAgentaddress() != null && !configEntity.getAgentaddress().trim().isEmpty() &&
 						configEntity.getAgentport() != null && !configEntity.getAgentport().trim().isEmpty()) {

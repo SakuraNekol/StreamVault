@@ -40,6 +40,8 @@ public class ConfigEntity implements Serializable {
 	
 	private String generatenfo;
 	
+	private String danmudown;
+	
 	private String agenttype; //类型
 	
 	private String agentaddress;  //地址
@@ -184,6 +186,14 @@ public class ConfigEntity implements Serializable {
 
 	public void setRangenum(String rangenum) {
 		this.rangenum = rangenum;
+	}
+
+	public String getDanmudown() {
+		return danmudown;
+	}
+
+	public void setDanmudown(String danmudown) {
+		this.danmudown = danmudown;
 	}
 
 	

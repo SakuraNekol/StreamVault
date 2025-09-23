@@ -631,21 +631,20 @@ public class BiliUtil {
     public static void biliDanmaku(String type, String oid, String aid, int duration,String filename,String w,String h,String title)  {
         int segmentLength = 360;
         int segmentCount = (int) Math.ceil(duration / (double) segmentLength);
-//        List<String> assLines = new ArrayList<>();
         List<DanmakuElem> dm = new ArrayList<DanmakuElem>();
         for (int i = 1; i <= segmentCount; i++) {
             TreeMap<String, Object> params = new TreeMap<>();
             params.put("type", "1");           
-            params.put("oid", oid);         
-            params.put("pid", aid);
+            params.put("oid", oid);
+            if(null != aid) {
+            	params.put("pid", aid);
+            }
             params.put("segment_index", String.valueOf(i));
 
             String wbiUrl = WbiUtil.buildWbiUrl(params);
             try {
             	String url = "https://api.bilibili.com/x/v2/dm/wbi/web/seg.so?" + wbiUrl;
-//            	System.out.println(url);
             	byte[] result = HttpUtil.httpGetBiliBytes(url, Global.bilicookies, "https://www.bilibili.com", "https://www.bilibili.com/video/" + oid);
-//            	System.out.println("Received data length: " + result.length);
             	if (result != null) {
             		  DmSegMobileReply danmakuSeg = DmSegMobileReply.parseFrom(result);
             		  dm.addAll(danmakuSeg.getElemsList());

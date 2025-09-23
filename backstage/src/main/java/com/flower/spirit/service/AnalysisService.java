@@ -528,6 +528,9 @@ public class AnalysisService {
 					}
 					EmbyMetadataGenerator.createBillNfo(upname, uplocal, upmid, ctime, cid, title, desc,
 							filename + ".jpg", dir);
+					
+				}
+				if(Global.danmudown) {
 					BiliUtil.biliDanmaku("1", cid, aid, Integer.valueOf(duration), dir + File.separator+filename+".ass",width,height,title);
 				}
 				// 建档

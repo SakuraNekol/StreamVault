@@ -96,6 +96,8 @@ public class Global {
 
 	public static boolean getGeneratenfo =false;
 	
+	public static boolean danmudown =false;
+	
 	public static String proxyinfo;
 	
 	public static String useragent = null;
