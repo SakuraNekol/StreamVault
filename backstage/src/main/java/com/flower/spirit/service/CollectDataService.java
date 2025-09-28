@@ -349,6 +349,8 @@ public class CollectDataService {
 					        videoDataEntity.setVideoinfo(videoInfoJson.toJSONString());
 						}
 						videoDataDao.save(videoDataEntity);
+					}else {
+						logger.info(vt + (i + 1) + "-"+filename+"已存在,不下载");
 					}
 					// 新建明细
 					status = findByVideoid.size() == 0 ? "已完成" : "已完成(未下载已存在)";

@@ -2,12 +2,14 @@ package com.flower.spirit.utils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
@@ -161,14 +163,20 @@ public class HttpUtil {
         getMethod.getParams().setParameter(HttpMethodParams.SO_TIMEOUT, 5000);
         getMethod.getParams().setParameter("user-agent",Global.configInfo.getSerchPersion.getValue());
         getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-        String response = "";
+        StringBuilder response = new StringBuilder();
         try {
             int statusCode = httpClient.executeMethod(getMethod);
             if (statusCode != HttpStatus.SC_OK) {
                 System.err.println("请求出错: " + getMethod.getStatusLine());
+            } else {
+                try (InputStream is = getMethod.getResponseBodyAsStream();
+                     BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
+                    }
+                }
             }
-            byte[] responseBody = getMethod.getResponseBody();
-            response = new String(responseBody, param);
         } catch (HttpException e) {
             System.out.println("请检查输入的URL!");
             e.printStackTrace();
@@ -176,10 +184,9 @@ public class HttpUtil {
             System.out.println("发生网络异常!");
             e.printStackTrace();
         } finally {
-            /* 6 .释放连接 */
             getMethod.releaseConnection();
         }
-        return response;
+        return response.toString();
     }
 
     public static String httpGetBili(String url, String param, String cookie) {
