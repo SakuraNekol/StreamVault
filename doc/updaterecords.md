@@ -1,6 +1,23 @@
 ### 更新记录
 
 ```
+2025/09/28  Tagged the version as 250928 on Docker Hub. Merged the 250928 tag into the latest tag.
+更新小程序及APP端  优化提交页面  支持历史记录 本地模式 显示最近提交十条
+优化视频列表界面 新增骨架屏懒加载
+APP及小程序端新增收藏类任务 单次执行任务功能
+APP端提交链接新增参数校验，防止错误数据提交
+同步 yt-dlp 最新源码
+新增消息通知通道：Server酱(测试)
+收藏类模块新增bilibili合集类下载及监控
+收藏类中抖音无法下载图文问题
+bilibili 收藏/合集/投稿预埋加载弹幕参数
+新版下载的视频可通过视频列表刷新弹幕按钮下载弹幕  当前不支持在下载时同步下载弹幕
+优化bilibili 标题选择器问题
+其他常规问题优化
+```
+
+
+```
 2025/09/23  Tagged the version as 250923 on Docker Hub. Merged the 250923 tag into the latest tag.
 拆分了 **NFO** 和 **弹幕下载** 功能：
 弹幕下载功能现已独立设置，默认处于关闭状态。
