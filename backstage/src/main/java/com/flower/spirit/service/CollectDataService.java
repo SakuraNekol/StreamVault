@@ -10,18 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.io.File;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
-
-import org.quartz.CronTrigger;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
-import org.quartz.JobKey;
 import org.quartz.SchedulerException;
-import org.quartz.Trigger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -157,6 +150,9 @@ public class CollectDataService {
 
 			if (collectDataEntity.getOriginaladdress().startsWith("bili-arc-")) {
 				return createBillArc(collectDataEntity, monitor);
+			}
+			if (collectDataEntity.getOriginaladdress().startsWith("bili-seaarc-")) {
+				return createBillSeasonsArchives(collectDataEntity, monitor);
 			}
 
 		}
@@ -307,6 +303,9 @@ public class CollectDataService {
 								Global.bilicookies, map.get("quality"), namepath);
 						String videounaddr = FileUtil.generateDir(false, Global.platform.bilibili.name(), false,
 								filename, namepath, "mp4");
+						String duration = findVideoStreaming.get("duration"); //视频秒数
+						String aid = findVideoStreaming.get("aid");
+						
 						// 封面down
 						String codir = FileUtil.generateDir(false, Global.platform.bilibili.name(), false, filename,
 								namepath, null);
@@ -319,7 +318,6 @@ public class CollectDataService {
 						VideoDataEntity videoDataEntity = new VideoDataEntity(findVideoStreaming.get("cid"),
 								findVideoStreaming.get("title"), findVideoStreaming.get("desc"), "哔哩",
 								codir + "/" + filename + ".jpg", findVideoStreaming.get("video"), videounaddr, bvid);
-						videoDataDao.save(videoDataEntity);
 						logger.info(vt + (i + 1) + "下载流程结束");
 
 						JSONObject owner = JSONObject.parseObject(map.get("owner"));
@@ -343,6 +341,14 @@ public class CollectDataService {
 						if (Global.getGeneratenfo) {
 							EmbyMetadataGenerator.createFavoriteEpisodeNfo(map, dir, i + 1, dirpath);
 						}
+						if(Global.danmudown) {
+//							BiliUtil.biliDanmaku("1", cid, aid, Integer.valueOf(duration), dir + File.separator+filename+".ass",title);
+						    JSONObject videoInfoJson = new JSONObject();
+					        videoInfoJson.put("aid", aid);
+					        videoInfoJson.put("duration", duration);
+					        videoDataEntity.setVideoinfo(videoInfoJson.toJSONString());
+						}
+						videoDataDao.save(videoDataEntity);
 					}
 					// 新建明细
 					status = findByVideoid.size() == 0 ? "已完成" : "已完成(未下载已存在)";
@@ -762,6 +768,61 @@ public class CollectDataService {
 					}
 
 					this.createBiliData(save, arcSearch, namepath, "投稿");
+					return new AjaxEntity(Global.ajax_success,"任务启动成功", null);
+				}
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		return new AjaxEntity(Global.ajax_success,"任务创建成功", null);
+	}
+	
+	
+	public AjaxEntity createBillSeasonsArchives(CollectDataEntity collectDataEntity, String monitor) {
+		String newod = collectDataEntity.getOriginaladdress().replaceAll("bili-seaarc-", "");
+		if (null != monitor && monitor.equals("Y")) {
+			try {
+				Integer maxc = 300;
+				long countByDataid = collectDataDetailDao.countByDataid(collectDataEntity.getId());
+				if (countByDataid > 0) {
+					maxc = null != collectDataEntity.getMaxcur() ? collectDataEntity.getMaxcur() : 300;
+				} else {
+					maxc = null != collectDataEntity.getOmaxcur() ? collectDataEntity.getOmaxcur() : 300;
+				}
+//				maxc = 30;
+				String[] datasp = newod.split("#");
+				JSONArray arcSearch = BiliUtil.SeasonsSearch(datasp[0],datasp[1], maxc); 
+				if (null != arcSearch && arcSearch.size() > 0) {
+					JSONObject ddd = arcSearch.getJSONObject(0);
+					String namepath = StringUtil.getFileName(ddd.getString("name"),collectDataEntity.getTaskname());
+					String description = ddd.getString("description");
+					collectDataEntity.setTaskstatus("已提交待处理");
+					collectDataEntity.setCreatetime(DateUtils.formatDateTime(new Date()));
+					collectDataEntity.setCount(String.valueOf(arcSearch.size()));
+					CollectDataEntity save = collectdDataDao.save(collectDataEntity);
+
+					JSONObject infobili = new JSONObject();
+					JSONObject data = new JSONObject();
+					String cover = "";
+					try {
+						cover = ddd.getString("cover");
+					} catch (Exception e) {
+						logger.error(ddd.toJSONString());
+					}
+					data.put("title", namepath + "的投稿");
+					data.put("intro", (description!=null?description:namepath));
+					data.put("cover", cover);
+					data.put("ctime", DateUtils.getDate());
+					infobili.put("data", data);
+					String temporaryDirectory = FileUtil.generateDir(true, Global.platform.bilibili.name(), false, null,
+							namepath, null);
+					if (Global.getGeneratenfo) {
+						if (!(new File(temporaryDirectory + File.separator + "tvshow.nfo").exists())) {
+							EmbyMetadataGenerator.createFavoriteNfo(infobili.toJSONString(), temporaryDirectory);
+						}
+					}
+
+					this.createBiliData(save, arcSearch, namepath, "合集");
 					return new AjaxEntity(Global.ajax_success,"任务启动成功", null);
 				}
 			} catch (Exception e2) {

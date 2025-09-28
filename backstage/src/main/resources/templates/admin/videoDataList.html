@@ -9,7 +9,6 @@
     <link href="../static/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="../static/css/style.min.css" rel="stylesheet">
     <link href="../static/js/skin/laypage.css" rel="stylesheet">
-
     <style>
         table{
             table-layout: fixed;
@@ -828,7 +827,9 @@
         } else if(item.videoplatform === '哔哩') {
             if(item.originaladdress.startsWith('bili-fav-')) return '收藏夹';
             if(item.originaladdress.startsWith('bili-arc-')) return '投稿';
-            return '分享链接';
+            if(item.originaladdress.startsWith('bili-seaarc-')) return '合集';
+            if(item.originaladdress.startsWith('https://')) return '分享链接';
+            return '收藏/合集';
         }
         return '其他';
     }
@@ -846,6 +847,7 @@
         } else if(item.videoplatform === '哔哩') {
             if(item.originaladdress.startsWith('bili-fav-')) return item.originaladdress.substring(9);
             if(item.originaladdress.startsWith('bili-arc-')) return item.originaladdress.substring(9);
+            if(item.originaladdress.startsWith('bili-seaarc-')) return item.originaladdress.substring(12);
         }
         return item.originaladdress;
     }

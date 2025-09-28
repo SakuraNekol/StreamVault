@@ -528,12 +528,77 @@ public class BiliUtil {
 	 * @param maxcur 限制数量
 	 * @return 视频列表
 	 */
+	public static JSONArray getSeasonsArchives(String mid,String seaarcid,Integer maxcur) {
+		List<JSONObject> videos = new ArrayList<>();
+		getSeasonsArchives(mid,seaarcid,"1" ,maxcur, videos);
+		JSONArray array = new JSONArray();
+		array.addAll(videos);
+		return array;
+	}
+	
+	/**
+	 * 获取用户投稿视频
+	 * 
+	 * @param mid    用户ID
+	 * @param maxcur 限制数量
+	 * @return 视频列表
+	 */
 	public static JSONArray getVideos(String mid, Integer maxcur) {
 		List<JSONObject> videos = new ArrayList<>();
 		getVideosRecursive(mid, "1", maxcur, videos);
 		JSONArray array = new JSONArray();
 		array.addAll(videos);
 		return array;
+	}
+	
+	
+	/**
+	 * 递归获取视频的具体实现
+	 */
+	private static void getSeasonsArchives(String mid,String seaarcid ,String pn, Integer maxcur, List<JSONObject> videos) {
+		String apiUrl = "https://api.bilibili.com/x/polymer/web-space/seasons_archives_list?mid="+mid+"&season_id="+seaarcid+"&sort_reverse=false&page_num="+pn+"&page_size=30";
+		try {
+			String response = HttpUtil.httpGetBili(apiUrl, Global.bilicookies, "https://space.bilibili.com",
+					"https://space.bilibili.com/" + mid);
+			JSONObject json = JSONObject.parseObject(response);
+			if (json.getInteger("code") == 0) {
+				JSONObject data = json.getJSONObject("data");
+				JSONArray list = data.getJSONArray("archives");
+//				JSONArray vlist = list.getJSONArray("vlist");
+				if (list.size() == 0) {
+					return;
+				}
+				JSONObject meta = data.getJSONObject("meta");
+				String cover = meta.getString("cover");
+				String description = meta.getString("description");
+				String name = meta.getString("name");
+				for (int i = 0; i < list.size(); i++) {
+					JSONObject video = list.getJSONObject(i);
+					if (videos.isEmpty()) {
+					    video.put("cover", cover);
+					    video.put("description", description);
+					    video.put("name", name);
+					}
+					videos.add(video);
+					if (maxcur != null && videos.size() >= maxcur) {
+						return;
+					}
+				}
+				if (maxcur == null || videos.size() < maxcur) {
+					Thread.sleep(5000); 
+					int page = Integer.parseInt(pn);
+					int count = data.getJSONObject("page").getInteger("count");
+					int ps = data.getJSONObject("page").getInteger("ps");
+					int totalPages = (count + ps - 1) / ps;
+					if (page < totalPages) {
+						getVideosRecursive(mid, String.valueOf(page + 1), maxcur, videos);
+					}
+				}
+				
+			}
+		} catch (Exception e) {
+			logger.error("获取视频列表失败: {}", e.getMessage());
+		}
 	}
 
 	/**
@@ -593,7 +658,30 @@ public class BiliUtil {
 			logger.error("获取视频列表失败: {}", e.getMessage());
 		}
 	}
+	
+	/** 合集列表类查询
+	 * @param mid
+	 * @param maxcur
+	 * @return
+	 */
+	public static JSONArray SeasonsSearch(String mid,String seaarcid, Integer maxcur) {
+		JSONArray videos = getSeasonsArchives(mid,seaarcid,maxcur);
+		if (videos != null && !videos.isEmpty()) {
+			String logMessage = maxcur == null ? String.format("获取到%d个视频", videos.size())
+					: String.format("获取到%d个视频(限制:%s)", videos.size(), maxcur);
+			logger.info(logMessage);
+			return videos;
+		}
+		return null;
+	}
+	
+	
 
+	/** 投稿类查询
+	 * @param mid
+	 * @param maxcur
+	 * @return
+	 */
 	public static JSONArray ArcSearch(String mid, Integer maxcur) {
 		JSONArray videos = getVideos(mid, maxcur);
 		if (videos != null && !videos.isEmpty()) {
@@ -606,6 +694,12 @@ public class BiliUtil {
 	}
 	
 	
+    /**
+     * 传入两个标题 判断使用哪个标题
+     * @param name1
+     * @param name2
+     * @return
+     */
     public static String chooseVideoTitle(String name1, String name2) {
         if ((name1 == null || name1.isEmpty()) && (name2 == null || name2.isEmpty())) {
             return "";
@@ -619,15 +713,37 @@ public class BiliUtil {
         if (name2 != null && !name2.isEmpty()) return name2;
         return name1 != null ? name1 : "";
     }
+    
+    /**
+     * 判断标题是否为系统标题
+     * @param name
+     * @return
+     */
     private static boolean isSystemGenerated(String name) {
         return name != null && name.matches("studio_video_\\d+");
     }
+    /**
+     * 判断是否包含中文
+     * @param name
+     * @return
+     */
     private static boolean hasChinese(String name) {
         if (name == null) return false;
         return name.codePoints().anyMatch(
                 c -> Character.UnicodeScript.of(c) == Character.UnicodeScript.HAN
         );
     }
+    /**
+     * 
+     * 下载弹幕
+     * 
+     * @param type
+     * @param oid
+     * @param aid
+     * @param duration
+     * @param filename
+     * @param title
+     */
     public static void biliDanmaku(String type, String oid, String aid, int duration,String filename,String title)  {
         int segmentLength = 360;
         int segmentCount = (int) Math.ceil(duration / (double) segmentLength);

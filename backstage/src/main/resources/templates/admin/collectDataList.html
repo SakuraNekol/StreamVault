@@ -173,6 +173,7 @@
 							<label>类型</label>
 							<select class="bilibili-select form-control">
 								<option value="arc">投稿</option>
+								<option value="seaarc">合集</option>
 								<option value="fav">收藏夹</option>
 							</select>
 						</div>
@@ -220,9 +221,15 @@
 
 				<div class="row">
 					<div class="col-md-6">
-						<div class="form-group">
+						<div class="form-group addressl">
 							<label class="address-label">收藏链接</label>
 							<input type="text" name="originaladdress" autocomplete="off" class="originaladdress form-control" placeholder="请输入收藏夹ID">
+						</div>
+					</div>
+					<div class="col-md-6 seaarcline"  style="display: none">
+						<div class="form-group">
+							<label class="address-label">合集ID</label>
+							<input type="text" name="seaarcid" autocomplete="off" class="seaarcid form-control" placeholder="合集ID">
 						</div>
 					</div>
 					<div class="col-md-6">
@@ -275,10 +282,15 @@
 					<div class="bilibili-tip">
 						<strong>哔哩哔哩提示:</strong><br/>
 						只需要填写收藏夹ID<br/>
-						eg. https://www.bilibili.com/medialist/detail/ml12344  中只需要填写 12344
-						如果是投稿  则只填用户id
+						eg. https://www.bilibili.com/medialist/detail/ml12344  中只需要填写 12344<br />
+						如果是投稿  则只填用户id<br />
 						eg. https://space.bilibili.com/xxxxx  中只需要填xxxx
-						同时B站逻辑中 未处理被风控命中 终止逻辑 所以会抛出异常  等待下一次监控继续执行
+						同时B站逻辑中 未处理被风控命中 终止逻辑 所以会抛出异常  等待下一次监控继续执行<br />
+						合集类 需要两个参数  本身目前懒 不分开了<br />
+						需要创作者的个人ID 和对应合集的ID 以#号拼接<br />
+						eg.https://space.bilibili.com/123456/lists?sid=789456<br />
+						填作者id 123456  合集id  789456<br />
+						
 					</div>
 					<div class="douyin-tip" style="display: none;">
 						<strong>抖音提示:</strong><br/>
@@ -330,12 +342,14 @@
 				$('.douyin-type').show();
 				$('.douyin-tip').show();
 				$('.bilibili-tip').hide();
+				$('.seaarcline').hide();
 				$('.bilibili-type').hide();
 				$('.bilibili-max-fetch').hide();
 				$('.address-label').parent().parent().show();
-				$('.address-label').text('用户ID');
+				$('.addressl .address-label').text('用户ID');
 				$('.originaladdress').attr('placeholder', '请输入用户ID');
 			} else {
+				$('.seaarcline').hide();
 				$('.douyin-type').hide();
 				$('.collect-list').hide();
 				$('.douyin-tip').hide();
@@ -343,7 +357,7 @@
 				$('.bilibili-type').show();
 				$('.bilibili-max-fetch').hide();
 				$('.address-label').parent().parent().show();
-				$('.address-label').text('收藏链接');
+				$('.addressl .address-label').text('收藏链接');
 				$('.originaladdress').attr('placeholder', '请输入收藏夹ID');
 				$('.bilibili-select').trigger('change');
 			}
@@ -354,10 +368,18 @@
 			var type = $(this).val();
 			if(type === 'arc') {
 				$('.bilibili-max-fetch').show();
+				$('.seaarcline').hide();
 				$('.originaladdress').attr('placeholder', '请输入UP主ID');
-			} else {
+			} 
+			if(type === 'fav'){
 				$('.bilibili-max-fetch').hide();
+				$('.seaarcline').hide();
 				$('.originaladdress').attr('placeholder', '请输入收藏夹ID');
+			}
+			if(type === 'seaarc'){
+				$('.bilibili-max-fetch').show();
+				$('.seaarcline').show();
+				$('.originaladdress').attr('placeholder', '请输入创作者ID');
 			}
 		}).trigger('change');
 
@@ -441,10 +463,13 @@
 			}
 			if(platform === '哔哩') {
 				var type = $('.bilibili-select').val();
+				var seaarcid = $('.seaarcid').val();
 				if(type === 'fav') {
 					originaladdress = 'bili-fav-' + originaladdress;
 				} else if(type === 'arc') {
 					originaladdress = 'bili-arc-' + originaladdress;
+				} else if(type === 'seaarc') {
+					originaladdress = 'bili-seaarc-' + originaladdress+"#"+seaarcid;
 				}
 			}
 			
@@ -464,7 +489,7 @@
 			// 如果是B站，添加最大获取数参数
 			if(platform === '哔哩') {
 				var type = $('.bilibili-select').val();
-				if(type === 'arc') {
+				if(type === 'arc' || type === 'seaarc' ) {
 					option.omaxcur = $('.bilibili-type .max-fetch').val();
 					option.maxcur = $('.bilibili-type .monitor-max-fetch').val();
 				}
@@ -502,7 +527,7 @@
 			layer.open({
 				type: 1,
 				skin: 'layui-layer-rim',
-				area: ['530px', '550px'],
+				area: ['680px', '720px'],
 				content: $('.addCollectBox')
 			});
 		})
@@ -637,6 +662,9 @@
 								} else if(list[i].originaladdress.startsWith('bili-arc-')) {
 									addressType = '投稿';
 									addressValue = list[i].originaladdress.substring(9);
+								}else if(list[i].originaladdress.startsWith('bili-seaarc-')) {
+									addressType = '合集';
+									addressValue = list[i].originaladdress.substring(12);
 								} else {
 									// 旧数据格式
 									addressType = '收藏夹(旧格式)';
@@ -673,7 +701,7 @@
 									+'<td title="'+list[i].taskname+'">'
 										+textnone(list[i].taskname)
 										+'<br/><small class="text-muted">'
-										+(list[i].platform === '哔哩' && list[i].originaladdress.startsWith('bili-arc-') ? 
+										+(list[i].platform === '哔哩' && (list[i].originaladdress.startsWith('bili-arc-') || list[i].originaladdress.startsWith('bili-seaarc-')) ? 
 											(list[i].omaxcur ? '首次:'+list[i].omaxcur : '首次:哔哩全量') + 
 											' | ' + 
 											(list[i].maxcur ? '监控:'+list[i].maxcur : '监控:哔哩全量') : 
@@ -699,7 +727,7 @@
 									+'<a data-id="'+list[i].id+'" class="btn btn-xs btn-success startTask" href="#!" title="开始任务" data-toggle="tooltip">开始任务</a>'
 									+'<a data-id="'+list[i].id+'" class="btn btn-xs btn-default viewProcesses" href="#!" title="查看进程" data-toggle="tooltip">查看进程</a>'
 									+'<a data-id="'+list[i].id+'" class="btn btn-xs btn-default deleteProcesses" href="#!" title="删除" data-toggle="tooltip">删除</a>'
-									+(list[i].platform === '哔哩' && !list[i].originaladdress.startsWith('bili-fav-') && !list[i].originaladdress.startsWith('bili-arc-') ? 
+									+(list[i].platform === '哔哩' && !list[i].originaladdress.startsWith('bili-fav-') && !list[i].originaladdress.startsWith('bili-arc-')  && !list[i].originaladdress.startsWith('bili-seaarc-') ? 
 										'<a onclick="fixData('+list[i].id+')" data-id="'+list[i].id+'" class="btn btn-xs btn-warning fixData" href="#!" title="将数据格式调整为新版" data-toggle="tooltip">修复</a>' : '')
 									+'</div>'
 									+'</td></tr>'
