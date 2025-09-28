@@ -557,7 +557,6 @@ public class BiliUtil {
 		try {
 			String response = HttpUtil.httpGetBili(apiUrl, Global.bilicookies, "https://space.bilibili.com",
 					"https://space.bilibili.com/" + mid);
-			System.out.println(apiUrl);
 			JSONObject json = JSONObject.parseObject(response);
 			if (json.getInteger("code") == 0) {
 				JSONObject data = json.getJSONObject("data");
