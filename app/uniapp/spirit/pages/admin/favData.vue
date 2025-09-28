@@ -34,6 +34,7 @@
 					</view>
 				</view>
 				<view class="fav-actions">
+					<button class="execTaskById-btn" @tap="execTaskById(item)">单次运行</button>
 					<button class="delete-btn" @tap="deleteFav(item)">删除</button>
 				</view>
 			</view>
@@ -118,6 +119,46 @@
 					complete: () => {
 						this.loading = false;
 						uni.stopPullDownRefresh();
+					}
+				});
+			},
+			execTaskById(item){
+				uni.showModal({
+					title: '执行',
+					content: '确定要执行单次该任务吗？',
+					success: (res) => {
+						if (res.confirm) {
+							this.confirmexecTaskById(item);
+						}
+					}
+				});
+			},
+			confirmexecTaskById(item){
+				var that = this;
+				const serveraddr = uni.getStorageSync('serveraddr');
+				const serverport = uni.getStorageSync('serverport');
+				const adminCookie = uni.getStorageSync('adminCookie');
+				uni.showLoading({title: '调度中...'});
+				uni.request({
+					url: `${serveraddr}:${serverport}/admin/api/execCollectData?id=${item.id}`,
+					method: 'GET',
+					header: {
+						'content-type': 'application/x-www-form-urlencoded',
+						'Cookie': adminCookie
+					},
+					success: (res) => {
+						if (res.data.resCode === '000001') {
+							uni.showToast({title: '执行成功', icon: 'success'});
+							that.getList(1); // 假设你有一个获取列表的方法
+						} else {
+							uni.showToast({title: res.data.message || '执行失败', icon: 'none'});
+						}
+					},
+					fail: () => {
+						uni.showToast({title: '网络错误', icon: 'none'});
+					},
+					complete: () => {
+						uni.hideLoading();
 					}
 				});
 			},
@@ -225,6 +266,16 @@
 }
 .delete-btn {
 	background: #ff4d4f;
+	color: #fff;
+	border-radius: 20rpx;
+	font-size: 24rpx;
+	padding: 0 32rpx;
+	height: 48rpx;
+	line-height: 48rpx;
+	border: none;
+}
+.execTaskById-btn{
+	background: #0676ff;
 	color: #fff;
 	border-radius: 20rpx;
 	font-size: 24rpx;

@@ -1,10 +1,7 @@
 package com.flower.spirit.utils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -560,6 +557,7 @@ public class BiliUtil {
 		try {
 			String response = HttpUtil.httpGetBili(apiUrl, Global.bilicookies, "https://space.bilibili.com",
 					"https://space.bilibili.com/" + mid);
+			System.out.println(apiUrl);
 			JSONObject json = JSONObject.parseObject(response);
 			if (json.getInteger("code") == 0) {
 				JSONObject data = json.getJSONObject("data");
