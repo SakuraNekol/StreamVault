@@ -8,6 +8,8 @@ import com.flower.spirit.entity.NotifyConfigEntity;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +30,7 @@ public class sendNotify {
     public static final String CHANNEL_QYWX = "qywx"; // 企业微信
     public static final String CHANNEL_DINGDING = "dingding"; // 钉钉
     public static final String CHANNEL_FEISHU = "feishu"; // 飞书
+    public static final String CHANNEL_SCT = "sct"; // Server酱
     
     
     /**
@@ -124,6 +127,8 @@ public class sendNotify {
                     return sendDingdingNotify(title, content, config);
                 case CHANNEL_FEISHU:
                     return sendFeishuNotify(title, content, config);
+                case CHANNEL_SCT:
+                    return sendSctNotify(title, content, config);
                 default:
                     logger.error("[通知发送] 不支持的通知渠道: {}", config.getNotifychannel());
                     return false;
@@ -134,7 +139,25 @@ public class sendNotify {
         }
     }
 
-    /**
+    private static boolean sendSctNotify(String title, String content, NotifyConfigEntity config) {
+    	 HttpHeaders headers = new HttpHeaders();
+         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    	 String url = "https://sctapi.ftqq.com/"+config.getSctkey()+".send";
+    	 MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+         params.add("title", title);
+         params.add("desp", content);
+         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+         try {
+             String response = restTemplate.postForObject(url, request, String.class);
+             logger.error("[通知发送] 发送成功: {}", response);
+         } catch (Exception e) {
+             e.printStackTrace();
+         }
+		return false;
+	}
+
+
+	/**
      * 企业微信通知
      */
     private static boolean sendQywxNotify(String title, String content, NotifyConfigEntity config) {

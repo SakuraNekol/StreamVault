@@ -320,7 +320,7 @@
                                         <label>通知渠道</label>
                                         <select class="form-control" id="notifyChannel" onchange="changeChannel()">
                                             <option value="qywx">企业微信</option>
-                                            <option value="dingding">钉钉(未测试)</option>
+                                            <option value="sct">Server酱</option>
                                             <option value="feishu">飞书</option>
                                         </select>
                                     </div>
@@ -328,12 +328,10 @@
                                         <label>企业微信WebHook Key</label>
                                         <input type="text" class="form-control" id="qywxKey">
                                     </div>
-<!--                                     <div class="form-group dingding-config" style="display:none;">
-                                        <label>钉钉WebHook Key</label>
-                                        <input type="text" class="form-control" id="dingdingKey">
-                                        <label class="mt-2">钉钉加签密钥(可选)</label>
-                                        <input type="text" class="form-control" id="dingdingSecret">
-                                    </div> -->
+                      				 <div class="form-group sct-config" style="display:none;">
+                                        <label>Server酱 Key</label>
+                                        <input type="text" class="form-control" id="sctkey" >
+                                    </div>
                                     <div class="form-group feishu-config" style="display:none;">
                                         <label>飞书WebHook Key</label>
                                         <input type="text" class="form-control" id="feishuKey">
@@ -398,9 +396,8 @@
                     // 根据渠道设置对应的值
                     if(config.notifychannel === 'qywx') {
                         $("#qywxKey").val(config.qywxkey);
-                    } else if(config.notifychannel === 'dingding') {
-                        $("#dingdingKey").val(config.dingdingKey);
-                        $("#dingdingSecret").val(config.dingdingSecret);
+                    } else if(config.notifychannel === 'sct') {
+                        $("#sctkey").val(config.sctkey);
                     } else if(config.notifychannel === 'feishu') {
                         $("#feishuKey").val(config.feishuKey);
                     }
@@ -418,9 +415,8 @@
         // 根据选择的渠道设置对应的key
         if(channel === 'qywx') {
             data.qywxkey = $("#qywxKey").val();
-        } else if(channel === 'dingding') {
-            data.dingdingKey = $("#dingdingKey").val();
-            data.dingdingSecret = $("#dingdingSecret").val();
+        } else if(channel === 'sct') {
+            data.sctkey = $("#sctkey").val();
         } else if(channel === 'feishu') {
             data.feishuKey = $("#feishuKey").val();
         }
@@ -697,7 +693,7 @@
     }
     function changeChannel() {
         var channel = $("#notifyChannel").val();
-        $(".qywx-config, .dingding-config, .feishu-config").hide();
+        $(".qywx-config, .sct-config, .feishu-config").hide();
         $("." + channel + "-config").show();
     }
     function detectPlatform() {

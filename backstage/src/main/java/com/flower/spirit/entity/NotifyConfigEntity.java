@@ -36,6 +36,8 @@ public class NotifyConfigEntity implements Serializable {
 	private String dingdingSecret; // 钉钉机器人密钥
 
 	private String feishuKey; // 飞书机器人key
+	
+	private String sctkey;
 
 	public Integer getId() {
 		return id;
@@ -84,4 +86,13 @@ public class NotifyConfigEntity implements Serializable {
 	public void setFeishuKey(String feishuKey) {
 		this.feishuKey = feishuKey;
 	}
+
+	public String getSctkey() {
+		return sctkey;
+	}
+
+	public void setSctkey(String sctkey) {
+		this.sctkey = sctkey;
+	}
+	
 }
