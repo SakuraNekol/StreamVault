@@ -64,6 +64,10 @@ public class BiliUtil {
 		String api = buildInterfaceAddress(videoDataInfo.get("aid"), videoDataInfo.get("cid"), token, quality);
 		String httpGetBili = HttpUtil.httpGetBili(api, "UTF-8", token);
 		JSONObject parseObject = JSONObject.parseObject(httpGetBili);
+	    int code = parseObject.getIntValue("code");
+	    if (code == -404) {
+	        return null; 
+	    }
 		String filename = StringUtil.getFileName(videoDataInfo.get("title"), videoDataInfo.get("cid"));
 		if ((Integer.valueOf(Global.bilibitstream) >= 80 && quality.equals("1"))
 				|| parseObject.getJSONObject("data").containsKey("dash")) {
@@ -234,6 +238,7 @@ public class BiliUtil {
 			String fav)
 			throws Exception {
 		// 获取音视频流URL
+//		System.out.println(videoData);
 		JSONObject dashData = videoData.getJSONObject("data").getJSONObject("dash");
 		String videoUrl = dashData.getJSONArray("video").getJSONObject(0).getString("base_url");
 		String audioUrl = dashData.getJSONArray("audio").getJSONObject(0).getString("base_url");
@@ -557,7 +562,9 @@ public class BiliUtil {
 		try {
 			String response = HttpUtil.httpGetBili(apiUrl, Global.bilicookies, "https://space.bilibili.com",
 					"https://space.bilibili.com/" + mid);
+//			System.out.println(apiUrl);
 			JSONObject json = JSONObject.parseObject(response);
+//			System.out.println(json);
 			if (json.getInteger("code") == 0) {
 				JSONObject data = json.getJSONObject("data");
 				JSONArray list = data.getJSONArray("archives");
@@ -584,8 +591,8 @@ public class BiliUtil {
 				if (maxcur == null || videos.size() < maxcur) {
 					Thread.sleep(5000); 
 					int page = Integer.parseInt(pn);
-					int count = data.getJSONObject("page").getInteger("count");
-					int ps = data.getJSONObject("page").getInteger("ps");
+					int count = data.getJSONObject("page").getInteger("total");
+					int ps = data.getJSONObject("page").getInteger("page_size");
 					int totalPages = (count + ps - 1) / ps;
 					if (page < totalPages) {
 						getVideosRecursive(mid, String.valueOf(page + 1), maxcur, videos);
@@ -697,19 +704,40 @@ public class BiliUtil {
      * @param name2
      * @return
      */
-    public static String chooseVideoTitle(String name1, String name2) {
-        if ((name1 == null || name1.isEmpty()) && (name2 == null || name2.isEmpty())) {
-            return "";
-        }
-        if (isSystemGenerated(name1) && !isSystemGenerated(name2)) return name2;
-        if (isSystemGenerated(name2) && !isSystemGenerated(name1)) return name1;
-        boolean n1HasChinese = hasChinese(name1);
-        boolean n2HasChinese = hasChinese(name2);
-        if (n1HasChinese && !n2HasChinese) return name1;
-        if (n2HasChinese && !n1HasChinese) return name2;
-        if (name2 != null && !name2.isEmpty()) return name2;
-        return name1 != null ? name1 : "";
-    }
+	public static String chooseVideoTitle(String name1, String name2) {
+	    if ((name1 == null || name1.isEmpty()) && (name2 == null || name2.isEmpty())) {
+	        return "";
+	    }
+	    if (isSystemGenerated(name1) && !isSystemGenerated(name2)) return name2;
+	    if (isSystemGenerated(name2) && !isSystemGenerated(name1)) return name1;
+	    boolean n1HasChinese = hasChinese(name1);
+	    boolean n2HasChinese = hasChinese(name2);
+	    if (n1HasChinese && !n2HasChinese) return name1;
+	    if (n2HasChinese && !n1HasChinese) return name2;
+	    if (n1HasChinese && n2HasChinese) {
+	        int len1 = chineseLength(name1);
+	        int len2 = chineseLength(name2);
+	        if (len1 != len2) {
+	            return len1 > len2 ? name1 : name2;
+	        }
+	    }
+	    if (name2 != null && !name2.isEmpty()) return name2;
+
+	    return name1 != null ? name1 : "";
+	}
+
+	/** 统计字符串里的中文字符数量 */
+	private static int chineseLength(String str) {
+	    if (str == null) return 0;
+	    int count = 0;
+	    for (char c : str.toCharArray()) {
+	        if (String.valueOf(c).matches("[\\u4e00-\\u9fa5]")) {
+	            count++;
+	        }
+	    }
+	    return count;
+	}
+
     
     /**
      * 判断标题是否为系统标题

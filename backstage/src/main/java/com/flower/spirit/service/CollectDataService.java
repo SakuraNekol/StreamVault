@@ -302,54 +302,59 @@ public class CollectDataService {
 					if (findByVideoid.size() == 0) {
 						Map<String, String> findVideoStreaming = BiliUtil.findVideoStreamingNoData(map,
 								Global.bilicookies, map.get("quality"), namepath);
-						String videounaddr = FileUtil.generateDir(false, Global.platform.bilibili.name(), false,
-								filename, namepath, "mp4");
-						String duration = findVideoStreaming.get("duration"); //视频秒数
-						String aid = findVideoStreaming.get("aid");
-						
-						// 封面down
-						String codir = FileUtil.generateDir(false, Global.platform.bilibili.name(), false, filename,
-								namepath, null);
-						String dir = FileUtil.generateDir(true, Global.platform.bilibili.name(), false, filename,
-								namepath, null);
-						String dirpath = FileUtil.generateDir(true, Global.platform.bilibili.name(), false, null,
-								namepath, null);
-						HttpUtil.downBiliFromUrl(findVideoStreaming.get("pic"), filename + ".jpg", dir);
-						// 封面down
-						VideoDataEntity videoDataEntity = new VideoDataEntity(findVideoStreaming.get("cid"),
-								findVideoStreaming.get("title"), findVideoStreaming.get("desc"), "哔哩",
-								codir + "/" + filename + ".jpg", findVideoStreaming.get("video"), videounaddr, bvid);
-						logger.info(vt + (i + 1) + "下载流程结束");
+						if(findVideoStreaming!= null) {
+							String videounaddr = FileUtil.generateDir(false, Global.platform.bilibili.name(), false,
+									filename, namepath, "mp4");
+							String duration = findVideoStreaming.get("duration"); //视频秒数
+							String aid = findVideoStreaming.get("aid");
+							
+							// 封面down
+							String codir = FileUtil.generateDir(false, Global.platform.bilibili.name(), false, filename,
+									namepath, null);
+							String dir = FileUtil.generateDir(true, Global.platform.bilibili.name(), false, filename,
+									namepath, null);
+							String dirpath = FileUtil.generateDir(true, Global.platform.bilibili.name(), false, null,
+									namepath, null);
+							HttpUtil.downBiliFromUrl(findVideoStreaming.get("pic"), filename + ".jpg", dir);
+							// 封面down
+							VideoDataEntity videoDataEntity = new VideoDataEntity(findVideoStreaming.get("cid"),
+									findVideoStreaming.get("title"), findVideoStreaming.get("desc"), "哔哩",
+									codir + "/" + filename + ".jpg", findVideoStreaming.get("video"), videounaddr, bvid);
+							logger.info(vt + (i + 1) + "下载流程结束");
 
-						JSONObject owner = JSONObject.parseObject(map.get("owner"));
-						String upface = owner.getString("face");
-						String upname = owner.getString("name");
-						String upmid = owner.getString("mid");
-						String ctime = map.get("ctime");
-						// 下载up 头像 up头像不参与数据 只参与nfo
-						HttpUtil.downBiliFromUrl(upface, "upcover" + upmid + ".jpg", dir);
-						String uplocal = "upcover" + upmid + ".jpg";
-						if (null != Global.nfonetaddr && !"".equals(Global.nfonetaddr)) {
-							uplocal = Global.nfonetaddr + codir + uplocal + "?apptoken=" + Global.readonlytoken;
+							JSONObject owner = JSONObject.parseObject(map.get("owner"));
+							String upface = owner.getString("face");
+							String upname = owner.getString("name");
+							String upmid = owner.getString("mid");
+							String ctime = map.get("ctime");
+							// 下载up 头像 up头像不参与数据 只参与nfo
+							HttpUtil.downBiliFromUrl(upface, "upcover" + upmid + ".jpg", dir);
+							String uplocal = "upcover" + upmid + ".jpg";
+							if (null != Global.nfonetaddr && !"".equals(Global.nfonetaddr)) {
+								uplocal = Global.nfonetaddr + codir + uplocal + "?apptoken=" + Global.readonlytoken;
+							}
+							String piclocal = filename + ".jpg";
+							map.put("upname", upname);
+							map.put("upmid", upmid);
+							map.put("upface", uplocal);
+							map.put("piclocal", piclocal);
+							map.put("ctime", ctime);
+							map.put("title", filename);
+							if (Global.getGeneratenfo) {
+								EmbyMetadataGenerator.createFavoriteEpisodeNfo(map, dir, i + 1, dirpath);
+							}
+							if(Global.danmudown) {
+//								BiliUtil.biliDanmaku("1", cid, aid, Integer.valueOf(duration), dir + File.separator+filename+".ass",title);
+							    JSONObject videoInfoJson = new JSONObject();
+						        videoInfoJson.put("aid", aid);
+						        videoInfoJson.put("duration", duration);
+						        videoDataEntity.setVideoinfo(videoInfoJson.toJSONString());
+							}
+							videoDataDao.save(videoDataEntity);
+						}else {
+							logger.info(vt + (i + 1) + "-"+filename+"非常规类视频  当前不支持bangumi模式");
 						}
-						String piclocal = filename + ".jpg";
-						map.put("upname", upname);
-						map.put("upmid", upmid);
-						map.put("upface", uplocal);
-						map.put("piclocal", piclocal);
-						map.put("ctime", ctime);
-						map.put("title", filename);
-						if (Global.getGeneratenfo) {
-							EmbyMetadataGenerator.createFavoriteEpisodeNfo(map, dir, i + 1, dirpath);
-						}
-						if(Global.danmudown) {
-//							BiliUtil.biliDanmaku("1", cid, aid, Integer.valueOf(duration), dir + File.separator+filename+".ass",title);
-						    JSONObject videoInfoJson = new JSONObject();
-					        videoInfoJson.put("aid", aid);
-					        videoInfoJson.put("duration", duration);
-					        videoDataEntity.setVideoinfo(videoInfoJson.toJSONString());
-						}
-						videoDataDao.save(videoDataEntity);
+				
 					}else {
 						logger.info(vt + (i + 1) + "-"+filename+"已存在,不下载");
 					}

@@ -204,14 +204,21 @@ public class HttpUtil {
         }
 
         getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
-        String response = "";
+        StringBuilder response = new StringBuilder();
         try {
             int statusCode = httpClient.executeMethod(getMethod);
             if (statusCode != HttpStatus.SC_OK) {
                 System.err.println("请求出错: " + getMethod.getStatusLine());
+            } else {
+                try (InputStream is = getMethod.getResponseBodyAsStream();
+                     InputStreamReader isr = new InputStreamReader(is, "UTF-8");
+                     BufferedReader reader = new BufferedReader(isr)) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
+                    }
+                }
             }
-            byte[] responseBody = getMethod.getResponseBody();
-            response = new String(responseBody, param);
         } catch (HttpException e) {
             System.out.println("请检查输入的URL!");
             e.printStackTrace();
@@ -219,10 +226,9 @@ public class HttpUtil {
             System.out.println("发生网络异常!");
             e.printStackTrace();
         } finally {
-            /* 6 .释放连接 */
             getMethod.releaseConnection();
         }
-        return response;
+        return response.toString();
     }
     
     public static String httpGetBili(String url, String cookie,String origin,String referer ) {
