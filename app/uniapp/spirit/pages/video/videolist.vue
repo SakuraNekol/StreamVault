@@ -10,6 +10,7 @@
 						placeholder="搜索视频..." 
 						placeholder-class="placeholder"
 						@confirm="handleSearch"
+						@input="debounceSearch"
 					/>
 					<view class="search-btn" @click="handleSearch">
 						<uni-icons type="search" size="18" color="#666"></uni-icons>
@@ -59,7 +60,7 @@
 		<view class="content-wrap">
 			<!-- 视频列表 -->
 			<view class="video-list">
-				<!-- 骨架屏卡片 -->
+				<!-- 骨架屏卡片 - 只在加载中且列表为空时显示 -->
 				<view 
 					class="video-card skeleton-card" 
 					v-for="n in 6" 
@@ -132,13 +133,13 @@
 				</view>
 			</view>
 
-			<!-- 加载更多 -->
-			<view class="loading-more" v-if="list.length > 0">
+			<!-- 加载更多 - 只在有数据且正在加载时显示 -->
+			<view class="loading-more" v-if="list.length > 0 && isLoading">
 				<text class="loading-text">加载中...</text>
 			</view>
 
-			<!-- 空状态 -->
-			<view class="empty-state" v-if="list.length === 0">
+			<!-- 空状态 - 只在不加载且无数据时显示 -->
+			<view class="empty-state" v-if="!isLoading && list.length === 0">
 				<text class="empty-text">暂无视频内容</text>
 			</view>
 		</view>
@@ -156,12 +157,25 @@
 				isSearching: false,
 				showFilter: false,
 				selectedPlatform: '',
-				selectedTag: ''
+				selectedTag: '',
+				searchRequestId: 0, // 添加请求ID来处理竞态条件
+				searchTimer: null // 添加搜索防抖定时器
 			}
 		},
 		onLoad() {
 			console.log('页面加载，开始获取数据');
 			this.getData(this.fetchPageNum);
+		},
+		
+		/**
+		 * 页面卸载时清理定时器
+		 */
+		onUnload() {
+			console.log('页面卸载，清理定时器');
+			if (this.searchTimer) {
+				clearTimeout(this.searchTimer);
+				this.searchTimer = null;
+			}
 		},
 		
 		/**
@@ -188,12 +202,36 @@
 		},
 		methods: {
 			/**
+			 * 防抖搜索方法
+			 */
+			debounceSearch() {
+				// 清除之前的定时器
+				if (this.searchTimer) {
+					clearTimeout(this.searchTimer);
+				}
+				
+				// 设置新的定时器
+				this.searchTimer = setTimeout(() => {
+					this.handleSearch();
+				}, 300); // 300ms 防抖延迟
+			},
+			
+			/**
 			 * 清空搜索条件
 			 */
 			clearSearch() {
+				console.log('清空搜索条件');
+				// 清除搜索防抖定时器
+				if (this.searchTimer) {
+					clearTimeout(this.searchTimer);
+					this.searchTimer = null;
+				}
+				
 				this.searchKey = '';
 				this.isSearching = false;
+				this.isLoading = false; // 重置加载状态
 				this.fetchPageNum = 1;
+				this.list = []; // 先清空列表
 				this.getData(this.fetchPageNum);
 			},
 			
@@ -224,6 +262,7 @@
 			 * 清空筛选条件
 			 */
 			clearFilters() {
+				console.log('清空筛选条件');
 				this.selectedPlatform = '';
 				this.selectedTag = '';
 				this.applyFilters();
@@ -233,9 +272,12 @@
 			 * 应用筛选条件
 			 */
 			applyFilters() {
+				console.log('应用筛选条件');
 				this.fetchPageNum = 1;
 				this.isSearching = true;
+				this.isLoading = false; // 重置加载状态
 				this.showFilter = false; // 应用筛选后关闭筛选面板
+				this.list = []; // 先清空列表
 				this.getData(this.fetchPageNum);
 			},
 			
@@ -315,11 +357,28 @@
 					return timeStr;
 				}
 			},
+			
+			/**
+			 * 处理搜索请求
+			 */
 			handleSearch() {
-				// if (!this.searchKey.trim()) {
-				// 	return;
-				// }
+				console.log('开始搜索，关键词:', this.searchKey);
+				
+				// 防止重复搜索
+				if (this.isLoading) {
+					console.log('正在搜索中，忽略重复请求');
+					return;
+				}
+				
+				// 增加请求ID，用于处理竞态条件
+				this.searchRequestId++;
+				const currentRequestId = this.searchRequestId;
+				
 				this.isSearching = true;
+				this.isLoading = true; // 设置加载状态
+				this.fetchPageNum = 1; // 重置页码
+				this.list = []; // 清空列表，显示骨架屏
+				
 				var that = this;
 				var serveraddr = uni.getStorageSync('serveraddr');
 				var serverport = uni.getStorageSync('serverport');
@@ -331,29 +390,36 @@
 				});
 				
 				// 构建搜索参数，包含筛选条件
-			var searchData = {
-				videodesc: that.searchKey,
-				videoname: that.searchKey
-			};
-			
-			// 添加筛选条件
-			if (this.selectedPlatform) {
-				searchData.videoplatform = this.selectedPlatform;
-			}
-			if (this.selectedTag) {
-				searchData.videotag = this.selectedTag;
-			}
-			
-			uni.request({
-				url: api,
-				method: "POST",
-				header: {
-					'content-type': 'application/x-www-form-urlencoded'
-				},
-				data: searchData,
+				var searchData = {
+					videodesc: that.searchKey,
+					videoname: that.searchKey
+				};
+				
+				// 添加筛选条件
+				if (this.selectedPlatform) {
+					searchData.videoplatform = this.selectedPlatform;
+				}
+				if (this.selectedTag) {
+					searchData.videotag = this.selectedTag;
+				}
+				
+				uni.request({
+					url: api,
+					method: "POST",
+					header: {
+						'content-type': 'application/x-www-form-urlencoded'
+					},
+					data: searchData,
 					success(res) {
+						// 检查是否是最新的请求
+						if (currentRequestId !== that.searchRequestId) {
+							console.log('忽略过期的搜索请求');
+							return;
+						}
+						
+						that.isLoading = false; // 重置加载状态
+						
 						if(res.data.resCode == "000001"){
-							that.list = [];
 							var content = res.data.record.content;
 							for(var i = 0; i < content.length; i++){
 								content[i].videounrealaddr = `${serveraddr}:${serverport}${content[i].videounrealaddr}?apptoken=${servertoken}`;
@@ -364,17 +430,52 @@
 								content[i].showPlayBtn = false; // 初始化播放按钮状态
 							}
 							that.list = content;
+							that.fetchPageNum = 2; // 设置下一页页码
+							console.log('搜索完成，获取到', content.length, '条数据');
+						} else {
+							uni.showToast({
+								title: res.data.resMsg || '搜索失败',
+								icon: 'none'
+							});
 						}
 					},
+					fail(error) {
+						// 检查是否是最新的请求
+						if (currentRequestId !== that.searchRequestId) {
+							console.log('忽略过期的搜索请求错误');
+							return;
+						}
+						
+						that.isLoading = false; // 重置加载状态
+						console.error('搜索请求失败:', error);
+						uni.showToast({
+							title: '搜索失败',
+							icon: 'none'
+						});
+					},
 					complete() {
+						// 检查是否是最新的请求
+						if (currentRequestId !== that.searchRequestId) {
+							return;
+						}
+						
 						uni.hideLoading();
 					}
 				});
 			},
+			
 			/**
 			 * 获取视频数据
 			 */
 			getData(page) {
+				console.log('获取数据，页码:', page);
+				
+				// 防止重复请求
+				if (this.isLoading) {
+					console.log('正在加载中，忽略重复请求');
+					return;
+				}
+				
 				this.isLoading = true;
 				
 				var that = this;
@@ -395,7 +496,7 @@
 				var servertoken = uni.getStorageSync('servertoken');
 				var api = `${serveraddr}:${serverport}/api/findVideos?token=${servertoken}`;
 				
-				// console.log('请求参数:', option);
+				console.log('请求参数:', option);
 				
 				uni.request({
 					url: api,
@@ -406,29 +507,34 @@
 					data: option,
 					success(res) {
 						that.isLoading = false;
-						// console.log('获取数据成功:', res);
+						console.log('获取数据成功:', res);
 						
 						if(res.data.resCode == "000001"){
 							var temp = that.list;
-							that.list = [];
-							uni.showToast({
-							    icon: 'none',
-							    title: '刷新成功'
-							});
+							
+							// 如果是第一页，显示刷新成功提示
+							if (that.fetchPageNum === 1) {
+								that.list = [];
+								uni.showToast({
+								    icon: 'none',
+								    title: '刷新成功'
+								});
+							}
+							
 							var content = res.data.record.content;
 							
 							// 为新数据添加图片懒加载状态
-						for(var i = 0; i < content.length; i++){
-							content[i].videounrealaddr = `${serveraddr}:${serverport}${content[i].videounrealaddr}?apptoken=${servertoken}`;
-							content[i].videocover = `${serveraddr}:${serverport}${content[i].videocover}?apptoken=${servertoken}`;
-							content[i].imageLoading = true;
-							content[i].imageError = false;
-							content[i].showPlayBtn = false; // 初始化播放按钮状态
-						}
+							for(var i = 0; i < content.length; i++){
+								content[i].videounrealaddr = `${serveraddr}:${serverport}${content[i].videounrealaddr}?apptoken=${servertoken}`;
+								content[i].videocover = `${serveraddr}:${serverport}${content[i].videocover}?apptoken=${servertoken}`;
+								content[i].imageLoading = true;
+								content[i].imageError = false;
+								content[i].showPlayBtn = false; // 初始化播放按钮状态
+							}
 							
 							that.list = temp.concat(content);
 							that.fetchPageNum = that.fetchPageNum + 1;
-							// console.log(that.list);
+							console.log('当前列表长度:', that.list.length);
 						} else {
 							uni.showToast({
 								title: res.data.resMsg || '获取数据失败',
