@@ -345,7 +345,7 @@
 				$('.seaarcline').hide();
 				$('.bilibili-type').hide();
 				$('.bilibili-max-fetch').hide();
-				$('.address-label').parent().parent().show();
+				$('.addressl').show();
 				$('.addressl .address-label').text('用户ID');
 				$('.originaladdress').attr('placeholder', '请输入用户ID');
 			} else {
@@ -356,7 +356,7 @@
 				$('.bilibili-tip').show();
 				$('.bilibili-type').show();
 				$('.bilibili-max-fetch').hide();
-				$('.address-label').parent().parent().show();
+				$('.addressl').show();
 				$('.addressl .address-label').text('收藏链接');
 				$('.originaladdress').attr('placeholder', '请输入收藏夹ID');
 				$('.bilibili-select').trigger('change');
@@ -385,19 +385,19 @@
 
 		// 抖音类型选择切换
 		$('.douyin-select').change(function(){
+			$('.seaarcline').hide();
 			var type = $(this).val();
 			if(type === 'collect') {
 				$('.collect-list').show();
-				$('.address-label').parent().parent().hide(); // 隐藏用户ID输入框
-				// 清空收藏夹列表
+				$('.addressl').show().hide(); 
 				$('.collect-select').html('<option value="">加载中...</option>');
 				// 直接调用加载收藏夹
 				loadCollectList();
 			} else {
 				$('.collect-list').hide();
-				$('.address-label').parent().parent().show(); // 显示用户ID输入框
+				$('.addressl').show(); // 显示用户ID输入框
 				$('.address-label').text('用户ID');
-				$('.originaladdress').attr('placeholder', '请输入用户ID');
+				$('.addressl .originaladdress').attr('placeholder', '请输入用户ID');
 			}
 		});
 

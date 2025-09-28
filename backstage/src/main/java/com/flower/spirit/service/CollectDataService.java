@@ -33,6 +33,7 @@ import com.flower.spirit.dao.VideoDataDao;
 import com.flower.spirit.entity.CollectDataDetailEntity;
 import com.flower.spirit.entity.CollectDataEntity;
 import com.flower.spirit.entity.VideoDataEntity;
+import com.flower.spirit.executor.DouYinExecutor;
 import com.flower.spirit.task.QuartzTaskService;
 import com.flower.spirit.utils.Aria2Util;
 import com.flower.spirit.utils.BiliUtil;
@@ -426,20 +427,26 @@ public class CollectDataService {
 				JSONArray jsonArray = aweme_detail.getJSONArray("video_play_addr");
 				if (jsonArray == null || jsonArray.isEmpty()) {
 					// 不支持
-					status = "图集不支持下载";
-					Thread.sleep(2500);
-					CollectDataDetailEntity collectDataDetailEntity = new CollectDataDetailEntity();
-					collectDataDetailEntity.setDataid(entity.getId());
-					collectDataDetailEntity.setVideoid(awemeId);
-					collectDataDetailEntity.setOriginaladdress(awemeId);
-					collectDataDetailEntity.setStatus(status);
-					collectDataDetailEntity.setCreatetime(DateUtils.formatDateTime(new Date()));
-					collectDataDetailService.save(collectDataDetailEntity);
-					// 修改主体
-					String carriedout = entity.getCarriedout() == null ? "1"
-							: String.valueOf(Integer.parseInt(entity.getCarriedout()) + 1);
-					entity.setCarriedout(carriedout);
-					collectdDataDao.save(entity);
+					try {
+						DouYinExecutor.ImageTextExecutor(awemeId, entity.getOriginaladdress(),null);
+						CollectDataDetailEntity collectDataDetailEntity = new CollectDataDetailEntity();
+						collectDataDetailEntity.setDataid(entity.getId());
+						collectDataDetailEntity.setVideoid(awemeId);
+						collectDataDetailEntity.setOriginaladdress(awemeId);
+						collectDataDetailEntity.setStatus(status);
+						collectDataDetailEntity.setCreatetime(DateUtils.formatDateTime(new Date()));
+						status = "已完成";
+						Thread.sleep(2500);
+						collectDataDetailService.save(collectDataDetailEntity);
+						String carriedout = entity.getCarriedout() == null ? "1"
+								: String.valueOf(Integer.parseInt(entity.getCarriedout()) + 1);
+						entity.setCarriedout(carriedout);
+						collectdDataDao.save(entity);
+					} catch (Exception e) {
+						logger.error("收藏类模块中抖音图集下载异常");
+						logger.error(e.getMessage());
+						logger.error("收藏类模块中抖音图集下载异常");
+					}
 					continue;
 				}
 				String videoplay = "";
