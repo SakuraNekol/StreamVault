@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
@@ -10,20 +11,21 @@
     <link href="../static/css/style.min.css" rel="stylesheet">
     <link href="../static/js/skin/laypage.css" rel="stylesheet">
     <style>
-        table{
+        table {
             table-layout: fixed;
         }
-        table td{
-            text-overflow:ellipsis;
+
+        table td {
+            text-overflow: ellipsis;
             white-space: nowrap;
             overflow: hidden;
         }
-        
+
         .thumbnail-container {
             position: relative;
             display: inline-block;
         }
-        
+
         .thumbnail-preview {
             position: fixed;
             top: 50%;
@@ -34,25 +36,27 @@
             background: white;
             padding: 10px;
             border-radius: 5px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.3);
-            pointer-events: none; /* 防止鼠标事件 */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            /* 防止鼠标事件 */
         }
-        
+
         .thumbnail-preview img {
             max-width: 400px;
             max-height: 300px;
         }
-        
+
         .thumbnail-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 999;
             display: none;
-            pointer-events: none; /* 防止鼠标事件 */
+            pointer-events: none;
+            /* 防止鼠标事件 */
         }
 
         .delete-progress {
@@ -63,7 +67,7 @@
             background: white;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
             z-index: 1001;
             min-width: 300px;
             display: none;
@@ -76,6 +80,72 @@
             padding: 10px;
             background: #f8f9fa;
             border-radius: 4px;
+        }
+
+        /* 搜索表单优化样式 */
+        .form-search {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .form-search .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-search .control-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .form-search .form-control {
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 14px;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .form-search .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .form-search .btn {
+            padding: 8px 20px;
+            font-size: 14px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .form-search .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .form-search .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .form-search .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 响应式优化 */
+        @media (max-width: 768px) {
+            .form-search {
+                padding: 15px;
+            }
+
+            .form-search .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
         }
 
         .delete-progress .progress-item {
@@ -99,12 +169,191 @@
             background: #fff;
             border-radius: 4px;
         }
+
         .tags-container {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
             padding: 5px 0;
         }
+
+        /* 表格和操作按钮优化样式 */
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table th {
+            border-top: none;
+            font-weight: 600;
+            color: #495057;
+            background-color: #f8f9fa;
+            white-space: nowrap;
+        }
+
+        .table td {
+            vertical-align: middle;
+            padding: 12px 8px;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* 缩略图预览样式 */
+        .thumbnail-preview {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .thumbnail-preview:hover {
+            transform: scale(1.1);
+        }
+
+        /* 操作按钮样式优化 */
+        .action-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        .action-buttons .btn {
+            padding: 4px 8px;
+            font-size: 12px;
+            border-radius: 4px;
+            min-width: 60px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .action-buttons .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* 状态标签样式 */
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            text-align: center;
+            min-width: 50px;
+        }
+
+        /* 视频信息区域样式 */
+        .video-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .video-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+
+        .video-desc {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            white-space: pre-wrap; /* 保留换行符和空格 */
+            word-wrap: break-word; /* 长单词换行 */
+            word-break: break-all; /* 强制换行 */
+            max-width: 580px; /* 限制最大宽度 */
+            text-overflow: ellipsis;
+        }
+
+        /* 移动端响应式设计 */
+        @media (max-width: 768px) {
+            .table-responsive {
+                border: none;
+            }
+            
+            .table th,
+            .table td {
+                padding: 8px 4px;
+                font-size: 13px;
+            }
+
+            /* 隐藏部分列在小屏幕上 */
+            .table th:nth-child(2),
+            .table td:nth-child(2) {
+                display: none; /* 隐藏编号列 */
+            }
+
+            .table th:nth-child(5),
+            .table td:nth-child(5) {
+                display: none; /* 隐藏标签列 */
+            }
+
+            .table th:nth-child(7),
+            .table td:nth-child(7) {
+                display: none; /* 隐藏下载时间列 */
+            }
+
+            /* 操作按钮在移动端垂直排列 */
+            .action-buttons {
+                flex-direction: column;
+                gap: 4px;
+                align-items: stretch;
+            }
+
+            .action-buttons .btn {
+                width: 100%;
+                min-width: auto;
+                font-size: 11px;
+                padding: 6px 8px;
+            }
+
+            /* 缩略图在移动端稍小 */
+            .thumbnail-preview {
+                width: 60px;
+                height: 45px;
+            }
+
+            /* 视频信息在移动端更紧凑 */
+            .video-title {
+                font-size: 13px;
+            }
+
+            .video-desc {
+                font-size: 12px;
+                -webkit-line-clamp: 2;
+                max-width: 200px; /* 移动端进一步缩短宽度 */
+            }
+        }
+
+        @media (max-width: 576px) {
+            /* 超小屏幕进一步优化 */
+            .table th,
+            .table td {
+                padding: 6px 2px;
+                font-size: 12px;
+            }
+
+            .action-buttons .btn {
+                font-size: 10px;
+                padding: 4px 6px;
+            }
+
+            .thumbnail-preview {
+                width: 50px;
+                height: 38px;
+            }
+        }
+
         .tag-item {
             background: #e9ecef;
             border-radius: 3px;
@@ -113,6 +362,7 @@
             align-items: center;
             font-size: 14px;
         }
+
         .tag-item .remove-tag {
             margin-left: 5px;
             cursor: pointer;
@@ -120,6 +370,7 @@
             font-weight: bold;
             font-size: 16px;
         }
+
         .tag-item .remove-tag:hover {
             color: #dc3545;
         }
@@ -139,16 +390,20 @@
             transition: all 0.2s ease;
             min-height: 22px;
         }
+
         .video-tag:nth-child(3n+1) {
             background: #28a745;
         }
+
         .video-tag:nth-child(3n+2) {
             background: #17a2b8;
         }
+
         .video-tag:hover {
             transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
         }
+
         .tags-wrapper {
             padding: 4px;
             min-height: 30px;
@@ -161,7 +416,7 @@
         .thumbnail-private {
             position: relative;
         }
-        
+
         .thumbnail-private::before {
             content: '';
             position: absolute;
@@ -169,13 +424,13 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(255,255,255,0.9);
+            background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             z-index: 1;
             border-radius: 4px;
         }
-        
+
         .thumbnail-private::after {
             content: '\F0425';
             font-family: 'Material Design Icons';
@@ -187,6 +442,7 @@
             color: #666;
             z-index: 2;
         }
+
         .video-container {
             position: relative;
             width: 100%;
@@ -196,46 +452,53 @@
             align-items: center;
             justify-content: center;
         }
-        
+
         .video-container video {
-             max-width: 100%;
-             max-height: 100%;
-             object-fit: contain;
-             background: #000;
-         }
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            background: #000;
+        }
+
         @media (max-width: 768px) {
             .layui-layer {
                 margin: 10px !important;
             }
+
             .layui-layer-content {
                 overflow: hidden !important;
             }
+
             .video-container video::-webkit-media-controls-panel {
-                background-color: rgba(0,0,0,0.8);
+                background-color: rgba(0, 0, 0, 0.8);
             }
+
             .table-responsive {
                 font-size: 14px;
             }
-            
+
             .btn-group-sm .btn {
                 padding: 0.25rem 0.4rem;
                 font-size: 12px;
             }
+
             .playVideo {
                 min-width: 32px;
                 min-height: 32px;
             }
         }
-        
+
         @media (max-width: 480px) {
-             .card-body {
-                 padding: 0.75rem;
-             }
-             
-             .table th, .table td {
-                 padding: 0.5rem 0.25rem;
-             }
-         }
+            .card-body {
+                padding: 0.75rem;
+            }
+
+            .table th,
+            .table td {
+                padding: 0.5rem 0.25rem;
+            }
+        }
+
         @media (orientation: landscape) and (max-height: 500px) {
             .layui-layer {
                 margin: 5px !important;
@@ -245,56 +508,51 @@
 </head>
 
 <body>
-<div class="lyear-layout-web">
+    <div class="lyear-layout-web">
 
-    <div class="lyear-layout-container">
+        <div class="lyear-layout-container">
 
-        <!--左侧导航-->
-        <div th:insert="~{admin/include/common :: headermenu}"></div>
-        <!--End 头部信息-->
-        <!--End 头部信息-->
+            <!--左侧导航-->
+            <div th:insert="~{admin/include/common :: headermenu}"></div>
+            <!--End 头部信息-->
+            <!--End 头部信息-->
 
-        <!--页面主要内容-->
-        <main class="lyear-layout-content">
+            <!--页面主要内容-->
+            <main class="lyear-layout-content">
 
-            <div class="container-fluid">
+                <div class="container-fluid">
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="card">
-                                <div class="card-header bg-light">
-                                    <div class="row align-items-center">
-                                        <div class="col-auto">
-                                            <a class="btn btn-primary btn-sm searchData" href="#">
-                                                <i class="mdi mdi-magnify"></i> 搜索
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
                                 <div class="card-body">
                                     <form action="#!" method="post" class="form-horizontal form-search">
                                         <div class="row">
-                                            <div class="col-md-4">
-                                                <div class="form-group">
+                                            <div class="col-lg-3 col-md-6 col-sm-12">
+                                                <div class="form-group mb-3">
                                                     <label class="control-label">视频名称</label>
-                                                    <input type="text" class="form-control videoname" name="videoname" placeholder="请输入视频名称" />
+                                                    <input type="text" class="form-control videoname" name="videoname"
+                                                        placeholder="请输入视频名称" />
                                                 </div>
                                             </div>
-                                            <div class="col-md-4">
-                                                <div class="form-group">
+                                            <div class="col-lg-3 col-md-6 col-sm-12">
+                                                <div class="form-group mb-3">
                                                     <label class="control-label">视频简介</label>
-                                                    <input type="text" class="form-control videodesc" name="videodesc" placeholder="视频简介" />
+                                                    <input type="text" class="form-control videodesc" name="videodesc"
+                                                        placeholder="视频简介" />
                                                 </div>
                                             </div>
-                                                                                        <div class="col-md-4">
-                                            <div class="form-group">
+                                            <div class="col-lg-3 col-md-6 col-sm-12">
+                                                <div class="form-group mb-3">
                                                     <label class="control-label">视频标签</label>
-                                                    <input type="text" class="form-control videotag" name="videotag" placeholder="视频标签" />
+                                                    <input type="text" class="form-control videotag" name="videotag"
+                                                        placeholder="视频标签" />
                                                 </div>
                                             </div>
-                                            <div class="col-md-4">
-                                                <div class="form-group">
+                                            <div class="col-lg-3 col-md-6 col-sm-12">
+                                                <div class="form-group mb-3">
                                                     <label class="control-label">平台</label>
-                                                    <select name="videoplatform" class="form-control videoplatform" id="type">
+                                                    <select name="videoplatform" class="form-control videoplatform"
+                                                        id="type">
                                                         <option value="">所有</option>
                                                         <option value="tiktok">tiktok</option>
                                                         <option value="哔哩">哔哩</option>
@@ -308,6 +566,19 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <div class="form-group text-center">
+                                                    <button type="button" class="btn btn-primary searchData me-2">
+                                                        <i class="mdi mdi-magnify"></i> 搜索
+                                                    </button>
+                                                    <button type="button" class="btn btn-secondary"
+                                                        onclick="resetForm()">
+                                                        <i class="mdi mdi-refresh"></i> 重置
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </form>
                                 </div>
                             </div>
@@ -315,144 +586,159 @@
                     </div>
 
 
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="card">
-                            <div class="card-header bg-light">
-                                <div class="row align-items-center">
-                                    <div class="col">
-                                        <h5 class="card-title mb-0">视频列表</h5>
-                                    </div>
-                                    <div class="col-auto">
-                                        <button class="btn btn-danger btn-sm" id="batchDelete">
-                                            <i class="mdi mdi-delete"></i> 批量删除
-                                        </button>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <div class="row align-items-center">
+                                        <div class="col">
+                                            <h5 class="card-title mb-0">视频列表</h5>
+                                        </div>
+                                        <div class="col-auto">
+                                            <button class="btn btn-danger btn-sm" id="batchDelete">
+                                                <i class="mdi mdi-delete"></i> 批量删除
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead class="thead-light">
-                                        <tr>
-                                            <th style="width: 40px">
-                                                <div class="custom-control custom-checkbox">
-                                                    <input type="checkbox" class="custom-control-input" id="check-all">
-                                                    <label class="custom-control-label" for="check-all"></label>
-                                                </div>
-                                            </th>
-                                            <th style="width: 60px">编号</th>
-                                            <th style="width: 100px">封面</th>
-                                            <th>视频信息</th>
-                                            <th style="width: 150px">标签</th>
-                                            <th style="width: 100px">平台</th>
-                                            <th style="width: 150px">下载时间</th>
-                                            <th style="width: 120px">操作</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody class="tableData">
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div class="d-flex justify-content-center mt-3">
-                                    <ul id="pager" class="pagination pagination-sm">
-                                    </ul>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th style="width: 40px">
+                                                        <div class="custom-control custom-checkbox">
+                                                            <input type="checkbox" class="custom-control-input"
+                                                                id="check-all">
+                                                            <label class="custom-control-label" for="check-all"></label>
+                                                        </div>
+                                                    </th>
+                                                    <th style="width: 60px">编号</th>
+                                                    <th style="width: 100px">封面</th>
+                                                    <th style="width: 550px">视频信息</th>
+                                                    <th style="width: 150px">标签</th>
+                                                    <th style="width: 100px">平台</th>
+                                                    <th style="width: 150px">下载时间</th>
+                                                    <th style="width: 120px">操作</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="tableData">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="d-flex justify-content-center mt-3">
+                                        <ul id="pager" class="pagination pagination-sm">
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
 
                 </div>
 
-            </div>
+            </main>
+            <!--End 页面主要内容-->
+        </div>
 
-        </main>
-        <!--End 页面主要内容-->
+        <!--    模态框 start-->
+        <div class="updateData" style="display: none;padding: 20px;">
+            <input class="optionid" type="hidden">
+            <div class="form-group mb-4">
+                <label>隐私设置</label>
+                <select class="form-control videoprivacy">
+                    <option value="0">正常</option>
+                    <option value="1">隐私保护</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>视频标签</label>
+                <div class="tags-input-wrapper">
+                    <div class="tags-container mb-2"></div>
+                    <input type="text" class="form-control videotag-input" placeholder="输入标签后按空格或回车添加">
+                    <input type="hidden" class="videotag" name="videotag">
+                </div>
+            </div>
+            <div class="text-right mt-4">
+                <button type="button" class="btn btn-primary save-btn">保存修改</button>
+            </div>
+        </div>
+
+        <!--    模态框end-->
     </div>
 
-<!--    模态框 start-->
-    <div class="updateData" style="display: none;padding: 20px;">
-        <input class="optionid" type="hidden">
-        <div class="form-group mb-4">
-            <label>隐私设置</label>
-            <select class="form-control videoprivacy">
-                <option value="0">正常</option>
-                <option value="1">隐私保护</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>视频标签</label>
-            <div class="tags-input-wrapper">
-                <div class="tags-container mb-2"></div>
-                <input type="text" class="form-control videotag-input" placeholder="输入标签后按空格或回车添加">
-                <input type="hidden" class="videotag" name="videotag">
-            </div>
-        </div>
-        <div class="text-right mt-4">
-            <button type="button" class="btn btn-primary save-btn">保存修改</button>
-        </div>
+    <div class="delete-progress">
+        <h5>批量删除进度</h5>
+        <div class="progress-list"></div>
     </div>
-
-<!--    模态框end-->
-</div>
-
-<div class="delete-progress">
-    <h5>批量删除进度</h5>
-    <div class="progress-list"></div>
-</div>
-<div id="readtoken" th:data-readtoken="${readtoken}" style="display: none"></div>
-<script type="text/javascript" src="../static/js/jquery.min.js"></script>
-<script type="text/javascript" src="../static/js/bootstrap.min.js"></script>
-<script type="text/javascript" src="../static/js/perfect-scrollbar.min.js"></script>
-<script type="text/javascript" src="../static/js/main.min.js"></script>
-<script type="text/javascript" src="../static/js/laypage.js"></script>
-<script src="../static/js/layer/layer.js" type="text/javascript"></script>
-<script type="text/javascript">
-	var readtoken = document.getElementById('readtoken').dataset.readtoken;
-    $(function(){
-        findList(1);
-        $('.searchData').click(function () {
-            findList(1)
+    <div id="readtoken" th:data-readtoken="${readtoken}" style="display: none"></div>
+    <script type="text/javascript" src="../static/js/jquery.min.js"></script>
+    <script type="text/javascript" src="../static/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../static/js/perfect-scrollbar.min.js"></script>
+    <script type="text/javascript" src="../static/js/main.min.js"></script>
+    <script type="text/javascript" src="../static/js/laypage.js"></script>
+    <script src="../static/js/layer/layer.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        var readtoken = document.getElementById('readtoken').dataset.readtoken;
+        $(function () {
+            findList(1);
+            $('.searchData').click(function () {
+                findList(1)
+            })
         })
 
+        /**
+         * 重置搜索表单
+         * 清空所有搜索条件并重新加载数据
+         */
+        function resetForm() {
+            // 清空所有输入框
+            $('.form-search input[type="text"]').val('');
+            // 重置下拉选择框
+            $('.form-search select').val('');
+            // 重新加载第一页数据
+            findList(1);
+        }
+
         // 全选/取消全选
-        $('#check-all').change(function() {
+        $('#check-all').change(function () {
             $('input[type="checkbox"]').prop('checked', $(this).prop('checked'));
         });
 
         // 批量删除
-        $('#batchDelete').click(function() {
+        $('#batchDelete').click(function () {
             var selectedIds = [];
             var selectedNames = [];
-            $('input[type="checkbox"]:checked').each(function() {
-                if($(this).attr('id') !== 'check-all') {
+            $('input[type="checkbox"]:checked').each(function () {
+                if ($(this).attr('id') !== 'check-all') {
                     var id = $(this).data('id');
                     selectedIds.push(id);
                     selectedNames.push($(this).closest('tr').find('.video-info .font-weight-bold').text());
                 }
             });
 
-            if(selectedIds.length === 0) {
+            if (selectedIds.length === 0) {
                 layer.msg('请选择要删除的项目');
                 return;
             }
 
-            layer.confirm("删除后下载的资源将一并删除,是否删除选中的"+selectedIds.length+"项?", function(index){
+            layer.confirm("删除后下载的资源将一并删除,是否删除选中的" + selectedIds.length + "项?", function (index) {
                 var deleteCount = 0;
                 var totalCount = selectedIds.length;
                 var $progress = $('.delete-progress');
                 var $progressList = $progress.find('.progress-list');
-                
+
                 // 初始化进度显示
                 $progressList.empty();
-                selectedNames.forEach(function(name, index) {
-                    $progressList.append('<div class="progress-item pending" data-id="'+selectedIds[index]+'">' + name + ' - 等待删除</div>');
+                selectedNames.forEach(function (name, index) {
+                    $progressList.append('<div class="progress-item pending" data-id="' + selectedIds[index] + '">' + name + ' - 等待删除</div>');
                 });
                 $progress.show();
-                
+
                 function deleteNext() {
-                    if(deleteCount >= totalCount) {
-                        setTimeout(function(){
+                    if (deleteCount >= totalCount) {
+                        setTimeout(function () {
                             $progress.hide();
                             window.location.reload();
                         }, 1500);
@@ -461,10 +747,10 @@
 
                     var id = selectedIds[deleteCount];
                     var name = selectedNames[deleteCount];
-                    var $item = $progressList.find('.progress-item[data-id="'+id+'"]');
-                    
-                    $.get("/admin/api/deleteVideoData?id="+id, function(res){
-                        if(res.resCode == "000001"){
+                    var $item = $progressList.find('.progress-item[data-id="' + id + '"]');
+
+                    $.get("/admin/api/deleteVideoData?id=" + id, function (res) {
+                        if (res.resCode == "000001") {
                             $item.removeClass('pending').addClass('success')
                                 .html(name + ' - 删除成功');
                             deleteCount++;
@@ -475,7 +761,7 @@
                             deleteCount++;
                             deleteNext();
                         }
-                    }).fail(function() {
+                    }).fail(function () {
                         $item.removeClass('pending').addClass('error')
                             .html(name + ' - 删除失败: 网络错误');
                         deleteCount++;
@@ -487,597 +773,594 @@
                 layer.close(index);
             });
         });
-    });
-    function updateData(){
-        $('.editData').click(function (){
-            var $btn = $(this);
-            var id = $btn.data('id');
-            var videoprivacy = $btn.data('videoprivacy') || '0';
-            var videotag = $btn.data('videotag') || '';
-            
-            // 打开编辑框
-            layer.open({
-                type: 1,
-                title: '编辑视频信息',
-                area: ['500px', '400px'],
-                content: $('.updateData'),
-                success: function(){
-                    // 设置表单值
-                    $('.optionid').val(id);
-                    $('.videoprivacy').val(videoprivacy);
-                    
-                    // 初始化标签
-                    var $tagsContainer = $('.tags-container').empty();
-                    var $tagInput = $('.videotag-input');
-                    var $hiddenInput = $('.videotag');
-                    
-                    // 如果有已存在的标签，添加它们
-                    if(videotag) {
-                        videotag.split('|').forEach(function(tag) {
-                            if(tag) addTag(tag.trim());
-                        });
-                    }
-                    
-                    // 更新隐藏输入框的值
-                    function updateHiddenInput() {
-                        var tags = [];
-                        $('.tag-item').each(function() {
-                            tags.push($(this).data('value'));
-                        });
-                        $hiddenInput.val(tags.join('|'));
-                    }
-                    
-                    // 添加标签的函数
-                    function addTag(text) {
-                        text = text.trim();
-                        if(!text) return;
-                        
-                        // 检查标签是否已存在
-                        var exists = false;
-                        $('.tag-item').each(function() {
-                            if($(this).data('value') === text) {
-                                exists = true;
-                                return false;
-                            }
-                        });
-                        
-                        if(!exists) {
-                            var $tag = $('<span class="tag-item" data-value="' + text + '">' + 
-                                       text + '<span class="remove-tag">&times;</span></span>');
-                            $tagsContainer.append($tag);
-                            updateHiddenInput();
+        function updateData() {
+            $('.editData').click(function () {
+                var $btn = $(this);
+                var id = $btn.data('id');
+                var videoprivacy = $btn.data('videoprivacy') || '0';
+                var videotag = $btn.data('videotag') || '';
+
+                // 打开编辑框
+                layer.open({
+                    type: 1,
+                    title: '编辑视频信息',
+                    area: ['500px', '400px'],
+                    content: $('.updateData'),
+                    success: function () {
+                        // 设置表单值
+                        $('.optionid').val(id);
+                        $('.videoprivacy').val(videoprivacy);
+
+                        // 初始化标签
+                        var $tagsContainer = $('.tags-container').empty();
+                        var $tagInput = $('.videotag-input');
+                        var $hiddenInput = $('.videotag');
+
+                        // 如果有已存在的标签，添加它们
+                        if (videotag) {
+                            videotag.split('|').forEach(function (tag) {
+                                if (tag) addTag(tag.trim());
+                            });
                         }
-                    }
-                    
-                    // 绑定标签输入事件
-                    $tagInput.on('keydown', function(e) {
-                        if(e.key === ' ' || e.key === 'Enter') {
-                            e.preventDefault();
-                            var text = $(this).val();
-                            if(text) {
-                                addTag(text);
-                                $(this).val('');
-                            }
+
+                        // 更新隐藏输入框的值
+                        function updateHiddenInput() {
+                            var tags = [];
+                            $('.tag-item').each(function () {
+                                tags.push($(this).data('value'));
+                            });
+                            $hiddenInput.val(tags.join('|'));
                         }
-                    });
-                    
-                    // 绑定删除标签事件
-                    $tagsContainer.on('click', '.remove-tag', function() {
-                        $(this).parent().remove();
-                        updateHiddenInput();
-                    });
-                    
-                    // 绑定保存按钮事件
-                    $('.save-btn').off('click').on('click', function(){
-                        var formData = {
-                            id: $('.optionid').val(),
-                            videoprivacy: $('.videoprivacy').val(),
-                            videotag: $('.videotag').val()
-                        };
-                        
-                        var loadIndex = layer.load(1, {shade: [0.3,'#000']});
-                        $.ajax({
-                            url: '/admin/api/updateVideoData',
-                            type: 'POST',
-                            data: formData,
-                            success: function(res){
-                                layer.close(loadIndex);
-                                if(res.resCode === "000001"){
-                                    layer.msg(res.message);
-                                    layer.closeAll();
-                                    findList($('#pager').find('.laypage_curr').text() || 1);
-                                } else {
-                                    layer.msg(res.message || '保存失败');
+
+                        // 添加标签的函数
+                        function addTag(text) {
+                            text = text.trim();
+                            if (!text) return;
+
+                            // 检查标签是否已存在
+                            var exists = false;
+                            $('.tag-item').each(function () {
+                                if ($(this).data('value') === text) {
+                                    exists = true;
+                                    return false;
                                 }
-                            },
-                            error: function(){
-                                layer.close(loadIndex);
-                                layer.msg('网络错误，请重试');
+                            });
+
+                            if (!exists) {
+                                var $tag = $('<span class="tag-item" data-value="' + text + '">' +
+                                    text + '<span class="remove-tag">&times;</span></span>');
+                                $tagsContainer.append($tag);
+                                updateHiddenInput();
+                            }
+                        }
+
+                        // 绑定标签输入事件
+                        $tagInput.on('keydown', function (e) {
+                            if (e.key === ' ' || e.key === 'Enter') {
+                                e.preventDefault();
+                                var text = $(this).val();
+                                if (text) {
+                                    addTag(text);
+                                    $(this).val('');
+                                }
                             }
                         });
-                    });
-                }
-            });
-        });
-    }
-    function transferName(str){
-        var obj=str.lastIndexOf("/");
-        var filename = str.substr(obj+1);
-        var path = str.substr(0,obj);
-        return path+"/"+encodeURIComponent(filename);
-    }
-    function deleteData(){
-        $('.deleteData').click(function () {
-            var id = $(this).attr('data-id');
-            layer.confirm("删除后下载的资源将一并删除,是否删除", function(index){
-                //调用接口删除
-                var loadIndex = layer.load(1, {shade: [0.3,'#000']});
-                $.get("/admin/api/deleteVideoData?id="+id,function(res){
-                    layer.close(loadIndex);
-                    if(res.resCode =="000001"){
-                        layer.msg(res.message)
-                        setTimeout(function(){
-                            window.location.reload();
-                        },1500)
-                    }else{
-                        layer.alert(res.message);
+
+                        // 绑定删除标签事件
+                        $tagsContainer.on('click', '.remove-tag', function () {
+                            $(this).parent().remove();
+                            updateHiddenInput();
+                        });
+
+                        // 绑定保存按钮事件
+                        $('.save-btn').off('click').on('click', function () {
+                            var formData = {
+                                id: $('.optionid').val(),
+                                videoprivacy: $('.videoprivacy').val(),
+                                videotag: $('.videotag').val()
+                            };
+
+                            var loadIndex = layer.load(1, { shade: [0.3, '#000'] });
+                            $.ajax({
+                                url: '/admin/api/updateVideoData',
+                                type: 'POST',
+                                data: formData,
+                                success: function (res) {
+                                    layer.close(loadIndex);
+                                    if (res.resCode === "000001") {
+                                        layer.msg(res.message);
+                                        layer.closeAll();
+                                        findList($('#pager').find('.laypage_curr').text() || 1);
+                                    } else {
+                                        layer.msg(res.message || '保存失败');
+                                    }
+                                },
+                                error: function () {
+                                    layer.close(loadIndex);
+                                    layer.msg('网络错误，请重试');
+                                }
+                            });
+                        });
                     }
-                }).fail(function(){
-                    layer.close(loadIndex);
-                    layer.msg('网络错误，请重试');
-                })
-                layer.close(index);
+                });
             });
-        })
-    }
-    function playVideo(){
-        $('.playVideo').click(function (){
-            var videourl = $(this).attr('data-video');
-            var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            var screenWidth = window.innerWidth || document.documentElement.clientWidth;
-            var screenHeight = window.innerHeight || document.documentElement.clientHeight;
-            var dialogWidth, dialogHeight;
-            if (isMobile || screenWidth < 768) {
-                dialogWidth = Math.min(screenWidth - 20, screenWidth * 0.95) + 'px';
-                dialogHeight = Math.min(screenHeight - 60, screenHeight * 0.8) + 'px';
-            } else if (screenWidth < 1200) {
-                dialogWidth = Math.min(screenWidth * 0.8, 600) + 'px';
-                dialogHeight = Math.min(screenHeight * 0.7, 450) + 'px';
-            } else {
-                dialogWidth = '800px';
-                dialogHeight = '530px';
-            }
-             var html = '<div class="video-container" style="position: relative; width: 100%; height: 100%; background: #000;">' +
-                       '<video src="' + videourl + '" ' +
-                       'width="100%" height="100%" ' +
-                       'controls="controls" ' +
-                       'preload="metadata" ' +
-                       'playsinline ' +  // iOS内联播放
-                       'webkit-playsinline ' +  // 旧版iOS支持
-                       'x5-video-player-type="h5" ' +  // 腾讯X5内核优化
-                       'x5-video-player-fullscreen="true" ' +  // X5全屏支持
-                       'x5-video-orientation="portraint" ' +  // X5竖屏优化
-                       'style="object-fit: contain; background: #000;">' +
-                       '您的浏览器不支持视频播放' +
-                       '</video>' +
-                       '</div>';
-            
-            // 打开弹窗
-            var layerIndex = layer.open({
-                type: 1,
-                skin: 'layui-layer-rim',
-                area: [dialogWidth, dialogHeight],
-                content: html,
-                title: '视频播放',
-                maxmin: !isMobile, // 移动端禁用最大化最小化
-                resize: !isMobile, // 移动端禁用拖拽调整
-                move: !isMobile,   // 移动端禁用拖拽移动
-                success: function(layero, index) {
-                    console.log('视频弹窗打开成功');
-                    
-                    // 获取视频元素
-                    var video = layero.find('video')[0];
-                    if (video) {
-                        // 移动端自动播放优化
-                        if (isMobile) {
-                            // 尝试自动播放（某些浏览器可能阻止）
-                            var playPromise = video.play();
-                            if (playPromise !== undefined) {
-                                playPromise.catch(function(error) {
-                                    console.log('自动播放被阻止，需要用户手动播放');
+        }
+        function transferName(str) {
+            var obj = str.lastIndexOf("/");
+            var filename = str.substr(obj + 1);
+            var path = str.substr(0, obj);
+            return path + "/" + encodeURIComponent(filename);
+        }
+        function deleteData() {
+            $('.deleteData').click(function () {
+                var id = $(this).attr('data-id');
+                layer.confirm("删除后下载的资源将一并删除,是否删除", function (index) {
+                    //调用接口删除
+                    var loadIndex = layer.load(1, { shade: [0.3, '#000'] });
+                    $.get("/admin/api/deleteVideoData?id=" + id, function (res) {
+                        layer.close(loadIndex);
+                        if (res.resCode == "000001") {
+                            layer.msg(res.message)
+                            setTimeout(function () {
+                                window.location.reload();
+                            }, 1500)
+                        } else {
+                            layer.alert(res.message);
+                        }
+                    }).fail(function () {
+                        layer.close(loadIndex);
+                        layer.msg('网络错误，请重试');
+                    })
+                    layer.close(index);
+                });
+            })
+        }
+        function playVideo() {
+            $('.playVideo').click(function () {
+                var videourl = $(this).attr('data-video');
+                var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                var screenWidth = window.innerWidth || document.documentElement.clientWidth;
+                var screenHeight = window.innerHeight || document.documentElement.clientHeight;
+                var dialogWidth, dialogHeight;
+                if (isMobile || screenWidth < 768) {
+                    dialogWidth = Math.min(screenWidth - 20, screenWidth * 0.95) + 'px';
+                    dialogHeight = Math.min(screenHeight - 60, screenHeight * 0.8) + 'px';
+                } else if (screenWidth < 1200) {
+                    dialogWidth = Math.min(screenWidth * 0.8, 600) + 'px';
+                    dialogHeight = Math.min(screenHeight * 0.7, 450) + 'px';
+                } else {
+                    dialogWidth = '800px';
+                    dialogHeight = '530px';
+                }
+                var html = '<div class="video-container" style="position: relative; width: 100%; height: 100%; background: #000;">' +
+                    '<video src="' + videourl + '" ' +
+                    'width="100%" height="100%" ' +
+                    'controls="controls" ' +
+                    'preload="metadata" ' +
+                    'playsinline ' +  // iOS内联播放
+                    'webkit-playsinline ' +  // 旧版iOS支持
+                    'x5-video-player-type="h5" ' +  // 腾讯X5内核优化
+                    'x5-video-player-fullscreen="true" ' +  // X5全屏支持
+                    'x5-video-orientation="portraint" ' +  // X5竖屏优化
+                    'style="object-fit: contain; background: #000;">' +
+                    '您的浏览器不支持视频播放' +
+                    '</video>' +
+                    '</div>';
+
+                // 打开弹窗
+                var layerIndex = layer.open({
+                    type: 1,
+                    skin: 'layui-layer-rim',
+                    area: [dialogWidth, dialogHeight],
+                    content: html,
+                    title: '视频播放',
+                    maxmin: !isMobile, // 移动端禁用最大化最小化
+                    resize: !isMobile, // 移动端禁用拖拽调整
+                    move: !isMobile,   // 移动端禁用拖拽移动
+                    success: function (layero, index) {
+                        console.log('视频弹窗打开成功');
+
+                        // 获取视频元素
+                        var video = layero.find('video')[0];
+                        if (video) {
+                            // 移动端自动播放优化
+                            if (isMobile) {
+                                // 尝试自动播放（某些浏览器可能阻止）
+                                var playPromise = video.play();
+                                if (playPromise !== undefined) {
+                                    playPromise.catch(function (error) {
+                                        console.log('自动播放被阻止，需要用户手动播放');
+                                    });
+                                }
+                            }
+
+                            // 添加视频事件监听
+                            video.addEventListener('loadstart', function () {
+                                console.log('视频开始加载');
+                            });
+
+                            video.addEventListener('error', function (e) {
+                                console.log('视频加载错误:', e);
+                                layer.msg('视频加载失败，请检查网络连接', { icon: 2 });
+                            });
+
+                            // 移动端触摸优化
+                            if (isMobile) {
+                                video.addEventListener('touchstart', function (e) {
+                                    // 防止双击缩放
+                                    e.preventDefault();
                                 });
                             }
                         }
-                        
-                        // 添加视频事件监听
-                        video.addEventListener('loadstart', function() {
-                            console.log('视频开始加载');
-                        });
-                        
-                        video.addEventListener('error', function(e) {
-                            console.log('视频加载错误:', e);
-                            layer.msg('视频加载失败，请检查网络连接', {icon: 2});
-                        });
-                        
-                        // 移动端触摸优化
-                        if (isMobile) {
-                            video.addEventListener('touchstart', function(e) {
-                                // 防止双击缩放
-                                e.preventDefault();
-                            });
-                        }
+                    },
+                    end: function () {
+                        console.log('视频弹窗关闭');
                     }
-                },
-                end: function() {
-                    console.log('视频弹窗关闭');
+                });
+            });
+        }
+        function getImage(url, isPrivate) {
+            if (isPrivate) {
+                return '<div class="thumbnail-container">' +
+                    '<div class="thumbnail-private">' +
+                    '<img src="' + (url || '/static/images/noimage.jpg') + '" class="img-thumbnail" style="max-width: 80px; max-height: 60px;" onerror="this.src=\'/static/images/noimage.jpg\'">' +
+                    '</div>' +
+                    '</div>';
+            }
+            if (url) {
+                return '<div class="thumbnail-container">' +
+                    '<img src="' + url + '" class="img-thumbnail" style="max-width: 80px; max-height: 60px;" ' +
+                    'onmouseenter="showPreview(this)" onmouseleave="hidePreview()" ' +
+                    'onerror="this.src=\'/static/images/noimage.jpg\'">' +
+                    '</div>';
+            }
+            return '';
+        }
+
+        var previewTimer;
+        var hideTimer;
+
+        function showPreview(img) {
+            clearTimeout(hideTimer);
+            clearTimeout(previewTimer);
+
+            previewTimer = setTimeout(function () {
+                var preview = document.getElementById('thumbnail-preview');
+                if (!preview) {
+                    preview = document.createElement('div');
+                    preview.id = 'thumbnail-preview';
+                    preview.className = 'thumbnail-preview';
+                    document.body.appendChild(preview);
+
+                    var overlay = document.createElement('div');
+                    overlay.className = 'thumbnail-overlay';
+                    overlay.id = 'thumbnail-overlay';
+                    document.body.appendChild(overlay);
+                }
+
+                var previewImg = preview.querySelector('img');
+                if (!previewImg) {
+                    previewImg = document.createElement('img');
+                    preview.appendChild(previewImg);
+                }
+
+                previewImg.src = img.src;
+                preview.style.display = 'block';
+                document.getElementById('thumbnail-overlay').style.display = 'block';
+            }, 100); // 延迟100ms显示,避免快速移动时的闪烁
+        }
+
+        function hidePreview() {
+            clearTimeout(previewTimer);
+            hideTimer = setTimeout(function () {
+                var preview = document.getElementById('thumbnail-preview');
+                var overlay = document.getElementById('thumbnail-overlay');
+                if (preview) preview.style.display = 'none';
+                if (overlay) overlay.style.display = 'none';
+            }, 100); // 延迟100ms隐藏,避免快速移动时的闪烁
+        }
+
+        function formatTime(time) {
+            if (!time) return '';
+            return new Date(time).toLocaleString();
+        }
+
+        function formatVideoInfo(item) {
+            // 判断是否为隐私模式
+            var isPrivate = item.videoprivacy === '1';
+            var displayName = isPrivate ? '******' : item.videoname;
+            var displayDesc = isPrivate ? '******' : item.videodesc;
+
+            var html = '<div class="video-title content-field" data-id="' + item.id + '" title="' + (isPrivate ? '' : item.videoname) + '">' + displayName + '</div>';
+            html += '<div class="video-desc content-field" data-id="' + item.id + '" title="' + (isPrivate ? '' : item.videodesc) + '">' + displayDesc + '</div>';
+
+            // 只在非隐私模式下显示地址信息
+            if (!isPrivate) {
+                var addressInfo = getAddressInfo(item);
+                html += '<div class="small mt-1">';
+                html += '<span class="badge ' + addressInfo.cc + '">' + addressInfo.type + '</span> ';
+                html += '<span class="text-muted">' + addressInfo.value + '</span>';
+                html += '</div>';
+            }
+
+            return html;
+        }
+
+        function formatTags(tags) {
+            if (!tags) return '<div class="tags-wrapper"></div>';
+            var html = '<div class="tags-wrapper">';
+            tags.split('|').forEach(function (tag) {
+                if (tag) {
+                    html += '<span class="video-tag">' + tag.trim() + '</span>';
                 }
             });
-        });
-    }
-    function getImage(url, isPrivate) {
-        if(isPrivate) {
-            return '<div class="thumbnail-container">' +
-                   '<div class="thumbnail-private">' +
-                   '<img src="'+(url || '/static/images/noimage.jpg')+'" class="img-thumbnail" style="max-width: 80px; max-height: 60px;" onerror="this.src=\'/static/images/noimage.jpg\'">' +
-                   '</div>' +
-                   '</div>';
-        }
-        if(url) {
-            return '<div class="thumbnail-container">' +
-                   '<img src="'+url+'" class="img-thumbnail" style="max-width: 80px; max-height: 60px;" ' +
-                   'onmouseenter="showPreview(this)" onmouseleave="hidePreview()" ' +
-                   'onerror="this.src=\'/static/images/noimage.jpg\'">' +
-                   '</div>';
-        }
-        return '';
-    }
-
-    var previewTimer;
-    var hideTimer;
-
-    function showPreview(img) {
-        clearTimeout(hideTimer);
-        clearTimeout(previewTimer);
-        
-        previewTimer = setTimeout(function() {
-            var preview = document.getElementById('thumbnail-preview');
-            if (!preview) {
-                preview = document.createElement('div');
-                preview.id = 'thumbnail-preview';
-                preview.className = 'thumbnail-preview';
-                document.body.appendChild(preview);
-                
-                var overlay = document.createElement('div');
-                overlay.className = 'thumbnail-overlay';
-                overlay.id = 'thumbnail-overlay';
-                document.body.appendChild(overlay);
-            }
-            
-            var previewImg = preview.querySelector('img');
-            if (!previewImg) {
-                previewImg = document.createElement('img');
-                preview.appendChild(previewImg);
-            }
-            
-            previewImg.src = img.src;
-            preview.style.display = 'block';
-            document.getElementById('thumbnail-overlay').style.display = 'block';
-        }, 100); // 延迟100ms显示,避免快速移动时的闪烁
-    }
-
-    function hidePreview() {
-        clearTimeout(previewTimer);
-        hideTimer = setTimeout(function() {
-            var preview = document.getElementById('thumbnail-preview');
-            var overlay = document.getElementById('thumbnail-overlay');
-            if (preview) preview.style.display = 'none';
-            if (overlay) overlay.style.display = 'none';
-        }, 100); // 延迟100ms隐藏,避免快速移动时的闪烁
-    }
-
-    function formatTime(time) {
-        if(!time) return '';
-        return new Date(time).toLocaleString();
-    }
-
-    function formatVideoInfo(item) {
-        var html = '<div class="video-info">';
-        
-        // 判断是否为隐私模式
-        var isPrivate = item.videoprivacy === '1';
-        var displayName = isPrivate ? '******' : item.videoname;
-        var displayDesc = isPrivate ? '******' : item.videodesc;
-        
-        html += '<div class="font-weight-bold text-truncate content-field" data-id="'+item.id+'" title="'+(isPrivate ? '' : item.videoname)+'">'+displayName+'</div>';
-        html += '<div class="small text-muted text-truncate content-field" data-id="'+item.id+'" title="'+(isPrivate ? '' : item.videodesc)+'">'+displayDesc+'</div>';
-        
-        // 只在非隐私模式下显示地址信息
-        if(!isPrivate) {
-            var addressInfo = getAddressInfo(item);
-            html += '<div class="small">';
-            html += '<span class="badge '+addressInfo.cc+'">'+addressInfo.type+'</span> ';
-            html += '<span class="text-muted">'+addressInfo.value+'</span>';
             html += '</div>';
+            return html;
         }
-        
-        html += '</div>';
-        return html;
-    }
-    
-    function formatTags(tags) {
-        if(!tags) return '<div class="tags-wrapper"></div>';
-        var html = '<div class="tags-wrapper">';
-        tags.split('|').forEach(function(tag) {
-            if(tag) {
-                html += '<span class="video-tag">'+tag.trim()+'</span>';
+
+        // 辅助函数：获取地址类型
+        function getAddressType(item) {
+            if (item.videoplatform === '抖音') {
+                if (item.originaladdress.startsWith('post')) return '作品';
+                if (item.originaladdress.startsWith('like')) return '喜欢';
+                if (item.originaladdress.startsWith('recommend')) return '首页推荐';
+                if (item.originaladdress.startsWith('fav-')) return '收藏夹';
+                if (item.originaladdress.startsWith('https://v.douyin.com/')) return '分享链接';
+            } else if (item.videoplatform === '哔哩') {
+                if (item.originaladdress.startsWith('bili-fav-')) return '收藏夹';
+                if (item.originaladdress.startsWith('bili-arc-')) return '投稿';
+                if (item.originaladdress.startsWith('bili-seaarc-')) return '合集';
+                if (item.originaladdress.startsWith('https://')) return '分享链接';
+                return '收藏/合集';
+            }
+            return '其他';
+        }
+
+        // 辅助函数：获取地址值
+        function getAddressValue(item) {
+            if (item.videoplatform === '抖音') {
+                if (item.originaladdress.startsWith('post')) return item.originaladdress.substring(4);
+                if (item.originaladdress.startsWith('like')) return item.originaladdress.substring(4);
+                if (item.originaladdress.startsWith('recommend')) return item.originaladdress.substring(9);
+                if (item.originaladdress.startsWith('fav-')) {
+                    var parts = item.originaladdress.split('-');
+                    return parts[1] + ' (' + parts[2].substring(3) + ')';
+                }
+            } else if (item.videoplatform === '哔哩') {
+                if (item.originaladdress.startsWith('bili-fav-')) return item.originaladdress.substring(9);
+                if (item.originaladdress.startsWith('bili-arc-')) return item.originaladdress.substring(9);
+                if (item.originaladdress.startsWith('bili-seaarc-')) return item.originaladdress.substring(12);
+            }
+            return item.originaladdress;
+        }
+
+        // 辅助函数：获取完整地址信息
+        function getAddressInfo(item) {
+            var cc = "badge-info";
+            if (item.videoplatform === '抖音') {
+                if (item.originaladdress.startsWith('post')) cc = "badge-primary";
+                else if (item.originaladdress.startsWith('like')) cc = "badge-success";
+                else if (item.originaladdress.startsWith('recommend')) cc = "badge-secondary";
+                else if (item.originaladdress.startsWith('fav-')) cc = "badge-danger";
+                else if (item.originaladdress.startsWith('https://v.douyin.com/')) cc = "badge-warning";
+            }
+            return {
+                type: getAddressType(item),
+                value: getAddressValue(item),
+                cc: cc
+            };
+        }
+
+        // 修改显示/隐藏切换事件处理
+        $(document).on('click', '.toggle-privacy', function (e) {
+            e.preventDefault();
+            var $btn = $(this);
+            var isShowing = $btn.data('show') === true;
+
+            if (isShowing) {
+                // 直接执行隐藏操作
+                hideContent($btn);
+            } else {
+                // 显示密码输入框
+                layer.prompt({
+                    title: '请输入只读Token解锁',
+                    formType: 1,
+                    btn: ['确定', '取消']
+                }, function (value, index) {
+                    if (value === readtoken) {
+                        layer.close(index);
+                        showContent($btn);
+                    } else {
+                        layer.msg('密码错误');
+                    }
+                });
             }
         });
-        html += '</div>';
-        return html;
-    }
-    
-    // 辅助函数：获取地址类型
-    function getAddressType(item) {
-        if(item.videoplatform === '抖音') {
-            if(item.originaladdress.startsWith('post')) return '作品';
-            if(item.originaladdress.startsWith('like')) return '喜欢';
-            if(item.originaladdress.startsWith('recommend')) return '首页推荐';
-            if(item.originaladdress.startsWith('fav-')) return '收藏夹';
-            if(item.originaladdress.startsWith('https://v.douyin.com/')) return '分享链接';
-        } else if(item.videoplatform === '哔哩') {
-            if(item.originaladdress.startsWith('bili-fav-')) return '收藏夹';
-            if(item.originaladdress.startsWith('bili-arc-')) return '投稿';
-            if(item.originaladdress.startsWith('bili-seaarc-')) return '合集';
-            if(item.originaladdress.startsWith('https://')) return '分享链接';
-            return '收藏/合集';
-        }
-        return '其他';
-    }
-    
-    // 辅助函数：获取地址值
-    function getAddressValue(item) {
-        if(item.videoplatform === '抖音') {
-            if(item.originaladdress.startsWith('post')) return item.originaladdress.substring(4);
-            if(item.originaladdress.startsWith('like')) return item.originaladdress.substring(4);
-            if(item.originaladdress.startsWith('recommend')) return item.originaladdress.substring(9);
-            if(item.originaladdress.startsWith('fav-')) {
-                var parts = item.originaladdress.split('-');
-                return parts[1] + ' (' + parts[2].substring(3) + ')';
-            }
-        } else if(item.videoplatform === '哔哩') {
-            if(item.originaladdress.startsWith('bili-fav-')) return item.originaladdress.substring(9);
-            if(item.originaladdress.startsWith('bili-arc-')) return item.originaladdress.substring(9);
-            if(item.originaladdress.startsWith('bili-seaarc-')) return item.originaladdress.substring(12);
-        }
-        return item.originaladdress;
-    }
-    
-    // 辅助函数：获取完整地址信息
-    function getAddressInfo(item) {
-        var cc = "badge-info";
-        if(item.videoplatform === '抖音') {
-            if(item.originaladdress.startsWith('post')) cc = "badge-primary";
-            else if(item.originaladdress.startsWith('like')) cc = "badge-success";
-            else if(item.originaladdress.startsWith('recommend')) cc = "badge-secondary";
-            else if(item.originaladdress.startsWith('fav-')) cc = "badge-danger";
-            else if(item.originaladdress.startsWith('https://v.douyin.com/')) cc = "badge-warning";
-        }
-        return {
-            type: getAddressType(item),
-            value: getAddressValue(item),
-            cc: cc
-        };
-    }
-    
-    // 修改显示/隐藏切换事件处理
-    $(document).on('click', '.toggle-privacy', function(e) {
-        e.preventDefault();
-        var $btn = $(this);
-        var isShowing = $btn.data('show') === true;
-        
-        if(isShowing) {
-            // 直接执行隐藏操作
-            hideContent($btn);
-        } else {
-            // 显示密码输入框
-            layer.prompt({
-                title: '请输入只读Token解锁',
-                formType: 1,
-                btn: ['确定', '取消']
-            }, function(value, index){
-                if(value === readtoken) {
-                    layer.close(index);
-                    showContent($btn);
+
+        // 隐藏内容的函数
+        function hideContent($btn) {
+            var id = $btn.data('id');
+            var $contentFields = $('.content-field[data-id="' + id + '"]');
+            var $row = $btn.closest('tr');
+
+            $contentFields.each(function () {
+                var $field = $(this);
+                if ($field.hasClass('badge')) {
+                    $field.text('****');
                 } else {
-                    layer.msg('密码错误');
+                    $field.text('******').attr('title', '');
                 }
             });
-        }
-    });
-
-    // 隐藏内容的函数
-    function hideContent($btn) {
-        var id = $btn.data('id');
-        var $contentFields = $('.content-field[data-id="'+id+'"]');
-        var $row = $btn.closest('tr');
-        
-        $contentFields.each(function() {
-            var $field = $(this);
-            if($field.hasClass('badge')) {
-                $field.text('****');
-            } else {
-                $field.text('******').attr('title', '');
+            // 恢复默认图片和毛玻璃效果
+            var $imgContainer = $row.find('.thumbnail-container');
+            $imgContainer.find('img').attr('src', '/static/images/noimage.jpg')
+                .off('mouseenter mouseleave');
+            // 重新添加毛玻璃效果
+            if (!$imgContainer.find('.thumbnail-private').length) {
+                $imgContainer.html('<div class="thumbnail-private"><img src="' + $btn.data('cover') + '" class="img-thumbnail" style="max-width: 80px; max-height: 60px;" onerror="this.src=\'/static/images/noimage.jpg\'"></div>');
             }
-        });
-        // 恢复默认图片和毛玻璃效果
-        var $imgContainer = $row.find('.thumbnail-container');
-        $imgContainer.find('img').attr('src', '/static/images/noimage.jpg')
-            .off('mouseenter mouseleave');
-        // 重新添加毛玻璃效果
-        if(!$imgContainer.find('.thumbnail-private').length) {
-            $imgContainer.html('<div class="thumbnail-private"><img src="'+$btn.data('cover')+'" class="img-thumbnail" style="max-width: 80px; max-height: 60px;" onerror="this.src=\'/static/images/noimage.jpg\'"></div>');
-        }
-        // 隐藏地址信息
-        $row.find('.video-info .small:last-child').hide();
-        
-        $btn.html('<i class="mdi mdi-eye"></i>').attr('title', '显示内容');
-        $btn.data('show', false);
-    }
+            // 隐藏地址信息
+            $row.find('.video-info .small:last-child').hide();
 
-    // 显示内容的函数
-    function showContent($btn) {
-        var id = $btn.data('id');
-        var $contentFields = $('.content-field[data-id="'+id+'"]');
-        var $row = $btn.closest('tr');
-        
-        $contentFields.each(function() {
-            var $field = $(this);
-            if($field.hasClass('badge')) {
-                $field.text($btn.data('platform'));
-            } else if($field.hasClass('text-muted')) {
-                $field.text($btn.data('desc')).attr('title', $btn.data('desc'));
-            } else {
-                $field.text($btn.data('name')).attr('title', $btn.data('name'));
+            $btn.html('<i class="mdi mdi-eye"></i>').attr('title', '显示内容');
+            $btn.data('show', false);
+        }
+
+        // 显示内容的函数
+        function showContent($btn) {
+            var id = $btn.data('id');
+            var $contentFields = $('.content-field[data-id="' + id + '"]');
+            var $row = $btn.closest('tr');
+
+            $contentFields.each(function () {
+                var $field = $(this);
+                if ($field.hasClass('badge')) {
+                    $field.text($btn.data('platform'));
+                } else if ($field.hasClass('text-muted')) {
+                    $field.text($btn.data('desc')).attr('title', $btn.data('desc'));
+                } else {
+                    $field.text($btn.data('name')).attr('title', $btn.data('name'));
+                }
+            });
+            // 恢复原始图片
+            var $img = $row.find('.thumbnail-container img');
+            var originalSrc = $btn.data('cover');
+            if (originalSrc) {
+                // 移除毛玻璃效果
+                $row.find('.thumbnail-private').removeClass('thumbnail-private');
+                $img.attr('src', originalSrc)
+                    .on('mouseenter', function () { showPreview(this); })
+                    .on('mouseleave', function () { hidePreview(); });
             }
-        });
-        // 恢复原始图片
-        var $img = $row.find('.thumbnail-container img');
-        var originalSrc = $btn.data('cover');
-        if(originalSrc) {
-            // 移除毛玻璃效果
-            $row.find('.thumbnail-private').removeClass('thumbnail-private');
-            $img.attr('src', originalSrc)
-                .on('mouseenter', function() { showPreview(this); })
-                .on('mouseleave', function() { hidePreview(); });
+            // 显示地址信息
+            var addressInfo = getAddressInfo({
+                videoplatform: $btn.data('platform'),
+                originaladdress: $btn.data('address')
+            });
+            var $addressDiv = $row.find('.video-info .small:last-child');
+            if ($addressDiv.length === 0) {
+                $addressDiv = $('<div class="small">')
+                    .appendTo($row.find('.video-info'));
+            }
+            $addressDiv.html('<span class="badge ' + addressInfo.cc + '">' + addressInfo.type + '</span> ' +
+                '<span class="text-muted">' + addressInfo.value + '</span>')
+                .show();
+
+            $btn.html('<i class="mdi mdi-eye-off"></i>').attr('title', '隐藏内容');
+            $btn.data('show', true);
         }
-        // 显示地址信息
-        var addressInfo = getAddressInfo({
-            videoplatform: $btn.data('platform'),
-            originaladdress: $btn.data('address')
-        });
-        var $addressDiv = $row.find('.video-info .small:last-child');
-        if($addressDiv.length === 0) {
-            $addressDiv = $('<div class="small">')
-                .appendTo($row.find('.video-info'));
+        function refreshDanmu() {
+            $('.refreshDanmu').click(function () {
+                var id = $(this).attr('data-id');
+                layer.confirm("是否要刷新当前视频弹幕,刷新则当前视频弹幕将会重新下载", function (index) {
+                    var loadIndex = layer.load(1, { shade: [0.3, '#000'] });
+                    $.get("/admin/api/refreshDanmu?id=" + id, function (res) {
+                        layer.close(loadIndex);
+                        if (res.resCode == "000001") {
+                            layer.msg(res.message)
+                            setTimeout(function () {
+                                window.location.reload();
+                            }, 1500)
+                        } else {
+                            layer.alert(res.message);
+                        }
+                    }).fail(function () {
+                        layer.close(loadIndex);
+                        layer.msg('网络错误，请重试');
+                    })
+                    layer.close(index);
+                });
+            })
         }
-        $addressDiv.html('<span class="badge '+addressInfo.cc+'">'+addressInfo.type+'</span> ' +
-                       '<span class="text-muted">'+addressInfo.value+'</span>')
-                  .show();
-        
-        $btn.html('<i class="mdi mdi-eye-off"></i>').attr('title', '隐藏内容');
-        $btn.data('show', true);
-    }
-    function refreshDanmu(){
-    	$('.refreshDanmu').click(function(){
-            var id = $(this).attr('data-id');
-            layer.confirm("是否要刷新当前视频弹幕,刷新则当前视频弹幕将会重新下载", function(index){
-            	var loadIndex = layer.load(1, {shade: [0.3,'#000']});
-                $.get("/admin/api/refreshDanmu?id="+id,function(res){
+
+        function findList(page) {
+            var option = {
+                pageNo: page,
+                pageSize: 25
+            }
+            var videoname = $('.videoname').val();
+            if (videoname != "") {
+                option['videoname'] = videoname;
+            }
+            var videodesc = $('.videodesc').val();
+            if (videodesc != "") {
+                option['videodesc'] = videodesc;
+            }
+            var videoplatform = $('.videoplatform').val();
+            if (videoplatform != "") {
+                option['videoplatform'] = videoplatform;
+            }
+            var videotag = $('.videotag').val();
+            if (videotag != "") {
+                option['videotag'] = videotag;
+            }
+
+            var loadIndex = layer.load(1, { shade: [0.3, '#000'] });
+            $.post("/admin/api/findVideoDataList", option,
+                function (data, status) {
                     layer.close(loadIndex);
-                    if(res.resCode =="000001"){
-                        layer.msg(res.message)
-                        setTimeout(function(){
-                            window.location.reload();
-                        },1500)
-                    }else{
-                        layer.alert(res.message);
+                    console.log(data, status);
+                    if (data.resCode === "000001") {
+                        var record = data.record;
+                        var html = "";
+                        var list = record.content;
+                        for (var i = 0; i < list.length; i++) {
+                            var isPrivate = list[i].videoprivacy === '1';
+                            html += '<tr>';
+                            html += '<td><div class="custom-control custom-checkbox"><input type="checkbox" class="custom-control-input" id="check-' + list[i].id + '" data-id="' + list[i].id + '"><label class="custom-control-label" for="check-' + list[i].id + '"></label></div></td>';
+                            html += '<td>' + list[i].id + '</td>';
+                            html += '<td>' + getImage(list[i].videocover, isPrivate) + '</td>';
+                            html += '<td><div class="video-info">' + formatVideoInfo(list[i]) + '</div></td>';
+                            html += '<td>' + formatTags(list[i].videotag) + '</td>';
+                            html += '<td><span class="status-badge badge badge-info content-field" data-id="' + list[i].id + '">' + (isPrivate ? '****' : list[i].videoplatform) + '</span></td>';
+                            html += '<td>' + formatTime(list[i].createtime) + '</td>';
+                            html += '<td>';
+                            html += '<div class="action-buttons">';
+                            html += '<a data-id="' + list[i].id + '" data-videoprivacy="' + list[i].videoprivacy + '" data-videotag="' + list[i].videotag + '" class="btn btn-outline-primary btn-sm editData" href="#!" title="编辑" data-toggle="tooltip"><i class="mdi mdi-pencil"></i> 编辑</a>';
+                            if (isPrivate) {
+                                html += '<a href="#!" class="btn btn-outline-info btn-sm toggle-privacy" ' +
+                                    'data-id="' + list[i].id + '" ' +
+                                    'data-show="false" ' +
+                                    'data-name="' + list[i].videoname + '" ' +
+                                    'data-desc="' + list[i].videodesc + '" ' +
+                                    'data-platform="' + list[i].videoplatform + '" ' +
+                                    'data-cover="' + list[i].videocover + '" ' +
+                                    'data-address="' + list[i].originaladdress + '" ' +
+                                    'title="显示内容" data-toggle="tooltip">' +
+                                    '<i class="mdi mdi-eye"></i> 显示</a>';
+                            }
+                            html += '<a data-id="' + list[i].id + '" data-video="' + list[i].videounrealaddr + '" data-videoprivacy="' + list[i].videoprivacy + '" class="btn btn-outline-success btn-sm playVideo" href="#!" title="播放" data-toggle="tooltip"><i class="mdi mdi-play"></i> 播放</a>';
+                            html += '<a data-id="' + list[i].id + '" class="btn btn-outline-warning btn-sm refreshDanmu" href="#!" title="刷新弹幕" data-toggle="tooltip"><i class="mdi mdi-refresh"></i> 弹幕</a>';
+                            html += '<a data-id="' + list[i].id + '" class="btn btn-outline-danger btn-sm deleteData" href="#!" title="删除" data-toggle="tooltip"><i class="mdi mdi-delete"></i> 删除</a>';
+                            html += '</div>';
+                            html += '</td>';
+                            html += '</tr>';
+                        }
+
+                        $('.tableData').html(html)
+                        playVideo();
+                        deleteData();
+                        updateData();
+                        refreshDanmu();
+                        laypage({
+                            cont: 'pager',
+                            pages: record.page.totalPages,
+                            curr: page,
+                            jump: function (obj, first) {
+                                if (!first && obj.curr != page) {
+                                    findList(obj.curr);
+                                }
+                            }
+                        })
+                    } else {
+                        layer.msg('加载数据失败');
                     }
-                }).fail(function(){
+                }).fail(function () {
                     layer.close(loadIndex);
                     layer.msg('网络错误，请重试');
                 })
-                layer.close(index);
-            });
-    	})
-    }
-
-    function  findList(page){
-        var option = {
-            pageNo:page,
-            pageSize:25
         }
-        var  videoname = $('.videoname').val();
-        if(videoname != "" ){
-            option['videoname']= videoname;
-        }
-        var  videodesc = $('.videodesc').val();
-        if(videodesc != "" ){
-            option['videodesc']= videodesc;
-        }
-        var  videoplatform = $('.videoplatform').val();
-        if(videoplatform != "" ){
-            option['videoplatform']= videoplatform;
-        }
-        var videotag = $('.videotag').val();
-        if(videotag != "" ){
-            option['videotag']= videotag;
-        }
-        
-        var loadIndex = layer.load(1, {shade: [0.3,'#000']});
-        $.post("/admin/api/findVideoDataList",option,
-            function(data,status){
-                layer.close(loadIndex);
-                console.log(data,status);
-                if(data.resCode==="000001"){
-                    var record = data.record;
-                    var html = "";
-                    var list = record.content;
-                    for(var i = 0;i<list.length;i++){
-                        var isPrivate = list[i].videoprivacy === '1';
-                        html += '<tr>';
-                        html += '<td><div class="custom-control custom-checkbox"><input type="checkbox" class="custom-control-input" id="check-'+list[i].id+'" data-id="'+list[i].id+'"><label class="custom-control-label" for="check-'+list[i].id+'"></label></div></td>';
-                        html += '<td>'+list[i].id+'</td>';
-                        html += '<td>'+getImage(list[i].videocover, isPrivate)+'</td>';
-                        html += '<td>'+formatVideoInfo(list[i])+'</td>';
-                        html += '<td>'+formatTags(list[i].videotag)+'</td>';
-                        html += '<td><span class="badge badge-info content-field" data-id="'+list[i].id+'">'+(isPrivate ? '****' : list[i].videoplatform)+'</span></td>';
-                        html += '<td>'+formatTime(list[i].createtime)+'</td>';
-                        html += '<td>';
-                        html += '<div class="btn-group btn-group-sm">';
-                        html += '<a data-id="'+list[i].id+'" data-videoprivacy="'+list[i].videoprivacy+'" data-videotag="'+list[i].videotag+'" class="btn btn-outline-primary editData" href="#!" title="编辑" data-toggle="tooltip"><i class="mdi mdi-pencil"></i></a>';
-                        if(isPrivate) {
-                            html += '<a href="#!" class="btn btn-outline-info toggle-privacy" ' +
-                                   'data-id="'+list[i].id+'" ' +
-                                   'data-show="false" ' +
-                                   'data-name="'+list[i].videoname+'" ' +
-                                   'data-desc="'+list[i].videodesc+'" ' +
-                                   'data-platform="'+list[i].videoplatform+'" ' +
-                                   'data-cover="'+list[i].videocover+'" ' +
-                                   'data-address="'+list[i].originaladdress+'" ' +
-                                   'title="显示内容" data-toggle="tooltip">' +
-                                   '<i class="mdi mdi-eye"></i></a>';
-                        }
-                        html += '<a data-id="'+list[i].id+'" data-video="'+list[i].videounrealaddr+'" data-videoprivacy="'+list[i].videoprivacy+'" class="btn btn-outline-success playVideo" href="#!" title="播放" data-toggle="tooltip"><i class="mdi mdi-play"></i></a>';
-                        html += '<a data-id="'+list[i].id+'" class="btn btn-outline-warning refreshDanmu" href="#!" title="刷新弹幕" data-toggle="tooltip"><i class="mdi mdi-refresh"></i></a>';
-                        html += '<a data-id="'+list[i].id+'" class="btn btn-outline-danger deleteData" href="#!" title="删除" data-toggle="tooltip"><i class="mdi mdi-delete"></i></a>';
-                        html += '</div>';
-                        html += '</td>';
-                        html += '</tr>';
-                    }
-
-                    $('.tableData').html(html)
-                    playVideo();
-                    deleteData();
-                    updateData();
-                    refreshDanmu();
-                    laypage({
-                        cont: 'pager',
-                        pages: record.page.totalPages,
-                        curr:page,
-                        jump: function(obj,first){
-                            if(!first && obj.curr != page){
-                                findList(obj.curr);
-                            }
-                        }
-                    })
-                } else {
-                    layer.msg('加载数据失败');
-                }
-            }).fail(function(){
-                layer.close(loadIndex);
-                layer.msg('网络错误，请重试');
-            })
-    }
-</script>
+    </script>
 </body>
+
 </html>
