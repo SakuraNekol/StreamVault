@@ -251,14 +251,19 @@ public class VideoDataService {
 		Optional<VideoDataEntity> findById = videoDataDao.findById(data.getId());
 		if(findById.isPresent()) {
 			VideoDataEntity videoDataEntity = findById.get();
-			String videoinfo = videoDataEntity.getVideoinfo();
-			if(null !=videoinfo && !"".equals(videoinfo)) {
-				String videoaddr = videoDataEntity.getVideoaddr();
-				JSONObject video = JSONObject.parseObject(videoinfo);
-				String filepathname = videoaddr.substring(0, videoaddr.lastIndexOf(".")) + ".ass";
-				BiliUtil.biliDanmaku("1", videoDataEntity.getVideoid(), video.getString("aid"), Integer.valueOf(video.getString("duration")), filepathname,videoDataEntity.getVideoname());
-				return new AjaxEntity(Global.ajax_success, "刷新成功", null);
+			if(videoDataEntity.getVideoplatform().equals(Global.platform.bilibili.name()) || videoDataEntity.getVideoplatform().equals("哔哩")) {
+				String videoinfo = videoDataEntity.getVideoinfo();
+				if(null !=videoinfo && !"".equals(videoinfo)) {
+					String videoaddr = videoDataEntity.getVideoaddr();
+					JSONObject video = JSONObject.parseObject(videoinfo);
+					String filepathname = videoaddr.substring(0, videoaddr.lastIndexOf(".")) + ".ass";
+					BiliUtil.biliDanmaku("1", videoDataEntity.getVideoid(), video.getString("aid"), Integer.valueOf(video.getString("duration")), filepathname,videoDataEntity.getVideoname());
+					return new AjaxEntity(Global.ajax_success, "刷新成功", null);
+				}
+			}else {
+				return new AjaxEntity(Global.ajax_uri_error, "当前平台暂时不支持刷新弹幕,目前仅支持BiliBili", null);
 			}
+
 		}
 		return new AjaxEntity(Global.ajax_uri_error, "当前视频未旧版数据,暂时不支持刷新弹幕", null);
 
