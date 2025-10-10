@@ -714,7 +714,7 @@
                 if ($(this).attr('id') !== 'check-all') {
                     var id = $(this).data('id');
                     selectedIds.push(id);
-                    selectedNames.push($(this).closest('tr').find('.video-info .font-weight-bold').text());
+                    selectedNames.push($(this).closest('tr').find('.video-title').text());
                 }
             });
 
