@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>链接解析-StreamVault</title>
+    <th:block th:insert="~{admin/include/header :: metaHeader}"></th:block>
+    <link href="../static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../static/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="../static/css/style.min.css" rel="stylesheet">
+    <link href="../static/js/skin/laypage.css" rel="stylesheet">
+
+    <style>
+        /* 页面主要样式 - 白色主题 */
+        .card {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: #ffffff;
+        }
+        
+        .card-header {
+            background: #ffffff;
+            color: #333;
+            border-bottom: 1px solid #e9ecef;
+            border-radius: 8px 8px 0 0 !important;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-control {
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            background: #ffffff;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #6c757d;
+            box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.25);
+            background: #ffffff;
+        }
+        
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            color: #ffffff;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .btn-primary:focus {
+            background-color: #0056b3;
+            border-color: #0056b3;
+            color: #ffffff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+            color: #ffffff;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-success:hover {
+            background-color: #1e7e34;
+            border-color: #1e7e34;
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+        }
+        
+        .btn-info {
+            background-color: #17a2b8;
+            border-color: #17a2b8;
+            color: #ffffff;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-info:hover {
+            background-color: #138496;
+            border-color: #138496;
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(23, 162, 184, 0.2);
+        }
+        
+        /* 加载动画样式 */
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            color: #6c757d;
+        }
+        
+        #loadingDiv {
+            background: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        /* 结果显示区域样式 */
+        #resultDiv .card {
+            background: #ffffff;
+            border: 1px solid #e9ecef;
+        }
+        
+        #resultDiv .card-header {
+            background: #f8f9fa;
+            color: #333;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        /* 视频信息样式 */
+        .card-title {
+            color: #333;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        
+        .card-text {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        /* 输入组样式 */
+        .input-group .form-control {
+            background-color: #ffffff;
+        }
+        
+        .input-group-append .btn {
+            border-radius: 0 6px 6px 0;
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: #ffffff;
+        }
+        
+        .input-group-append .btn:hover {
+            background-color: #495057;
+            border-color: #495057;
+            color: #ffffff;
+        }
+        
+        /* 复制按钮样式 */
+        .btn-copy {
+            background-color: #28a745 !important;
+            border-color: #28a745 !important;
+            color: white !important;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .btn-copy:hover {
+            background-color: #1e7e34 !important;
+            border-color: #1e7e34 !important;
+            color: white !important;
+        }
+        
+        .btn-copy:focus {
+            background-color: #1e7e34 !important;
+            border-color: #1e7e34 !important;
+            color: white !important;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+        
+        /* 复选框样式 */
+        .form-check-input:checked {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+        
+        .form-check-label {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        /* 注意事项样式 */
+        .notice-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .notice-card .card-header {
+            background: #ffffff;
+            border-bottom: 1px solid #e9ecef;
+            color: #495057;
+        }
+        
+        .notice-list {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .notice-list li {
+            margin-bottom: 8px;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .col-md-4, .col-md-8 {
+                margin-bottom: 15px;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .ml-2 {
+                margin-left: 0 !important;
+            }
+        }
+        
+        /* 图片样式 */
+        img.img-fluid {
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        /* 分割线样式 */
+        hr {
+            border-top: 1px solid #e9ecef;
+            margin: 20px 0;
+        }
+        
+        /* 页面背景 */
+        .lyear-layout-content {
+            background: #f8f9fa;
+        }
+        
+        .container-fluid {
+            background: transparent;
+        }
+    </style>
+</head>
+
+<body>
+<div class="lyear-layout-web">
+
+    <div class="lyear-layout-container">
+
+        <!--左侧导航-->
+        <div th:insert="~{admin/include/common :: headermenu}"></div>
+        <!--End 头部信息-->
+        <!--End 头部信息-->
+
+        <!--页面主要内容-->
+        <main class="lyear-layout-content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>视频链接解析</h4>
+                            </div>
+                            <div class="card-body">
+                                <!-- 表单区域 -->
+                                <form id="directDataForm">
+                                    <div class="form-group">
+                                        <label for="videoUrl">视频分享链接</label>
+                                        <input type="text" class="form-control" id="videoUrl" name="originaladdress" 
+                                               placeholder="请输入视频平台分享的链接" required>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="onlyGetLink">
+                                            <label class="form-check-label" for="onlyGetLink">
+                                                仅获取链接地址
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                                        <i class="mdi mdi-send"></i> 提交解析
+                                    </button>
+                                </form>
+                                
+                                <!-- 加载状态 -->
+                                <div id="loadingDiv" style="display: none; text-align: center; margin-top: 20px;">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="sr-only">解析中...</span>
+                                    </div>
+                                    <p class="mt-2">正在解析中，请稍候...</p>
+                                </div>
+                                
+                                <!-- 结果显示区域 -->
+                                <div id="resultDiv" style="display: none; margin-top: 30px;">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5>解析结果</h5>
+                                        </div>
+                                        <div class="card-body" id="resultContent">
+                                            <!-- 动态内容将在这里显示 -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 注意事项区域 - 移到页底 -->
+                        <div class="card notice-card mt-4">
+                            <div class="card-header">
+                                <h5><i class="mdi mdi-information-outline"></i> 使用说明</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul class="notice-list">
+                                     <li>当前 仅获取链接地址仅支持抖音</li>
+                                     <li>其他平台由于取的是DASH流 暂不支持直链</li>
+                                     <li>抖音图文类暂不支持直链,会提交到图文模块</li>
+                                     <li>如果直接下载提示403错误，请使用"新窗口打开"或"复制链接"功能</li>
+                                     <li>403错误通常是由于视频平台的防盗链机制，复制链接到新窗口可以绕过此限制</li>
+                                 </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <!--End 页面主要内容-->
+    </div>
+
+    <!--    模态框 start-->
+    <div class="updateData layui-form" style="display: none;padding: 20px;">
+        <input class="optionid" type="hidden">
+        <div class="layui-inline">
+            <label class="layui-form-label">视频名称</label>
+            <div class="layui-input-inline">
+                <input  type="text" name="videoname"  autocomplete="off" class="videoname layui-input">
+            </div>
+        </div>
+        <div class="layui-inline">
+            <label class="layui-form-label">视频简介</label>
+            <div class="layui-input-inline">
+                <input  type="text" name="videodesc"  autocomplete="off" class="videodesc layui-input">
+            </div>
+        </div>
+        <div class="buttondiv" style=" padding-left: 5%; padding-top: 5%; "><button type="button" class="layui-btn">保存信息</button></div>
+    </div>
+
+    <!--    模态框end-->
+</div>
+
+<script type="text/javascript" src="../static/js/jquery.min.js"></script>
+<script type="text/javascript" src="../static/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../static/js/perfect-scrollbar.min.js"></script>
+<script type="text/javascript" src="../static/js/main.min.js"></script>
+<script type="text/javascript" src="../static/js/laypage.js"></script>
+<script src="../static/js/layer/layer.js" type="text/javascript"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+    /**
+     * 表单提交处理函数
+     * 处理视频链接解析的表单提交
+     */
+    $('#directDataForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const videoUrl = $('#videoUrl').val().trim();
+        const onlyGetLink = $('#onlyGetLink').is(':checked');
+        
+        // 验证输入
+        if (!videoUrl) {
+            layer.msg('请输入视频分享链接', {icon: 2});
+            return;
+        }
+        
+        // 显示加载状态
+        showLoading();
+        
+        // 构建API URL
+        let apiUrl = '/admin/api/directData';
+        if (onlyGetLink) {
+            apiUrl += '?type=2';
+        }else{
+        	apiUrl += '?type=1';
+        }
+        
+        // 发送请求
+        $.ajax({
+            url: apiUrl,
+            type: 'POST',
+            data: {
+                originaladdress: videoUrl
+            },
+            success: function(response) {
+                console.log('API响应成功:', response);
+                hideLoading();
+                handleApiResponse(response, onlyGetLink);
+            },
+            error: function(xhr, status, error) {
+                console.error('API请求失败:', error);
+                hideLoading();
+                layer.msg('请求失败，请稍后重试', {icon: 2});
+            }
+        });
+    });
+    
+    /**
+     * 显示加载状态
+     */
+    function showLoading() {
+        $('#loadingDiv').show();
+        $('#resultDiv').hide();
+        $('#submitBtn').prop('disabled', true).html('<i class="mdi mdi-loading mdi-spin"></i> 解析中...');
+    }
+    
+    /**
+     * 隐藏加载状态
+     */
+    function hideLoading() {
+        $('#loadingDiv').hide();
+        $('#submitBtn').prop('disabled', false).html('<i class="mdi mdi-send"></i> 提交解析');
+    }
+    
+    /**
+     * 处理API响应
+     * @param {Object} response - API响应数据
+     * @param {boolean} onlyGetLink - 是否仅获取链接地址
+     */
+    function handleApiResponse(response, onlyGetLink) {
+        if (response.resCode === '000001') {
+            if (onlyGetLink && response.record) {
+                // 勾选状态下的成功响应，显示视频信息和下载链接
+                renderVideoInfo(response.record);
+            } else {
+                // 未勾选状态下的成功响应
+                layer.msg(response.message || '提交成功', {icon: 1});
+                $('#resultDiv').hide();
+            }
+        } else if (response.resCode === '999998') {
+            // 平台不支持
+            layer.msg(response.message || '当前平台暂时不支持获取直链', {icon: 2});
+            $('#resultDiv').hide();
+        } else {
+            // 其他错误
+            layer.msg(response.message || '解析失败', {icon: 2});
+            $('#resultDiv').hide();
+        }
+    }
+    
+    /**
+     * 渲染视频信息
+     * @param {Object} record - 视频记录数据
+     */
+    function renderVideoInfo(record) {
+        const resultHtml = `
+            <div class="row">
+                <div class="col-md-4">
+                    <img src="${record.cover}" class="img-fluid rounded" alt="视频封面" style="max-height: 200px;">
+                </div>
+                <div class="col-md-8">
+                    <h5 class="card-title">${record.desc || '无标题'}</h5>
+                    <p class="card-text">
+                        <strong>作者：</strong>${record.nickname}<br>
+                        <strong>发布时间：</strong>${record.create_time}<br>
+                        <strong>视频ID：</strong>${record.awemeid}<br>
+                        <strong>用户ID：</strong>${record.uid}
+                    </p>
+                    <div class="mt-3">
+                        <button class="btn btn-success" onclick="downloadVideo('${record.videoplay}')">
+                            <i class="mdi mdi-download"></i> 下载视频
+                        </button>
+                        <button class="btn btn-secondary ml-2" onclick="copyToClipboard('${record.videoplay}')">
+                            <i class="mdi mdi-content-copy"></i> 复制链接
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <h6>视频链接：</h6>
+                    <div class="input-group">
+                        <input type="text" class="form-control" value="${record.videoplay}" readonly id="videoLink">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('${record.videoplay}')">
+                                <i class="mdi mdi-content-copy"></i> 复制
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        $('#resultContent').html(resultHtml);
+        $('#resultDiv').show();
+        
+        // 显示成功消息
+        layer.msg('解析成功！', {icon: 1});
+    }
+    
+    /**
+     * 下载视频函数
+     * @param {string} videoUrl - 视频链接
+     */
+    window.downloadVideo = function(videoUrl) {
+        try {
+            // 创建一个临时的a标签进行下载
+            const link = document.createElement('a');
+            link.href = videoUrl;
+            link.download = ''; // 让浏览器自动确定文件名
+            
+            // 设置一些可能有助于绕过防盗链的属性
+            link.setAttribute('referrerpolicy', 'no-referrer');
+            link.style.display = 'none';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            layer.msg('开始下载视频...', {icon: 1});
+        } catch (error) {
+            console.error('下载失败:', error);
+            layer.msg('下载失败，请尝试复制链接后在新窗口打开', {icon: 2});
+        }
+    };
+    
+    
+    /**
+     * 复制文本到剪贴板
+     * @param {string} text - 要复制的文本
+     */
+    window.copyToClipboard = function(text) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(function() {
+                layer.msg('链接已复制到剪贴板', {icon: 1});
+            }).catch(function(err) {
+                console.error('复制失败:', err);
+                fallbackCopyTextToClipboard(text);
+            });
+        } else {
+            fallbackCopyTextToClipboard(text);
+        }
+    };
+    
+    /**
+     * 备用复制方法
+     * @param {string} text - 要复制的文本
+     */
+    function fallbackCopyTextToClipboard(text) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.position = "fixed";
+        
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                layer.msg('链接已复制到剪贴板', {icon: 1});
+            } else {
+                layer.msg('复制失败，请手动复制', {icon: 2});
+            }
+        } catch (err) {
+            console.error('复制失败:', err);
+            layer.msg('复制失败，请手动复制', {icon: 2});
+        }
+        
+        document.body.removeChild(textArea);
+    }
+});
+</script>
+</body>
+</html>
