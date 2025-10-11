@@ -1,6 +1,16 @@
 ### 更新记录
 
 ```
+2025/10/11  Tagged the version as 251011 on Docker Hub. Merged the 251011 tag into the latest tag.
+优化视频列表页面
+优化刷新弹幕返回提示
+新增yt-dlp内置检查更新功能
+新增直链解析模块-后端菜单 目前仅支持抖音详见功能页面使用说明
+同步内置yt-dlp至最新
+
+```
+
+```
 2025/09/28  Tagged the version as 250928 on Docker Hub. Merged the 250928 tag into the latest tag.
 更新小程序及APP端  优化提交页面  支持历史记录 本地模式 显示最近提交十条
 优化视频列表界面 新增骨架屏懒加载
