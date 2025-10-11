@@ -2,6 +2,9 @@ package com.flower.spirit.utils;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -132,4 +135,30 @@ public class StringUtil {
     public static boolean isNotBlank(final CharSequence cs) {
         return !StringUtils.isBlank(cs);
     }
+    
+    public static String getUpdateStatus(String text) {
+        Pattern currentVersionPattern = Pattern.compile("Current version: ([^ ]+)");
+        Pattern latestVersionPattern = Pattern.compile("Latest version: ([^ ]+)");
+        Pattern upToDatePattern = Pattern.compile("yt-dlp is up to date \\(([^ ]+)\\)");
+        Matcher currentVersionMatcher = currentVersionPattern.matcher(text);
+        Matcher latestVersionMatcher = latestVersionPattern.matcher(text);
+        if (currentVersionMatcher.find() && latestVersionMatcher.find()) {
+            String currentVersion = currentVersionMatcher.group(1);
+            String latestVersion = latestVersionMatcher.group(1);
+
+            if (currentVersion.equals(latestVersion)) {
+                return "当前已是最新版本 版本号:" + latestVersion;
+            } else {
+                return "已经成功更新yt-dlp 由" + currentVersion + " 更新至 " + latestVersion;
+            }
+        }
+        Matcher upToDateMatcher = upToDatePattern.matcher(text);
+        if (upToDateMatcher.find()) {
+            String latestVersion = upToDateMatcher.group(1);
+            return "当前已是最新版本 版本号:" + latestVersion;
+        }
+
+        return "无法获取版本信息";
+    }
+
 }

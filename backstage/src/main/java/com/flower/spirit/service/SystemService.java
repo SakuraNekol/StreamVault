@@ -13,6 +13,7 @@ import com.flower.spirit.common.AjaxEntity;
 import com.flower.spirit.config.Global;
 import com.flower.spirit.dao.UserDao;
 import com.flower.spirit.entity.UserEntity;
+import com.flower.spirit.utils.CommandUtil;
 import com.flower.spirit.utils.HttpUtil;
 import com.flower.spirit.utils.MD5Util;
 import com.flower.spirit.utils.SecurityUtil;
@@ -176,8 +177,21 @@ public class SystemService {
 		}
 	}
 
+
+	/**
+	 * 这里是一个  检查并更新应用版本  这里目前只检查yt-dlp
+	 * 后续考虑添加 f2 Python库 和本应用
+	 * 
+	 * @return
+	 */
+	public AjaxEntity checkAndUpdate() {
+		String message ="StreamVault 版本暂时无法通过在线更新<br />";
+		String commandos = CommandUtil.commandos("yt-dlp -U");
+		String updateStatus = StringUtil.getUpdateStatus(commandos);
+		message= message+"yt-dlp版本:"+updateStatus;
+		return new AjaxEntity(Global.ajax_success, message, null);
+	}
 	public static void main(String[] args) {
-		SystemService systemService = new SystemService();
-		systemService.checkVersion();
+
 	}
 }

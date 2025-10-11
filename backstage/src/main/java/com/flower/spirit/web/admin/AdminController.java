@@ -506,4 +506,15 @@ public class AdminController {
 	public AjaxEntity refreshDanmu(VideoDataEntity downloaderEntity,HttpServletRequest request) {
 		return videoDataService.refreshDanmu(downloaderEntity);
 	}
+	
+	/**
+	 * 更新并检查应用及yt-dlp版本
+	 * @param checkAndUpdate
+	 * @param request
+	 * @return
+	 */
+	@GetMapping(value = "/checkAndUpdate")
+	public AjaxEntity checkAndUpdate() {
+		return systemService.checkAndUpdate();
+	}
 }

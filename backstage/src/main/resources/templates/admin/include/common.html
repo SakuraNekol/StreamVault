@@ -17,11 +17,28 @@
 		            if (li) li.classList.add("active");
 		            let parentNav = li.closest(".nav-item-has-subnav");
 		            if (parentNav) parentNav.classList.add("active", "open");
-		            let subNav = parentNav.querySelector(".nav-subnav");
-		            if (subNav) subNav.style.display = "block"; 
+		            if(parentNav!=null){
+			            let subNav = parentNav.querySelector(".nav-subnav");
+			            if (subNav) subNav.style.display = "block"; 
+		            }
+	
 		        }
 		    });
 		});
+		function checkAndUpdate(){
+            var loadIndex = layer.load(1, { shade: [0.3, '#000'] });
+            $.get("/admin/api/checkAndUpdate", function (res) {
+                layer.close(loadIndex);
+                if (res.resCode == "000001") {
+                    layer.alert(res.message)
+                } else {
+                    layer.alert(res.message);
+                }
+            }).fail(function () {
+                layer.close(loadIndex);
+                layer.msg('网络错误，请重试');
+            })
+		}
 	</script>
 	<aside class="lyear-layout-sidebar">
         <!-- logo -->
@@ -100,9 +117,11 @@
                         </ul>
                     </li>
 
-
+					<li style="padding: 0 15px;line-height: 60px;border-left: 1px solid rgba(255,255,255,.1);" onclick="checkAndUpdate()">
+                      <small style="cursor: pointer;">检查并更新</small>
+                    </li>
                     <li style="padding: 0 15px;line-height: 60px;border-left: 1px solid rgba(255,255,255,.1);">
-                      <small style="color: #999;">v250928</small>
+                      <small style="color: #999;">v251011</small>
                     </li>
                     
                 </ul>
