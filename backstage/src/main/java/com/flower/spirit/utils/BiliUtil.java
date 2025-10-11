@@ -2,6 +2,7 @@ package com.flower.spirit.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +42,14 @@ public class BiliUtil {
 	private FfmpegQueueDao ffmpegQueueDao;
 
 	private static BiliUtil biliUtil;
+	
+	
+	private static final BigInteger XOR_CODE = new BigInteger("23442827791579");
+	private static final BigInteger MASK_CODE = new BigInteger("2251799813685247");
+	private static final BigInteger MAX_AID = BigInteger.ONE.shiftLeft(51);
+	private static final BigInteger BASE = new BigInteger("58");
+	private static final String DATA_STRING = "FcwAPNKTMug3GV5Lj7EJnHpWsx4tb8haYeviqBz6rkCy12mUSDQX9RdoZf";
+
 
 	@PostConstruct
 	public void init() {
@@ -808,8 +817,56 @@ public class BiliUtil {
      
     }
     
+	/**
+	 * 转换算法来自知乎@mcfx，其以WTFPL开源
+	 * @param bv
+	 * @return
+	 */
+	public static String bv2av(String bv) {
+		char[] n = bv.toCharArray();
+		char temp = n[3];
+		n[3] = n[9];
+		n[9] = temp;
+		temp = n[4];
+		n[4] = n[7];
+		n[7] = temp;
+		char[] newArray = new char[n.length - 3];
+		System.arraycopy(n, 3, newArray, 0, n.length - 3);
+		BigInteger result = BigInteger.ZERO;
+		for (char c : newArray) {
+			result = result.multiply(BASE).add(BigInteger.valueOf(DATA_STRING.indexOf(c)));
+		}
+		BigInteger avNumber = result.and(MASK_CODE).xor(XOR_CODE);
+		return "av" + avNumber.toString();
+	}
 
-
-
+	/**
+	 * 转换算法来自知乎@mcfx，其以WTFPL开源
+	 * @param bv
+	 * @return
+	 */
+	public static String av2bv(String av) {
+		String avNumber = av.substring(2);
+		BigInteger t = new BigInteger(avNumber);
+		BigInteger r = (MAX_AID.or(t)).xor(XOR_CODE);
+		StringBuilder sb = new StringBuilder("B");
+		char[] n = new char[12];
+		int o = n.length - 1;
+		while (r.compareTo(BigInteger.ZERO) > 0) {
+			n[o] = DATA_STRING.charAt(r.mod(BASE).intValue());
+			r = r.divide(BASE);
+			o--;
+		}
+		char temp = n[3];
+		n[3] = n[9];
+		n[9] = temp;
+		temp = n[4];
+		n[4] = n[7];
+		n[7] = temp;
+		for (char c : n) {
+			sb.append(c);
+		}
+		return sb.toString();
+	}
 
 }
