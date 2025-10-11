@@ -517,4 +517,15 @@ public class AdminController {
 	public AjaxEntity checkAndUpdate() {
 		return systemService.checkAndUpdate();
 	}
+	
+	/**
+	 * 直链提交
+	 * @param directData
+	 * @param request
+	 * @return
+	 */
+	@PostMapping(value = "/directData")
+	public AjaxEntity directData(VideoDataEntity video,HttpServletRequest request) {
+		return analysisService.directData(video,request);
+	}
 }

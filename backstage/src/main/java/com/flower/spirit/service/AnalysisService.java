@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSONObject;
+import com.flower.spirit.common.AjaxEntity;
 import com.flower.spirit.config.Global;
 import com.flower.spirit.dao.VideoDataDao;
 import com.flower.spirit.entity.ProcessHistoryEntity;
@@ -38,6 +39,8 @@ import com.flower.spirit.utils.StringUtil;
 import com.flower.spirit.utils.URLUtil;
 import com.flower.spirit.utils.YtDlpUtil;
 import com.flower.spirit.utils.sendNotify;
+
+import jakarta.servlet.http.HttpServletRequest;
 /**
  * @author flower
  *         废弃 重写
@@ -723,6 +726,28 @@ public class AnalysisService {
 
 	public static void main(String[] args) {
 
+	}
+
+	public AjaxEntity directData(VideoDataEntity video,HttpServletRequest resq) {
+		String type = resq.getParameter("type");
+		if(type.equals("1")) {
+			try {
+				processingVideos(Global.apptoken, video.getOriginaladdress());
+				return new AjaxEntity(Global.ajax_success, "提交成功", null);
+			} catch (Exception e) {
+			
+			}
+		}else {
+			String platform = this.getPlatform(video.getOriginaladdress());
+			String url = this.getUrl(video.getOriginaladdress());
+			if(null != platform&& platform.equals("抖音")) {
+				Map<String, String> downVideo = DouUtil.downVideo(url);
+				return new AjaxEntity(Global.ajax_success, "获取成功", downVideo);
+			}else {
+				return new AjaxEntity(Global.ajax_uri_error, "当前平台暂时不支持直链", null);
+			}
+		}
+		return null;
 	}
 
 }

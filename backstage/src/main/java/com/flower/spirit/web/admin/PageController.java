@@ -208,4 +208,9 @@ public class PageController {
 	public String dataStatistics() {
 		return "admin/home";
 	}
+	
+	@RequestMapping(value = "/directData")
+	public String directData() {
+		return "admin/directData";
+	}
 }
