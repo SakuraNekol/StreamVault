@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,8 @@ public class BiliConfigService {
 	
 	@Autowired
 	private BiliConfigDao BiliConfigDao;
+	
+	private Logger logger = LoggerFactory.getLogger(BiliConfigService.class);
 	
 	public BiliConfigEntity getData() {
 		List<BiliConfigEntity> findAll = BiliConfigDao.findAll();
@@ -100,7 +104,7 @@ public class BiliConfigService {
 	/**
 	 * 判断是否需要刷新cookie 如何需要则刷新cookie
 	 */
-	public  String isNeedRefreshAndUpdate() {
+	public  void isNeedRefreshAndUpdate() {
 		String biliJctValue = Global.bilicookies.replaceAll("(?s).*bili_jct=([^;]+).*", "$1");
 		if(biliJctValue != null) {
 			String url = "https://passport.bilibili.com/x/passport-login/web/cookie/info?=csrf"+biliJctValue;
@@ -115,7 +119,7 @@ public class BiliConfigService {
 					String bili_refresh_token = Global.bili_refresh_token;
 					if(Global.bili_refresh_token == null) {
 						sendNotify.sendMessage("StreamVault通知", "当前BiliBili的Cookie,因需要刷新,因为此cookie为旧版更新前登录,无法自动刷新,请前往后台重新扫码登录");
-						return null;
+						return ;
 					}
 					String correspondPath = BiliUtil.getCorrespondPath(String.format("refresh_%d", timestamp));
 					String refresh_csrf = HttpUtil.httpGetBili("https://www.bilibili.com/correspond/1/"+correspondPath, Global.bilicookies);
@@ -163,10 +167,12 @@ public class BiliConfigService {
 					}
 					
 					
+				}else {
+					logger.info("当前bilibili cookie无需刷新");
 				}
 			}
 		}
-		return biliJctValue;
+		return;
 
 	}
 	
