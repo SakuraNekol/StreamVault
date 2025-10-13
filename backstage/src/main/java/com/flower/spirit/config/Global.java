@@ -65,6 +65,8 @@ public class Global {
 	public static boolean bilimember = false;
 
 	public static String bilibitstream = "64";
+	
+	public static String bili_refresh_token = null;
 
 	public static boolean openprocesshistory = false;
 

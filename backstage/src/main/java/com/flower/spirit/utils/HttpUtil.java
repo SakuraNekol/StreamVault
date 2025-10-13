@@ -3,6 +3,7 @@ package com.flower.spirit.utils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,9 +16,11 @@ import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -25,14 +28,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -41,6 +47,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,6 +69,17 @@ import okhttp3.ResponseBody;
 public class HttpUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpUtil.class);
+    
+    private static final HttpClient httpClient = new HttpClient();
+    
+    private static final OkHttpClient client = new OkHttpClient.Builder()
+            .protocols(Collections.singletonList(Protocol.HTTP_1_1))
+            .connectTimeout(20, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true)
+            .build();
+
 
     /**
      * web 端
@@ -69,7 +89,6 @@ public class HttpUtil {
      * @return
      */
     public static String httpGet(String url, String param) {
-        HttpClient httpClient = new HttpClient();
         httpClient.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
         GetMethod getMethod = new GetMethod(url);
         getMethod.getParams().setParameter(HttpMethodParams.SO_TIMEOUT, 5000);
@@ -104,8 +123,8 @@ public class HttpUtil {
      * @param param
      * @return
      */
-    public static String httpGetBypoll(String url, String param) {
-        HttpClient httpClient = new HttpClient();
+    public static Map<String, String> httpGetBypoll(String url, String param) {
+    	Map<String, String> res = new HashMap<String, String>();
         httpClient.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
         GetMethod getMethod = new GetMethod(url);
         getMethod.getParams().setParameter(HttpMethodParams.SO_TIMEOUT, 5000);
@@ -131,7 +150,177 @@ public class HttpUtil {
                         cookie = cookie + ";" + str;
                     }
                 }
-                return cookie.substring(1, cookie.length());
+                JSONObject object = JSONObject.parseObject(response);
+                if(object.getString("code").equals("0")) {
+                	String refresh_token = object.getJSONObject("data").getString("refresh_token");
+                	res.put("refresh_token", refresh_token);
+                }
+                
+                res.put("cookie", cookie.substring(1, cookie.length()));
+                return res;
+            } else {
+                return null;
+            }
+
+        } catch (HttpException e) {
+            System.out.println("请检查输入的URL!");
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("发生网络异常!");
+            e.printStackTrace();
+        } finally {
+            /* 6 .释放连接 */
+            getMethod.releaseConnection();
+        }
+        return null;
+    }
+    
+    
+    public static String httpPost(String url, Map<String, String> params, String cook) {
+        Map<String, String> res = new HashMap<String, String>();
+        PostMethod postMethod = new PostMethod(url);
+        postMethod.getParams().setParameter(HttpMethodParams.SO_TIMEOUT, 5000);
+        postMethod.getParams().setParameter("user-agent", 
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36");
+        postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
+        if (null != cook && !cook.equals("")) {
+            postMethod.addRequestHeader("cookie", cook);
+        }
+        NameValuePair[] data = new NameValuePair[params.size()];
+        int i = 0;
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            data[i++] = new NameValuePair(entry.getKey(), entry.getValue());
+        }
+        postMethod.setRequestBody(data);
+        String response = "";
+        try {
+            int statusCode = httpClient.executeMethod(postMethod);
+            if (statusCode != HttpStatus.SC_OK) {
+                return null;
+            }
+
+            byte[] responseBody = postMethod.getResponseBody();
+            response = new String(responseBody, "UTF-8");
+
+            return response;
+
+        } catch (HttpException e) {
+            System.out.println("请检查输入的URL!");
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("发生网络异常!");
+            e.printStackTrace();
+        } finally {
+            // 释放连接
+            postMethod.releaseConnection();
+        }
+
+        return null;
+    }
+    
+    
+    public static Map<String, String> httpPostBypoll(String url, Map<String, String> params, String cook) {
+        Map<String, String> res = new HashMap<String, String>();
+        PostMethod postMethod = new PostMethod(url);
+        postMethod.getParams().setParameter(HttpMethodParams.SO_TIMEOUT, 5000);
+        postMethod.getParams().setParameter("user-agent", 
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36");
+        postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
+        if (null != cook && !cook.equals("")) {
+            postMethod.addRequestHeader("cookie", cook);
+        }
+        NameValuePair[] data = new NameValuePair[params.size()];
+        int i = 0;
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            data[i++] = new NameValuePair(entry.getKey(), entry.getValue());
+        }
+        postMethod.setRequestBody(data);
+        String response = "";
+        try {
+            int statusCode = httpClient.executeMethod(postMethod);
+            if (statusCode != HttpStatus.SC_OK) {
+                return null;
+            }
+
+            byte[] responseBody = postMethod.getResponseBody();
+            response = new String(responseBody, "UTF-8");
+
+            String code = JSONObject.parseObject(response).getString("code");
+            if (code.equals("0")) {
+                Header[] headers = postMethod.getResponseHeaders();
+                String cookie = "";
+                for (Header h : headers) {
+                    if (h.getName().equals("Set-Cookie")) {
+                        String str = h.getValue().split(";")[0];
+                        cookie = cookie + ";" + str;
+                    }
+                }
+                JSONObject object = JSONObject.parseObject(response);
+                if(object.getString("code").equals("0")) {
+                    String refresh_token = object.getJSONObject("data").getString("refresh_token");
+                    res.put("refresh_token", refresh_token);
+                }
+
+                res.put("cookie", cookie.substring(1, cookie.length()));
+                return res;
+            } else {
+                return null;
+            }
+
+        } catch (HttpException e) {
+            System.out.println("请检查输入的URL!");
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("发生网络异常!");
+            e.printStackTrace();
+        } finally {
+            // 释放连接
+            postMethod.releaseConnection();
+        }
+
+        return null;
+    }
+    
+    
+    public static Map<String, String> httpGetBypoll(String url, String param,String cook) {
+    	Map<String, String> res = new HashMap<String, String>();
+        httpClient.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
+        GetMethod getMethod = new GetMethod(url);
+        getMethod.getParams().setParameter(HttpMethodParams.SO_TIMEOUT, 5000);
+        getMethod.getParams().setParameter("user-agent",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36");
+        getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
+        if (null != cook && !cook.equals("")) {
+            getMethod.addRequestHeader("cookie", cook);
+        }
+
+        String response = "";
+        try {
+            int statusCode = httpClient.executeMethod(getMethod);
+            if (statusCode != HttpStatus.SC_OK) {
+                return null;
+            }
+            byte[] responseBody = getMethod.getResponseBody();
+            response = new String(responseBody, param);
+            String code = JSONObject.parseObject(response).getJSONObject("data").getString("code");
+            if (code.equals("0")) {
+                // 登录成功
+                Header[] headers = getMethod.getResponseHeaders();
+                String cookie = "";
+                for (Header h : headers) {
+                    if (h.getName().equals("Set-Cookie")) {
+                        String str = h.getValue().split(";")[0];
+                        cookie = cookie + ";" + str;
+                    }
+                }
+                JSONObject object = JSONObject.parseObject(response);
+                if(object.getString("code").equals("0")) {
+                	String refresh_token = object.getJSONObject("data").getString("refresh_token");
+                	res.put("refresh_token", refresh_token);
+                }
+                
+                res.put("cookie", cookie.substring(1, cookie.length()));
+                return res;
             } else {
                 return null;
             }
@@ -157,7 +346,6 @@ public class HttpUtil {
      * @return
      */
     public static String getSerchPersion(String url, String param) {
-        HttpClient httpClient = new HttpClient();
         httpClient.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
         GetMethod getMethod = new GetMethod(url);
         getMethod.getParams().setParameter(HttpMethodParams.SO_TIMEOUT, 5000);
@@ -190,8 +378,6 @@ public class HttpUtil {
     }
 
     public static String httpGetBili(String url, String param, String cookie) {
-        HttpClient httpClient = new HttpClient();
-
         httpClient.getParams().setCookiePolicy(CookiePolicy.BROWSER_COMPATIBILITY);
         httpClient.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
         GetMethod getMethod = new GetMethod(url);
@@ -233,10 +419,6 @@ public class HttpUtil {
     
     public static String httpGetBili(String url, String cookie,String origin,String referer ) {
     	String ua = null!=Global.useragent && !"".equals(Global.useragent)?Global.useragent:"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36";
-        OkHttpClient client = new OkHttpClient.Builder()
-                .connectTimeout(5, TimeUnit.SECONDS)    // 连接超时
-                .readTimeout(5, TimeUnit.SECONDS)       // 读取超时
-                .build();
         Request.Builder requestBuilder = new Request.Builder()
                 .url(url)
                 .get()
@@ -273,11 +455,6 @@ public class HttpUtil {
         String ua = (Global.useragent != null && !"".equals(Global.useragent))
                 ? Global.useragent
                 : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36";
-
-        OkHttpClient client = new OkHttpClient.Builder()
-                .connectTimeout(5, TimeUnit.SECONDS)
-                .readTimeout(5, TimeUnit.SECONDS)
-                .build();
 
         Request.Builder requestBuilder = new Request.Builder()
                 .url(url)
@@ -383,13 +560,6 @@ public class HttpUtil {
         long retryDelay = 5000;
 
         while (retryCount < maxRetries) {
-            OkHttpClient client = new OkHttpClient.Builder()
-                    .connectTimeout(10, TimeUnit.SECONDS)
-                    .readTimeout(60, TimeUnit.SECONDS)
-                    .writeTimeout(60, TimeUnit.SECONDS)
-                    .retryOnConnectionFailure(true)
-                    .build();
-
             File saveDir = new File(savePath);
             File finalFile = new File(saveDir, fileName);
             File tmpFile = new File(saveDir, fileName + ".downloading");
@@ -680,12 +850,7 @@ public class HttpUtil {
         int retryCount = 0;
         long retryDelay = 5000;
 
-        OkHttpClient client = new OkHttpClient.Builder()
-                .connectTimeout(20, TimeUnit.SECONDS)
-                .readTimeout(60, TimeUnit.SECONDS)
-                .writeTimeout(60, TimeUnit.SECONDS)
-                .retryOnConnectionFailure(true)
-                .build();
+
 
         while (retryCount < maxRetries) {
             File saveDir = new File(savePath);
@@ -824,13 +989,7 @@ public class HttpUtil {
             throw new IllegalArgumentException("urlStr, fileName, savePath 不能为空");
         }
 
-        OkHttpClient client = new OkHttpClient.Builder()
-                .protocols(Collections.singletonList(Protocol.HTTP_1_1))
-                .connectTimeout(20, TimeUnit.SECONDS)
-                .readTimeout(60, TimeUnit.SECONDS)
-                .writeTimeout(60, TimeUnit.SECONDS)
-                .retryOnConnectionFailure(true)
-                .build();
+
 
         File saveDir = new File(savePath);
         if (!saveDir.exists()) {
@@ -1019,5 +1178,74 @@ public class HttpUtil {
         logger.info("文件下载完成: {}", finalFile.getName());
         return "0";
     }
+    
+    public String decompressGzip(byte[] compressedData) throws IOException {
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(compressedData);
+        GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayInputStream);
+        InputStreamReader reader = new InputStreamReader(gzipInputStream, StandardCharsets.UTF_8);
+        BufferedReader bufferedReader = new BufferedReader(reader);
+
+        StringBuilder stringBuilder = new StringBuilder();
+        String line;
+        while ((line = bufferedReader.readLine()) != null) {
+            stringBuilder.append(line);
+        }
+        return stringBuilder.toString();
+    }
+    
+    
+    public static String httpGetBili(String url, String cookie) {
+        GetMethod getMethod = new GetMethod(url);
+        getMethod.getParams().setParameter("user-agent", Global.configInfo.getSerchPersion.getValue());
+
+        if (cookie != null && !cookie.isEmpty()) {
+            getMethod.addRequestHeader("cookie", cookie);
+        }
+
+        getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler());
+        StringBuilder response = new StringBuilder();
+
+        try {
+            int statusCode = httpClient.executeMethod(getMethod);
+            if (statusCode != HttpStatus.SC_OK) {
+                System.err.println("请求出错: " + getMethod.getStatusLine());
+            } else {
+                // 获取 Content-Encoding 头，检查是否是 gzip 压缩
+                String contentEncoding = getMethod.getResponseHeader("Content-Encoding") != null
+                        ? getMethod.getResponseHeader("Content-Encoding").getValue()
+                        : "";
+
+                InputStream is = getMethod.getResponseBodyAsStream();
+
+                // 如果是 gzip 压缩，则解压
+                if ("gzip".equalsIgnoreCase(contentEncoding)) {
+                    is = new GZIPInputStream(is); // 解压 gzip 数据
+                }
+
+                try (InputStreamReader isr = new InputStreamReader(is, "UTF-8");
+                     BufferedReader reader = new BufferedReader(isr)) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
+                    }
+                }
+            }
+        } catch (HttpException e) {
+            System.out.println("请检查输入的URL!");
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("发生网络异常!");
+            e.printStackTrace();
+        } finally {
+            getMethod.releaseConnection();
+        }
+
+        // 解析 HTML 获取 1-name 元素的文本
+        Document document = Jsoup.parse(response.toString());
+        Element nameElement = document.getElementById("1-name"); // 获取 id="1-name" 的元素
+        return (nameElement != null) ? nameElement.text() : null; // 返回元素的文本内容
+    }
+
+    
 
 }

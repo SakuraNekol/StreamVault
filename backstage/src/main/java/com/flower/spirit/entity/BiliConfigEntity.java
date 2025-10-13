@@ -28,6 +28,8 @@ public class BiliConfigEntity implements Serializable {
 	private String bigmember;
 	
 	private String bitstream;
+	
+	private String refreshtoken;
 
 	public Integer getId() {
 		return id;
@@ -59,6 +61,14 @@ public class BiliConfigEntity implements Serializable {
 
 	public void setBitstream(String bitstream) {
 		this.bitstream = bitstream;
+	}
+
+	public String getRefreshtoken() {
+		return refreshtoken;
+	}
+
+	public void setRefreshtoken(String refreshtoken) {
+		this.refreshtoken = refreshtoken;
 	}
 	
 	

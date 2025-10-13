@@ -70,6 +70,9 @@ public class AppConfig {
 		if(null != bili.getBitstream() && !"".equals(bili.getBitstream())) {
 			Global.bilibitstream= bili.getBitstream();
 		}
+		if(null != bili.getRefreshtoken() && !"".equals(bili.getRefreshtoken())) {
+			Global.bili_refresh_token= bili.getRefreshtoken();
+		}
 		TikTokConfigEntity tiktok = tikTokConfigService.getData();
 		if(null !=tiktok.getCookies() && !"".equals(tiktok.getCookies())) {
 			Global.tiktokCookie =tiktok.getCookies();

@@ -3,13 +3,22 @@ package com.flower.spirit.utils;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.spec.MGF1ParameterSpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.OAEPParameterSpec;
+import javax.crypto.spec.PSource;
 
 import jakarta.annotation.PostConstruct;
 
@@ -40,6 +49,7 @@ public class BiliUtil {
 
 	@Autowired
 	private FfmpegQueueDao ffmpegQueueDao;
+	
 
 	private static BiliUtil biliUtil;
 	
@@ -867,6 +877,33 @@ public class BiliUtil {
 			sb.append(c);
 		}
 		return sb.toString();
+	}
+	
+    public static String getCorrespondPath(String plaintext) {
+    	try {
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            String publicKeyStr = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDLgd2OAkcGVtoE3ThUREbio0EgUc/prcajMKXvkCKFCWhJYJcLkcM2DKKcSeFpD/j6Boy538YXnR6VhcuUJOhH2x71nzPjfdTcqMz7djHum0qSZA0AyCBDABUqCrfNgCiJ00Ra7GmRj+YCK1NJEuewlb40JNrRuoEUXpabUzGB8QIDAQAB";
+            byte[] publicBytes = Base64.getDecoder().decode(publicKeyStr);
+            X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(publicBytes);
+            PublicKey publicKey = keyFactory.generatePublic(x509EncodedKeySpec);
+            String algorithm = "RSA/ECB/OAEPPadding";
+            Cipher cipher = Cipher.getInstance(algorithm);
+            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+            byte[] plaintextBytes = plaintext.getBytes("UTF-8");
+            OAEPParameterSpec oaepParams = new OAEPParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256, PSource.PSpecified.DEFAULT);
+            cipher.init(Cipher.ENCRYPT_MODE, publicKey, oaepParams);
+            byte[] encryptedBytes = cipher.doFinal(plaintextBytes);
+            return new BigInteger(1, encryptedBytes).toString(16);
+		} catch (Exception e) {
+			return null;
+		}
+    }
+    
+    public static void main(String[] args) {
+    	String correspondPath = getCorrespondPath(String.format("refresh_%d", System.currentTimeMillis()));
+    	System.out.println(correspondPath);
+    	String httpGetBili = HttpUtil.httpGetBili("https://www.bilibili.com/correspond/1/"+correspondPath,"UTF-8", Global.bilicookies);
+    	System.out.println(httpGetBili);
 	}
 
 }
