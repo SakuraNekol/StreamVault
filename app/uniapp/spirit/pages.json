@@ -57,6 +57,18 @@
 			}
 		},
 		{
+			"path" : "pages/video/whoosh",
+			"style" : 
+			{
+				"navigationBarTitleText" : "",
+				"navigationStyle": "custom",
+				"app-plus": {
+					"titleNView": false,
+					"bounce": "none"
+				}
+			}
+		},
+		{
 			"path" : "pages/admin/favData",
 			"style" : 
 			{
@@ -75,6 +87,12 @@
 				"iconPath": "static/icon/index.png",
 				"selectedIconPath": "static/icon/index.png",
 				"text": "推送"
+			},
+			{
+				"pagePath": "pages/video/whoosh",
+				"iconPath": "static/icon/xiuxiu.png",
+				"selectedIconPath": "/static/icon/xiuxiu.png",
+				"text": "咻咻"
 			},
 			{
 				"pagePath": "pages/video/videolist",

@@ -3,6 +3,7 @@ package com.flower.spirit.service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,11 @@ public class BiliConfigService {
 	 * @return
 	 */
 	public AjaxEntity updateBiliConfig(BiliConfigEntity entity) {
+		//这里先简单set 一下 没时间仔细看
+		Optional<BiliConfigEntity> byId = BiliConfigDao.findById(entity.getId());
+		BiliConfigEntity biliConfigEntity = byId.get();
+		entity.setRefreshtoken(biliConfigEntity.getRefreshtoken());
+		//这里先简单set 一下 没时间仔细看
 		BiliConfigDao.save(entity);
 		Global.bilicookies = entity.getBilicookies();
 		if(null != entity.getBigmember() && entity.getBigmember().equals("是")) {

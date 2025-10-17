@@ -19,6 +19,9 @@
 				<view class="filter-btn" @click="toggleFilter">
 					筛选
 				</view>
+				<view class="whoosh-btn" @click="goToWhoosh">
+					咻咻
+				</view>
 			</view>
 			
 			<!-- 筛选面板 -->
@@ -240,6 +243,16 @@
 			 */
 			toggleFilter() {
 				this.showFilter = !this.showFilter;
+			},
+			
+			/**
+			 * 跳转到咻咻页面
+			 */
+			goToWhoosh() {
+				console.log('跳转到咻咻页面');
+				uni.navigateTo({
+					url: '/pages/video/whoosh'
+				});
 			},
 			
 			/**
@@ -674,6 +687,25 @@
 
 .filter-btn:active {
 	background: #0056cc;
+	transform: scale(0.98);
+}
+
+.whoosh-btn {
+	background: #ff2d55;
+	border: none;
+	border-radius: 20rpx;
+	padding: 12rpx 20rpx;
+	color: white;
+	font-size: 24rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.3s;
+	margin-left: 12rpx;
+}
+
+.whoosh-btn:active {
+	background: #e6194b;
 	transform: scale(0.98);
 }
 
