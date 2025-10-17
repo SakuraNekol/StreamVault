@@ -1,6 +1,15 @@
 ### 更新记录
 
 ```
+2025/10/11  Tagged the version as 251017 on Docker Hub. Merged the 251017 tag into the latest tag.
+新增bilibili cookie状态检查(251013版本)
+新增bilibili cookie自动刷新(251013版本)
+修复因在webui界面在扫码登录后 点击保存按钮而造成的刷新token丢失
+yt-dlp 替换为源库版本  版本号为 2025.10.14
+
+```
+
+```
 2025/10/11  Tagged the version as 251011 on Docker Hub. Merged the 251011 tag into the latest tag.
 优化视频列表页面
 优化刷新弹幕返回提示
