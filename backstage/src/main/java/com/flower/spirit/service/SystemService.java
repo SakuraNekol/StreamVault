@@ -1,6 +1,9 @@
 package com.flower.spirit.service;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
@@ -186,7 +189,15 @@ public class SystemService {
 	 */
 	public AjaxEntity checkAndUpdate() {
 		String message ="StreamVault 版本暂时无法通过在线更新<br />";
-		String commandos = CommandUtil.commandos("yt-dlp -U");
+
+		List<String> cmdList = new ArrayList<>();
+		cmdList.add("yt-dlp");
+		cmdList.add("-U");
+		if(Global.proxyinfo != null) {
+			cmdList.add("--proxy");
+			cmdList.add(Global.proxyinfo);
+		}
+		String commandos = CommandUtil.runCommandList(cmdList);
 		String updateStatus = StringUtil.getUpdateStatus(commandos);
 		message= message+"yt-dlp版本:"+updateStatus;
 		return new AjaxEntity(Global.ajax_success, message, null);

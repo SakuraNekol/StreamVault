@@ -189,7 +189,7 @@ public class CommandUtil {
         return runCommandList(cmdList);
     }
     
-    private static String runCommandList(List<String> cmdList) {
+    public static String runCommandList(List<String> cmdList) {
         StringBuilder output = new StringBuilder();
         Process process = null;
         try {
