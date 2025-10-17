@@ -1,7 +1,7 @@
 FROM eclipse-temurin:17-jre
 
 ENV TZ=Asia/Shanghai
-ARG BUILD_VERSION=2025.10.10.070705
+ARG BUILD_VERSION=2025.10.14
 ENV YT_DLP_VERSION=$BUILD_VERSION
 
 # 安装系统依赖（包括 ffmpeg, python3, pip, venv 等）
@@ -28,7 +28,7 @@ RUN python3 -m venv /opt/venv && \
 ENV PATH="/opt/venv/bin:$PATH"
 
 # 安装 yt-dlp
-RUN wget -O /usr/local/bin/yt-dlp https://github.com/lemon8866/yt-dlp/releases/download/${YT_DLP_VERSION}/yt-dlp && \
+RUN wget -O /usr/local/bin/yt-dlp https://github.com/yt-dlp/yt-dlp/releases/download/${YT_DLP_VERSION}/yt-dlp && \
     chmod a+rx /usr/local/bin/yt-dlp
 ENV YT_DLP_PATH=/usr/local/bin/yt-dlp
 
