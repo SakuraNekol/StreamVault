@@ -39,5 +39,9 @@ public interface VideoDataDao
 	 */
 	@Query("SELECT COUNT(v) FROM VideoDataEntity v WHERE v.createtime >= :startDate AND v.createtime < :endDate")
 	Long countTodayAdded(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+	
+	
+    @Query("SELECT v FROM VideoDataEntity v WHERE v.videoplatform = :videoplatform ORDER BY RANDOM()")
+    VideoDataEntity findRandomByVideoplatform(@Param("videoplatform") String videoplatform);
 
 }

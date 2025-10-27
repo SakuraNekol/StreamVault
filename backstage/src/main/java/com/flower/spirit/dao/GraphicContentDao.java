@@ -44,5 +44,9 @@ public interface GraphicContentDao extends JpaRepository<GraphicContentEntity, I
 	 */
 	@Query("SELECT COUNT(g) FROM GraphicContentEntity g WHERE g.createtime >= :startDate AND g.createtime < :endDate")
 	Long countTodayAdded(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+	
+	@Query("SELECT g FROM GraphicContentEntity g WHERE g.platform = :platform ORDER BY RANDOM()")
+	GraphicContentEntity findRandomByPlatform(@Param("platform") String platform);
+
 
 }

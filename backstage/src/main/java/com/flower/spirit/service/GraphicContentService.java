@@ -115,4 +115,8 @@ public class GraphicContentService {
 		return graphicContentDao.countTodayAdded(startDate, endDate);
 	}
 
+	public GraphicContentEntity findRandomByPlatform(String platform) {
+		return graphicContentDao.findRandomByPlatform(platform);
+	}
+	
 }

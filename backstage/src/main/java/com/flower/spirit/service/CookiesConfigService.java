@@ -2,9 +2,12 @@ package com.flower.spirit.service;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.httpclient.HttpException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.flower.spirit.common.AjaxEntity;
@@ -12,12 +15,25 @@ import com.flower.spirit.config.Global;
 import com.flower.spirit.dao.CookiesConfigDao;
 import com.flower.spirit.entity.CookiesConfigEntity;
 import com.flower.spirit.entity.CookiesRequestEntity;
+import com.flower.spirit.entity.GraphicContentEntity;
+import com.flower.spirit.entity.VideoDataEntity;
+import com.flower.spirit.executor.WeiBoExecutor;
+import com.flower.spirit.utils.DouUtil;
 
 @Service
 public class CookiesConfigService {
 
 	@Autowired
 	private CookiesConfigDao cookiesConfigDao;
+	
+	@Autowired
+	private VideoDataService videoDataService;
+	
+	@Autowired
+	private GraphicContentService graphicContentService;
+	
+	@Autowired
+	private WeiBoExecutor weiBoExecutor;
 
 	public CookiesConfigEntity getData() {
 		List<CookiesConfigEntity> findAll = cookiesConfigDao.findAll();
@@ -93,6 +109,36 @@ public class CookiesConfigService {
 		} catch (Exception e) {
 			return new AjaxEntity(Global.ajax_uri_error, "检查失败: " + e.getMessage(), null);
 		}
+	}
+	
+	public void checkCookieStatus() {
+		//先检查dy  dy从video那  微博从图文拿  最后检测小红书  其他yt-dlp平台等后边再说
+		String message ="";
+		VideoDataEntity randomByVideoplatform = videoDataService.findRandomByVideoplatform("抖音");
+		if(randomByVideoplatform!=null) {
+			try {
+				Map<String, String> bogus = DouUtil.getBogus(randomByVideoplatform.getVideoid());
+				if(bogus!=null) {
+					message = "抖音:正常\n";
+				}else {
+					message = "抖音:失效\n";
+				}
+			} catch (HttpException e) {message = "抖音:检测失败\n";} catch (Exception e) {message = "抖音:检测失败\n";}
+		}
+		
+		//检测微博
+		GraphicContentEntity randomByPlatform = graphicContentService.findRandomByPlatform("weibo");
+		if(randomByPlatform!=null) {
+			String fetchWeiboDetail = weiBoExecutor.fetchWeiboDetail(randomByPlatform.getVideoid());
+			if(fetchWeiboDetail!=null) {
+				message = "微博:正常\n";
+			}else {
+				message = "微博:失效\n";
+			}
+		}
+		
+		
+		
 	}
 
 }

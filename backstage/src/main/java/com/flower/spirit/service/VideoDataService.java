@@ -268,5 +268,8 @@ public class VideoDataService {
 	    return new AjaxEntity(Global.ajax_success, "刷新成功", null);
 	}
 
+	public VideoDataEntity findRandomByVideoplatform(String platform) {
+		return videoDataDao.findRandomByVideoplatform(platform);
+	}
 
 }
