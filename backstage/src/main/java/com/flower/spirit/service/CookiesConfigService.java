@@ -131,7 +131,7 @@ public class CookiesConfigService {
 		GraphicContentEntity randomByPlatform = graphicContentService.findRandomByPlatform("weibo");
 		if(randomByPlatform!=null) {
 			String fetchWeiboDetail = weiBoExecutor.fetchWeiboDetail(randomByPlatform.getVideoid());
-			if(fetchWeiboDetail!=null) {
+			if(fetchWeiboDetail!=null && !fetchWeiboDetail.contains("\"ok\":-100")) {
 				message =message+ "微博:正常\n";
 			}else {
 				message =message+"微博:失效\n";
