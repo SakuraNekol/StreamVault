@@ -19,6 +19,7 @@ import com.flower.spirit.entity.GraphicContentEntity;
 import com.flower.spirit.entity.VideoDataEntity;
 import com.flower.spirit.executor.WeiBoExecutor;
 import com.flower.spirit.utils.DouUtil;
+import com.flower.spirit.utils.sendNotify;
 
 @Service
 public class CookiesConfigService {
@@ -112,18 +113,18 @@ public class CookiesConfigService {
 	}
 	
 	public void checkCookieStatus() {
-		//先检查dy  dy从video那  微博从图文拿  最后检测小红书  其他yt-dlp平台等后边再说
+		//先检查dy  dy从video那  微博从图文拿  最后检测小红书 小红书cookie检测 不会 不做了  其他yt-dlp平台等后边再说
 		String message ="";
 		VideoDataEntity randomByVideoplatform = videoDataService.findRandomByVideoplatform("抖音");
 		if(randomByVideoplatform!=null) {
 			try {
 				Map<String, String> bogus = DouUtil.getBogus(randomByVideoplatform.getVideoid());
 				if(bogus!=null) {
-					message = "抖音:正常\n";
+					message =message+ "抖音:正常\n";
 				}else {
-					message = "抖音:失效\n";
+					message =message+ "抖音:失效\n";
 				}
-			} catch (HttpException e) {message = "抖音:检测失败\n";} catch (Exception e) {message = "抖音:检测失败\n";}
+			} catch (HttpException e) {message = message+"抖音:检测失败\n";} catch (Exception e) {message =message+ "抖音:检测失败\n";}
 		}
 		
 		//检测微博
@@ -131,13 +132,13 @@ public class CookiesConfigService {
 		if(randomByPlatform!=null) {
 			String fetchWeiboDetail = weiBoExecutor.fetchWeiboDetail(randomByPlatform.getVideoid());
 			if(fetchWeiboDetail!=null) {
-				message = "微博:正常\n";
+				message =message+ "微博:正常\n";
 			}else {
-				message = "微博:失效\n";
+				message =message+"微博:失效\n";
 			}
 		}
 		
-		
+		sendNotify.sendMessage("StreamVault cookie 检测通知", message);
 		
 	}
 
