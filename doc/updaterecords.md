@@ -1,5 +1,18 @@
 ### 更新记录
 
+
+```
+2025/10/28  Tagged the version as 251028 on Docker Hub. Merged the 251028 tag into the latest tag.
+升级内置的yt-dlp至最新版本 版本号为 2025.10.22
+添加抖音微博cookie状态检查 每天九点定时任务(必须在对应功能里使用过一次)
+将rednote 从yt-dlp中剥离
+rednote支持混杂模式  
+    当笔记中仅有一个视频 且视频时长超60s 入视频库
+    当笔记中有多个视频/多个图片 入图文库
+bilibili 弹幕下载是否开启相关可在webui中单独设置
+cookie管理中新增rednote 平台填写
+```
+
 ```
 2025/10/11  Tagged the version as 251017 on Docker Hub. Merged the 251017 tag into the latest tag.
 新增bilibili cookie状态检查(251013版本)
