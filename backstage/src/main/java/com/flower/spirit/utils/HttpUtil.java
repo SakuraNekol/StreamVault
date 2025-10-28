@@ -80,7 +80,28 @@ public class HttpUtil {
             .retryOnConnectionFailure(true)
             .build();
 
+    public static String getPage(String url,String cookie,String referer) {
+    	 Request.Builder requestBuilder = new Request.Builder().url(url);
+    	 if(null!= cookie && !"".equals(cookie)) {
+        	 requestBuilder.addHeader("Cookie", cookie);
+    	 }
+    	 if(null!= referer && !"".equals(referer)) {
+        	 requestBuilder.addHeader("referer", referer);
+    	 }
+    	 requestBuilder.addHeader("User-Agent", Global.useragent != null?Global.useragent:"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36");
+    	 Request request = requestBuilder.build();
+    	 try (Response response = client.newCall(request).execute()) {
+    		 String responseBody = response.body().string();
+             return responseBody;
+    	 } catch (Exception e) {
 
+         } finally {
+          
+         }
+		 return null;
+    }
+    
+    
     /**
      * web 端
      * 

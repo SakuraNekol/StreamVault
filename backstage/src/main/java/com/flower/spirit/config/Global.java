@@ -88,7 +88,8 @@ public class Global {
 		instagram,
 		twitter,
 		kuaishou,
-		weibo;
+		weibo,
+		rednote;
 	};
 
 	// 文件映射和保存路径

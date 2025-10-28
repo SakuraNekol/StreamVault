@@ -37,6 +37,10 @@ public class URLUtil {
 		List<String> weibo = new ArrayList<String>();
 		weibo.add("weibo.com");
 		
+		List<String> xiaohongshu = new ArrayList<String>();
+		xiaohongshu.add("www.xiaohongshu.com");
+		xiaohongshu.add("xhslink.com");
+		
 		put("tiktok", tiktok);
 		put("哔哩", bili);
 		put("抖音", dy);
@@ -44,6 +48,7 @@ public class URLUtil {
 		put("instagram", instagram);
 		put("twitter", twitter);
 		put("微博", weibo);
+		put("小红书", xiaohongshu);
 	}};;
 
 	/**

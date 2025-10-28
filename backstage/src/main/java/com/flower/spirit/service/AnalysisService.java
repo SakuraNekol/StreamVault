@@ -24,6 +24,7 @@ import com.flower.spirit.config.Global;
 import com.flower.spirit.dao.VideoDataDao;
 import com.flower.spirit.entity.ProcessHistoryEntity;
 import com.flower.spirit.entity.VideoDataEntity;
+import com.flower.spirit.executor.HongShuExecutor;
 import com.flower.spirit.executor.WeiBoExecutor;
 import com.flower.spirit.utils.Aria2Util;
 import com.flower.spirit.utils.BiliUtil;
@@ -66,6 +67,9 @@ public class AnalysisService {
 	
 	@Autowired
 	private WeiBoExecutor weiBoExecutor;
+	
+	@Autowired
+	private HongShuExecutor hongShuExecutor;
 
 
 	/**
@@ -101,6 +105,7 @@ public class AnalysisService {
 		platformHandlers.put("twitter", () -> executeTask(ytdlp, () -> this.twitter(platform, url)));
 		platformHandlers.put("快手", () -> executeTask(domestic, () -> this.kuaishou(platform, url)));
 		platformHandlers.put("微博", () -> executeTask(domestic, () -> this.weibo(platform, url)));
+		platformHandlers.put("小红书", () -> executeTask(domestic, () -> this.xiaohongshu(platform, url)));
 		// 获取并执行对应平台的处理逻辑
 		Runnable handler = platformHandlers.get(platform);
 		if (handler != null) {
@@ -119,6 +124,14 @@ public class AnalysisService {
 				});
 			}
 
+		}
+	}
+
+	private void xiaohongshu(String platform, String url) throws Exception {
+		try {
+			hongShuExecutor.dataExecutor(platform,url);
+		} catch (Exception e) {
+			logger.error("rednote url 解析错误,请提交对应日志 到issues");
 		}
 	}
 

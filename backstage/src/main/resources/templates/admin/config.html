@@ -249,7 +249,7 @@
                                         <button class="btn btn-primary saveTikTokConfig" type="button">保存</button>
                                     </div>
                                 </form>
-                                
+                                <div class="col-md-6" style="padding-left: 0">
                                 <form action="#" method="post" onsubmit="return false;">
                                     <input type="hidden" class="cookiesid" th:value="${cookies.id}" />
                                     <div class="form-group">
@@ -257,7 +257,16 @@
                                         <input type="type" name="kuaishouCookie"  autocomplete="off" class="form-control kuaishouCookie" th:value="${cookies.kuaishouCookie}">
                                     </div>
                                 </form>
-                                
+                                </div>
+                                 <div class="col-md-6" style="padding-left: 0">
+                                <form action="#" method="post" onsubmit="return false;">
+                                    <input type="hidden" class="cookiesid" th:value="${cookies.id}" />
+                                    <div class="form-group">
+                                        <label>红书cookie(仅图文,建议yt-dlp也导入一次)</label>
+                                        <input type="type" name="rednotecookie"  autocomplete="off" class="form-control rednotecookie" th:value="${cookies.rednotecookie}">
+                                    </div>
+                                </form>
+                                  </div>
                                 <form action="#" method="post" onsubmit="return false;">
                                     <input type="hidden" class="cookiesid" th:value="${cookies.id}" />
                                     <div class="form-group">
@@ -539,6 +548,7 @@
             option['id'] = appid;
             option['kuaishouCookie'] = $('.kuaishouCookie').val();
             option['weibocookie'] = $('.weibocookie').val();
+            option['rednotecookie'] = $('.rednotecookie').val();
             $.post("/admin/api/updateCookie",option,function(data,status){
                 if(data.resCode =="000001"){
                     layer.closeAll();
