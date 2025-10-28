@@ -109,8 +109,8 @@ public class HongShuExecutor {
 				}
 				Long duration = h264Data.getJSONObject(0).getLong("duration")/1000;
 				String masterUrl = h264Data.getJSONObject(0).getString("masterUrl");
-				if(duration>60) {
-					//单视频且时长超60 进视频
+				if(duration>6) {
+					//单视频且时长超6 进视频
 					String 	videofile = FileUtil.generateDir(true, Global.platform.rednote.name(), true, filename, null, null);
 					String videounrealaddr = FileUtil.generateDir(false, Global.platform.rednote.name(), true, filename,
 							null, "mp4");
