@@ -66,6 +66,10 @@ public class Global {
 
 	public static String bilibitstream = "64";
 	
+	public static boolean biliodddmm = true;
+	
+	public static boolean bilicollectdmm = false;
+	
 	public static String bili_refresh_token = null;
 
 	public static boolean openprocesshistory = false;

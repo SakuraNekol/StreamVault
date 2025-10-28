@@ -195,6 +195,20 @@
                                         </select>
                                     </div>
                                     <div class="form-group">
+                                        <label>是否在单视频中自动下载弹幕(需要打开弹幕下载)</label>
+                                        <select class="oddmm form-control" name="oddmm">
+                                            <option value="0"  th:selected="${bili.oddmm} eq '0'">否</option>
+                                            <option value="1"  th:selected="${bili.oddmm} eq '1'">是</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>是否在收藏类监控中自动下载弹幕(需要打开弹幕下载)</label>
+                                        <select class="collectdmm form-control" name="collectdmm">
+                                            <option value="0"  th:selected="${bili.collectdmm} eq '0'">否</option>
+                                            <option value="1"  th:selected="${bili.collectdmm} eq '1'">是</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
                                         <button class="btn btn-primary saveBiliConfig" type="button">保存</button>
                                     </div>
                                 </form>
@@ -262,7 +276,7 @@
                                 <form action="#" method="post" onsubmit="return false;">
                                     <input type="hidden" class="cookiesid" th:value="${cookies.id}" />
                                     <div class="form-group">
-                                        <label>红书cookie(仅图文,建议yt-dlp也导入一次)</label>
+                                        <label>红书cookie()</label>
                                         <input type="type" name="rednotecookie"  autocomplete="off" class="form-control rednotecookie" th:value="${cookies.rednotecookie}">
                                     </div>
                                 </form>
@@ -638,11 +652,15 @@
             var bilicookies = $('.bilicookies').val();
             var bigmember = $('.ismember').val();
             var bitstream = $('.bitstream').val();
+            var oddmm = $('.oddmm').val();
+            var collectdmm = $('.collectdmm').val();
             var option = {};
             option['id'] = appid;
             option['bilicookies'] = bilicookies;
             option['bigmember'] = bigmember;
             option['bitstream'] = bitstream;
+            option['oddmm'] = oddmm;
+            option['collectdmm'] = collectdmm;
             $.post("/admin/api/updateBiliConfig",option,function(data,status){
                 if(data.resCode =="000001"){
                     layer.closeAll();

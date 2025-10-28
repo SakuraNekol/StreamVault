@@ -548,7 +548,7 @@ public class AnalysisService {
 				}
 				VideoDataEntity videoDataEntity = new VideoDataEntity(cid, title, desc, platform, coverunaddr,
 						videoPath, videounaddr, video);
-				if(Global.danmudown) {
+				if(Global.danmudown && Global.biliodddmm) {
 					BiliUtil.biliDanmaku("1", cid, aid, Integer.valueOf(duration), dir + File.separator+filename+".ass",title);
 				    JSONObject videoInfoJson = new JSONObject();
 			        videoInfoJson.put("aid", aid);

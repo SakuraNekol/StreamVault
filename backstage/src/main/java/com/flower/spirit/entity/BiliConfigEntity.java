@@ -30,6 +30,10 @@ public class BiliConfigEntity implements Serializable {
 	private String bitstream;
 	
 	private String refreshtoken;
+	
+	private String oddmm;
+	
+	private String collectdmm;
 
 	public Integer getId() {
 		return id;
@@ -70,6 +74,24 @@ public class BiliConfigEntity implements Serializable {
 	public void setRefreshtoken(String refreshtoken) {
 		this.refreshtoken = refreshtoken;
 	}
+
+	public String getOddmm() {
+		return oddmm;
+	}
+
+	public void setOddmm(String oddmm) {
+		this.oddmm = oddmm;
+	}
+
+	public String getCollectdmm() {
+		return collectdmm;
+	}
+
+	public void setCollectdmm(String collectdmm) {
+		this.collectdmm = collectdmm;
+	}
+	
+	
 	
 	
 

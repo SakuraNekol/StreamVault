@@ -343,8 +343,8 @@ public class CollectDataService {
 							if (Global.getGeneratenfo) {
 								EmbyMetadataGenerator.createFavoriteEpisodeNfo(map, dir, i + 1, dirpath);
 							}
-							if(Global.danmudown) {
-//								BiliUtil.biliDanmaku("1", cid, aid, Integer.valueOf(duration), dir + File.separator+filename+".ass",title);
+							if(Global.danmudown && Global.bilicollectdmm) {
+								BiliUtil.biliDanmaku("1", cid, aid, Integer.valueOf(duration), dir + File.separator+filename+".ass",findVideoStreaming.get("title"));
 							    JSONObject videoInfoJson = new JSONObject();
 						        videoInfoJson.put("aid", aid);
 						        videoInfoJson.put("duration", duration);

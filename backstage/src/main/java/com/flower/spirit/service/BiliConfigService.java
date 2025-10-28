@@ -56,6 +56,16 @@ public class BiliConfigService {
 		if(null != entity.getBitstream() && !"".equals(entity.getBitstream())) {
 			Global.bilibitstream= entity.getBitstream();
 		}
+		if(null != entity.getOddmm() && entity.getOddmm().equals("1")) {
+			Global.biliodddmm= true;
+		}else {
+			Global.biliodddmm= false;
+		}
+		if(null != entity.getCollectdmm() && entity.getCollectdmm().equals("1")) {
+			Global.bilicollectdmm= true;
+		}else {
+			Global.bilicollectdmm= false;
+		}
 		return new AjaxEntity(Global.ajax_success, "操作成功", entity);
 	}
 
@@ -87,6 +97,10 @@ public class BiliConfigService {
 				BiliConfigEntity biliConfigEntity = new BiliConfigEntity();
 				biliConfigEntity.setBilicookies(cookie);
 				biliConfigEntity.setRefreshtoken(refresh_token);
+				biliConfigEntity.setOddmm("1");
+				biliConfigEntity.setCollectdmm("0");
+				Global.biliodddmm =true;
+				Global.bilicollectdmm =false;
 				Global.bilicookies = cookie;
 				Global.bili_refresh_token = refresh_token;
 				BiliConfigDao.save(biliConfigEntity);
@@ -153,6 +167,10 @@ public class BiliConfigService {
 								BiliConfigEntity biliConfigEntity = new BiliConfigEntity();
 								biliConfigEntity.setBilicookies(cookie);
 								biliConfigEntity.setRefreshtoken(refresh_token);
+								biliConfigEntity.setOddmm("1");
+								biliConfigEntity.setCollectdmm("0");
+								Global.biliodddmm =true;
+								Global.bilicollectdmm =false;
 								Global.bilicookies = cookie;
 								Global.bili_refresh_token = refresh_token;
 								BiliConfigDao.save(biliConfigEntity);
