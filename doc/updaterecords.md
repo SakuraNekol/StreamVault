@@ -1,5 +1,10 @@
 ### 更新记录
 
+```
+2025/10/29  Tagged the version as 251029 on Docker Hub. Merged the 251029 tag into the latest tag.
+fix 自动检查cookie 查询异常 检查失败的问题
+```
+
 
 ```
 2025/10/28  Tagged the version as 251028 on Docker Hub. Merged the 251028 tag into the latest tag.
