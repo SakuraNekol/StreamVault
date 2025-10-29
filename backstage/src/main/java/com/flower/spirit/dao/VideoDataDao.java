@@ -41,7 +41,7 @@ public interface VideoDataDao
 	Long countTodayAdded(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 	
 	
-    @Query("SELECT v FROM VideoDataEntity v WHERE v.videoplatform = :videoplatform ORDER BY RANDOM()")
-    VideoDataEntity findRandomByVideoplatform(@Param("videoplatform") String videoplatform);
+	@Query(value = "SELECT * FROM biz_video WHERE videoplatform = :videoplatform ORDER BY RANDOM() LIMIT 1", nativeQuery = true)
+	VideoDataEntity findRandomByVideoplatform(@Param("videoplatform") String videoplatform);
 
 }

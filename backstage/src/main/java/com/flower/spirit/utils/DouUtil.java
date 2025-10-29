@@ -193,6 +193,7 @@ public class DouUtil {
 		 if(null !=Global.tiktokCookie && !"".equals(Global.tiktokCookie) ) {
 		
 			 String httpget = CommandUtil.f2cmd(Global.tiktokCookie,aweme_id,"fetch_video",null,null,null,null);
+//			 System.out.println(httpget);
 			 JSONObject data = JSONObject.parseObject(httpget);
 			 String coveruri = "";
 			 JSONArray cover = data.getJSONArray("cover");
