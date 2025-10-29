@@ -48,6 +48,7 @@ StreamVault（原名：spirit）是一个视频资源管理与下载平台，支
 - 📋 NFO元数据生成(由于目前机制问题 目前测试仅仅jellyfin支持显示演员头像)
 - 💾 视频资源缓存管理
 - 📢 下载完成Webhook通知（支持企业微信群机器人/飞书）
+- 🏞️ 部分平台支持图文
 
 ### 📝 已计划内容
 
@@ -77,7 +78,7 @@ StreamVault（原名：spirit）是一个视频资源管理与下载平台，支
 | TikTok    | ✅      | 🤔             | 暂时通过yt-dlp|                                                   |
 | 快手      | ✅     | 🤔             | HTTP/Aria2   |备注② |
 | 微博      | ✅     | 🤔             | HTTP  |  备注④                                                   |
-| 红薯      | ✅     | 🤔             | 暂时通过yt-dlp |                                                   |
+| 红薯      | ✅     | 🤔             | HTTP |                                                   |
 | 通用平台  | ✅     | ❌            |  仅支持yt-dlp| 备注③ |
 
 * **通用平台**：除抖音、哔哩哔哩、快手外的所有平台，包括但不限于YouTube、Twitter、Instagram、微博、小红书等，均通过yt-dlp处理。详细支持列表请参考[yt-dlp官方支持站点文档](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md)。
