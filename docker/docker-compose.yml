@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  stream-vault:
+    image: qingfeng2336/stream-vault
+    container_name: stream-vault
+    ports:
+      # 端口默认为20803 如果需要 请自定义修改28083
+      - "28083:28081"
+    volumes:
+      # 默认为docker-compose相对目录  如果有需要自行修改 其他更高级的扩展目录 参考wiki
+      - "./stream/app:/app"
+      - "./stream/tmp:/tmp"
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
