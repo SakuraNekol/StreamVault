@@ -2,7 +2,7 @@
 
 <div align="center">
 
-> 🚀 多平台视频下载整合方案  通过小程序 快捷指令 API WEB 等提交单链快速下载视频 并支持收藏夹模式及监控
+> 🚀 视频下载整合方案  通过小程序 快捷指令 API WEB 等提交单链快速下载视频 并支持收藏夹模式及监控
 
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/lemon8866/StreamVault)
@@ -13,16 +13,6 @@
 ![Build Status](https://github.com/lemon8866/StreamVault/actions/workflows/docker-image.yml/badge.svg)
 
 </div>
-
-> ⚠️ **注意事项**:
->
-> 1. 如Docker Hub镜像版本不包含环境变量需要使用的参数（例如：代理、掩码、时区等），建议自行修改Dockerfile并编译。编译文件位于`backstage/src/main/docker/buildx`，已包含所有必要文件,编译后的jar文件不在上传,建议使用actions编译。
-> 2. 更多详细部署方式和配置说明，请查看[项目Wiki](https://github.com/lemon8866/StreamVault/wiki)和[更新日志](doc/updaterecords.md)。
-> 3. 已经借助AI之力完成了本项目的wiki，具体使用可以参考[项目Wiki](https://github.com/lemon8866/StreamVault/wiki)
-> 4. 所有配套客户端及源码可在 `app` 文件夹下找到
-> 5. 本项目相对于其他项目来说  使用的java语言  docker部署时建议添加内存限制
-> 6. 本项目没有做项目拆分为多个仓库  所以本仓库包含 uniapp tauri electron java 浏览器扩展 每个平台源码
-> 7. `backstage为后台服务端 java`  `app/uniapp  手机端源码`   `app/extend  浏览器扩展`  `app/desktop  桌面端客户端源码`
 
 
 ## ⚠️ 声明
@@ -35,7 +25,7 @@
 
 ## 🌟 项目简介
 
-StreamVault（原名：spirit）是一个视频资源管理与下载平台，支持多平台视频解析和下载，提供便捷的资源管理功能。支持API提交视频地址等
+StreamVault（原名：spirit）是一个视频资源管理与下载平台，支持视频下载，提供便捷的资源管理功能。支持API提交视频地址等
 
 ## ✨ 主要特性
 
