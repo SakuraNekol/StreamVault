@@ -408,6 +408,7 @@ public class CollectDataService {
 
 		}
 		int videoaddcount = 0;
+		int graphiccount = 0;
 		logger.info("任务开始" + entity.getOriginaladdress());
 		JSONArray allDYData = this.getDYData(entity, monitor);
 		// System.out.println(allDYData.size());
@@ -447,6 +448,7 @@ public class CollectDataService {
 								: String.valueOf(Integer.parseInt(entity.getCarriedout()) + 1);
 						entity.setCarriedout(carriedout);
 						collectdDataDao.save(entity);
+						graphiccount++;
 					} catch (Exception e) {
 						logger.error("收藏类模块中抖音图集下载异常");
 						logger.error(e.getMessage());
@@ -567,8 +569,9 @@ public class CollectDataService {
 
 			}
 		}
-		if (videoaddcount > 0) {
-			sendNotify.sendMessage(videoaddcount, entity.getTaskname());
+		int totalCount = videoaddcount + graphiccount;
+		if (totalCount > 0) {
+		    sendNotify.sendMessage(totalCount, entity.getTaskname());
 		}
 		entity.setTaskstatus("处理完成");
 		if (risk.equals("1")) {
