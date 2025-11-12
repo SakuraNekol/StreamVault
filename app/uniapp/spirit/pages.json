@@ -62,6 +62,12 @@
 			{
 				"navigationBarTitleText" : ""
 			}
+		},
+		{
+			"path": "pages/video/fallsVideo",
+			"style": {
+				"navigationBarTitleText": ""
+			}
 		}
     ],
 	"tabBar": {
@@ -81,6 +87,12 @@
 				"iconPath": "static/icon/play.png",
 				"selectedIconPath": "static/icon/play.png",
 				"text": "列表"
+			},
+			{
+				"pagePath": "pages/video/fallsVideo",
+				"iconPath": "/static/icon/xiuxiu.png",
+				"selectedIconPath": "static/icon/xiuxiu.png",
+				"text": "咻咻"
 			},
 			{
 				"pagePath": "pages/admin/admin",
