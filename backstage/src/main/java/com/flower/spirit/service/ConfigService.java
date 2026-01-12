@@ -22,6 +22,7 @@ import com.flower.spirit.utils.BeanUtil;
 import com.flower.spirit.utils.MD5Util;
 import com.flower.spirit.utils.StringUtil;
 import com.flower.spirit.utils.YtDlpUtil;
+import com.flower.spirit.utils.sendNotify;
 
 
 @Service
@@ -37,6 +38,8 @@ public class ConfigService {
 	
 	@Autowired
 	private TikTokConfigService tikTokConfigService;
+	
+	private static String cookiecloud ="";
 
 	public ConfigEntity getData() {
 		List<ConfigEntity> list =  configDao.findAll();
