@@ -103,12 +103,26 @@ public class ConfigService {
 	public void cookieCloud(String uuid,String encrypted, String crypto,String source) throws Exception {
 		String tilte ="cookieCloud 推送状态";
 		String content = "";
-		String mm =  MD5Util.MD5(uuid+"streamvalute");
+		CookiesConfigEntity data =null;
+		if(cookiecloud.equals("")) {
+			data = cookiesConfigService.getData();
+			cookiecloud = data.getCookiecloud();
+			if(data.getCookiecloud()==null || data.getCookiecloud().equals("")) {
+				return;
+			}
+		}
+		String mm =  MD5Util.MD5(cookiecloud+uuid+"streamvalute");
+
 		if(!source.equalsIgnoreCase(mm)) {
 			return;
 		}
-		CookiesConfigEntity data = cookiesConfigService.getData();
+		if(data== null) {
+			data = cookiesConfigService.getData();
+		}
 		String decrypt = AESUtils.decrypt(uuid,encrypted, data.getCookiecloud());
+		if(decrypt ==null ||  decrypt.equals("")) {
+			return;
+		}
 		JSONObject object = JSONObject.parseObject(decrypt);
 		JSONObject cookie_data = object.getJSONObject("cookie_data");
 		JSONArray weibo = cookie_data.getJSONArray("weibo.com");
@@ -119,7 +133,6 @@ public class ConfigService {
 		String douyin_cookie = StringUtil.cookiesToString(douyin).trim();
 		String xiaohongshu_cookie = StringUtil.cookiesToString(xiaohongshu).trim();
 		String kuaishou_cookie = StringUtil.cookiesToString(kuaishou).trim();
-
 		if(weibo_cookie!=null && !weibo_cookie.equals("") && weibo_cookie.length()>10) {
 			data.setWeibocookie(weibo_cookie);
 			logger.info("收到cookieCloud weibo cookie更新");
