@@ -305,7 +305,7 @@
                                 <form action="#" method="post" onsubmit="return false;">
                                     <input type="hidden" class="cookiesid" th:value="${cookies.id}" />
                                     <div class="form-group">
-                                        <label>CookieCloud 端对端加密密码 <i class="mdi mdi-help" style="cursor: pointer; font-size: 12px;" onclick="layer.open({type:1,title:'提示',area:['auto','auto'],content:'<div style=&quot;padding:30px;&quot;>cookiecloud 中选择上传到服务器<br/>地址填写:http://ip:port/api/cookieCloud<br/>请求Header 填写 application-source:xxxx <br>其中xxxx请使用你的用户KEY · UUID拼接streamvalute <br/>如abcstreamvalute 然后使用md5加密 得到<br>本应用只接受处理域名如下<br>weibo.com/xiaohongshu.com/douyin.com/kuaishou.com<br/>bili推荐扫码</div>'})"></i></label>
+                                        <label>CookieCloud 端对端加密密码 <i class="mdi mdi-help" style="cursor: pointer; font-size: 12px;" onclick="layer.open({type:1,title:'提示',area:['auto','auto'],content:'<div style=&quot;padding:30px;&quot;>cookiecloud 中选择上传到服务器<br/>地址填写:http://ip:port/api/cookieCloud<br/>请求Header 填写 application-source:xxxx <br>其中xxxx请使用加密密码和你的用户KEY · UUID拼接streamvalute <br/>如passuuidstreamvalute 然后使用md5加密 得到<br>本应用只接受处理域名如下<br>weibo.com/xiaohongshu.com/douyin.com/kuaishou.com<br/>bili推荐扫码</div>'})"></i></label>
                                         <input type="text" name="cookiecloud"  autocomplete="off" class="form-control cookiecloud" th:value="${cookies.cookiecloud}">
                                     </div>
                                 </form>
