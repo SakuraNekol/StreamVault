@@ -20,8 +20,13 @@ public class FrontController {
 			return "index";
 		}
 		if(Global.frontend.equals("video")) {
-			// 传递隐藏平台配置到前端
 			model.addAttribute("hiddenplatforms", Global.hiddenplatforms != null ? Global.hiddenplatforms : "");
+			model.addAttribute("video_pure","y");
+			return "video";
+		}
+		if(Global.frontend.equals("video_standard")) {
+			model.addAttribute("hiddenplatforms", Global.hiddenplatforms != null ? Global.hiddenplatforms : "");
+			model.addAttribute("video_pure","n");
 			return "video";
 		}
 		if(Global.frontend.equals("admin")) {

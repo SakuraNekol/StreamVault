@@ -703,13 +703,13 @@
                         
                         <!-- 操作按钮 -->
                         <div class="flex items-center gap-1 sm:gap-2">
-                            <button onclick="openSubmitModal()" 
+                            <button th:if="${video_pure != 'y'}" onclick="openSubmitModal()" 
                                     class="p-1.5 sm:p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors duration-200">
                                 <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                 </svg>
                             </button>
-                            <button onclick="showLocalDownloadPage()" 
+                            <button th:if="${video_pure != 'y'}" onclick="showLocalDownloadPage()" 
                                     class="p-1.5 sm:p-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors duration-200"
                                     title="本地下载">
                                 <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -754,7 +754,7 @@
         </div>
 
         <!-- 提交链接弹窗 -->
-        <div id="submitModal" class="modal">
+        <div id="submitModal" th:if="${video_pure != 'y'}" class="modal">
             <div class="modal-content m-auto bg-white p-6 w-96">
                 <h2 class="text-xl font-bold mb-4">提交视频链接</h2>
                 <div class="space-y-4">
@@ -909,7 +909,7 @@
     </div>
 
     <!-- 本地下载页面 -->
-    <div id="localDownloadPage" class="local-download-page">
+    <div id="localDownloadPage" th:if="${video_pure != 'y'}" class="local-download-page">
         <div class="local-download-container">
             <!-- 返回按钮 -->
             <div class="nav-back" onclick="showListPageFromLocal()">
@@ -1066,7 +1066,7 @@
                         
                         <!-- 警告信息 -->
                         <div id="dashWarning" class="warning-box" style="display: none;">
-                            <strong>⚠️ 注意：</strong> 该视频为DASH格式（音视频分离），直接下载可能没有声音。建议使用"服务器下载"功能。
+                            <strong>⚠️ 注意：</strong> 该视频为DASH格式（音视频分离）
                         </div>
 
                         <!-- 操作按钮 -->
@@ -1125,7 +1125,7 @@
         </div>
     </div>
 
-    <script>
+    <script th:inline="javascript">
         // 全局变量
         let currentPage = 1;
         let totalPages = 1;
@@ -1135,6 +1135,7 @@
         let currentPlatform = '';
         let currentVideoId = null;
         let serverToken = null;
+        const videoPure = /*[[${video_pure}]]*/ 'n';
         const PAGE_SIZE = 18; // 每页显示18个视频
         
         // 多视频支持
@@ -1888,6 +1889,9 @@
         
         // 视频提交弹窗
         function openSubmitModal() {
+            if (videoPure === 'y') {
+                return;
+            }
             document.getElementById('submitModal').classList.add('show');
         }
         
@@ -2081,6 +2085,9 @@
         
         // 显示本地下载页面
         function showLocalDownloadPage() {
+            if (videoPure === 'y') {
+                return;
+            }
             // 隐藏列表页面
             //判断token填没填
             if (!serverToken) {
@@ -2138,7 +2145,7 @@
             parseBtn.disabled = true;
             
             try {
-                const response = await axios.get('/api/parseVideoForLocal', {
+                const response = await axios.get('/api/directData', {
                     params: {
                         token: serverToken,
                         video: videoUrl
