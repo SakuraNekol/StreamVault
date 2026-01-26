@@ -964,51 +964,6 @@
                     </div>
                 </div>
 
-                <!-- 支持平台展示 -->
-                <div class="mb-6">
-                    <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" role="img" aria-label="支持图标">
-                            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
-                            <path d="m9 12 2 2 4-4"></path>
-                        </svg>
-                        支持的平台
-                    </h3>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        <div class="flex items-center gap-2 px-3 py-2 bg-pink-50 rounded-lg border border-pink-200">
-                            <span class="text-lg">🎵</span>
-                            <span class="text-sm font-medium text-pink-700">抖音</span>
-                        </div>
-                        <div class="flex items-center gap-2 px-3 py-2 bg-orange-50 rounded-lg border border-orange-200">
-                            <span class="text-lg">🎬</span>
-                            <span class="text-sm font-medium text-orange-700">快手</span>
-                        </div>
-                        <div class="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-200">
-                            <span class="text-lg">📺</span>
-                            <span class="text-sm font-medium text-blue-700">哔哩哔哩</span>
-                        </div>
-                        <div class="flex items-center gap-2 px-3 py-2 bg-red-50 rounded-lg border border-red-200">
-                            <span class="text-lg">▶️</span>
-                            <span class="text-sm font-medium text-red-700">YouTube</span>
-                        </div>
-                        <div class="flex items-center gap-2 px-3 py-2 bg-sky-50 rounded-lg border border-sky-200">
-                            <span class="text-lg">🐦</span>
-                            <span class="text-sm font-medium text-sky-700">Twitter/X</span>
-                        </div>
-                        <div class="flex items-center gap-2 px-3 py-2 bg-purple-50 rounded-lg border border-purple-200">
-                            <span class="text-lg">📷</span>
-                            <span class="text-sm font-medium text-purple-700">Instagram</span>
-                        </div>
-                        <div class="flex items-center gap-2 px-3 py-2 bg-rose-50 rounded-lg border border-rose-200">
-                            <span class="text-lg">📕</span>
-                            <span class="text-sm font-medium text-rose-700">小红书</span>
-                        </div>
-                        <div class="flex items-center gap-2 px-3 py-2 bg-red-50 rounded-lg border border-red-200">
-                            <span class="text-lg">🎧</span>
-                            <span class="text-sm font-medium text-red-700">网易云音乐</span>
-                        </div>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-2 text-center">以及更多yt-dlp支持的平台...</p>
-                </div>
 
                 <!-- 使用说明 -->
                 <div class="info-box">
@@ -1023,19 +978,11 @@
                     <ul class="text-sm space-y-2">
                         <li class="flex items-start gap-2">
                             <span class="text-blue-500 mt-0.5">•</span>
-                            <span><strong>视频平台：</strong>支持抖音、快手、B站、YouTube、Twitter等主流平台</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <span class="text-blue-500 mt-0.5">•</span>
-                            <span><strong>音乐平台：</strong>部分音乐平台（如QQ音乐、网易云音乐）尝试通过yt-dlp下载，成功率视平台限制而定</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <span class="text-blue-500 mt-0.5">•</span>
                             <span><strong>下载方式：</strong>解析后可直接下载视频/音频到本地电脑</span>
                         </li>
                         <li class="flex items-start gap-2">
                             <span class="text-blue-500 mt-0.5">•</span>
-                            <span><strong>注意事项：</strong>部分平台需要配置Cookie，DASH格式请使用提交链接</span>
+                            <span><strong>注意事项：</strong>部分平台需要配置Cookie，DASH格式请使用提交链接功能</span>
                         </li>
                     </ul>
                 </div>
@@ -1045,8 +992,8 @@
                     <div class="flex items-start gap-3">
                         <span class="text-2xl">💡</span>
                         <div>
-                            <h4 class="font-semibold text-amber-800 mb-1">小贴士</h4>
-                            <p class="text-sm text-amber-700">本地下载模式暂不支持获取图片资源（如封面图）。如果本地下载失败或遇到DASH格式视频，可以尝试使用"服务器下载"功能，服务器会自动合并音视频流并处理相关资源。</p>
+                            <h4 class="font-semibold text-amber-800 mb-1">注意</h4>
+                            <p class="text-sm text-amber-700">该功能请自测,无法处理issue问题</p>
                         </div>
                     </div>
                 </div>
@@ -1068,7 +1015,7 @@
                         <div id="dashWarning" class="warning-box" style="display: none;">
                             <strong>⚠️ 注意：</strong> 该视频为DASH格式（音视频分离）
                         </div>
-
+						<br/>
                         <!-- 操作按钮 -->
                         <div class="parse-result-actions">
                             <button onclick="downloadToLocal()" class="btn-download">
