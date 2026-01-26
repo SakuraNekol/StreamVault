@@ -9,13 +9,14 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import java.io.InputStream;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flower.spirit.common.AjaxEntity;
@@ -24,6 +25,7 @@ import com.flower.spirit.entity.VideoDataEntity;
 import com.flower.spirit.service.AnalysisService;
 import com.flower.spirit.service.VideoDataService;
 import com.flower.spirit.service.ConfigService;
+
 
 /**
  * api 调用控制器 此处控制器不拦截  仅通过token 校验
@@ -34,10 +36,10 @@ import com.flower.spirit.service.ConfigService;
 @RequestMapping("/api")
 public class ApiController {
 	
+	private static final Logger logger = LoggerFactory.getLogger(ApiController.class);
+	
 	@Autowired
 	private AnalysisService analysisService;
-	
-//	private ExecutorService exec = Executors.newFixedThreadPool(1);
 	
 	@Autowired
 	private VideoDataService videoDataService;
@@ -60,7 +62,7 @@ public class ApiController {
 		try {
 			analysisService.processingVideos(token,video);
 		} catch (Exception e) {
-			System.err.println("线程中异常 先打印 不一定有用 标记");
+			logger.error("线程中异常 先打印 不一定有用 标记");
 		}
 		return new AjaxEntity(Global.ajax_success, "已提交,等待系统处理", "");
 	
@@ -117,5 +119,19 @@ public class ApiController {
 	        e.printStackTrace();
 	        return ResponseEntity.status(500).body("Internal Server Error");
 	    }
+	}
+	
+	/**
+	 * pr 50
+	 * 
+	 * 解析视频用于本地下载
+	 * @param token
+	 * @param video
+	 * @return
+	 */
+	@RequestMapping("/directData")
+	@CrossOrigin
+	public AjaxEntity directData(String token, String video) {
+		return analysisService.directData(token,video);
 	}
 }
