@@ -113,6 +113,12 @@ public class AppConfig {
 		if(data.getDanmudown()!= null && data.getDanmudown().equals("1")) {
 			Global.danmudown =  true;
 		}
+		// 加载隐藏平台配置
+		if(data.getHiddenplatforms() != null) {
+			Global.hiddenplatforms = data.getHiddenplatforms();
+		} else {
+			Global.hiddenplatforms = "";
+		}
 		//清空 ffmpeg 队列
 		ffmpegQueueService.clearTask();
 		logger.info("ffmpeg队列已清空");
@@ -130,13 +136,13 @@ public class AppConfig {
         }
 
         StringBuilder proxyUrl = new StringBuilder();
-        proxyUrl.append(data.getAgenttype()).append("://");
+        proxyUrl.append(data.getAgenttype().trim()).append("://");
 
         if (!isBlank(data.getAgentaccpass())) {
-            proxyUrl.append(data.getAgentaccpass()).append("@");
+            proxyUrl.append(data.getAgentaccpass().trim()).append("@");
         }
 
-        proxyUrl.append(data.getAgentaddress()).append(":").append(data.getAgentport()).append("/");
+        proxyUrl.append(data.getAgentaddress().trim()).append(":").append(data.getAgentport().trim()).append("/");
 
         return proxyUrl.toString();
     }

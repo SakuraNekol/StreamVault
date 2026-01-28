@@ -86,6 +86,17 @@ public class VideoDataService {
 	                predicates.add(cb.like(root.get("videoplatform"), "%" + res.getVideoplatform() + "%"));
 	            }
 	            
+	            // 排除指定平台的视频（支持多个平台，逗号分隔）
+	            if (StringUtil.isString(res.getExcludePlatform())) {
+	                String[] excludePlatforms = res.getExcludePlatform().split(",");
+	                for (String platform : excludePlatforms) {
+	                    String trimmedPlatform = platform != null ? platform.trim() : "";
+	                    if (!trimmedPlatform.isEmpty()) {
+	                        predicates.add(cb.notLike(cb.lower(root.get("videoplatform")), "%" + trimmedPlatform.toLowerCase() + "%"));
+	                    }
+	                }
+	            }
+	            
 	            if (StringUtil.isString(res.getVideotag())) {
 	                predicates.add(cb.like(root.get("videotag"), "%" + res.getVideotag() + "%"));
 	            }
