@@ -145,17 +145,17 @@ public class ConfigService {
 		if(weibo_cookie!=null && !weibo_cookie.equals("") && weibo_cookie.length()>10) {
 			data.setWeibocookie(weibo_cookie);
 			logger.info("收到cookieCloud weibo cookie更新");
-			content =content+"weibo:已被更新";
+			content =content+"weibo:已被更新\n";
 		}
 		if(xiaohongshu_cookie!=null && !xiaohongshu_cookie.equals("") && xiaohongshu_cookie.length()>10) {
 			data.setRednotecookie(xiaohongshu_cookie);
 			logger.info("收到cookieCloud xiaohongshu cookie更新");
-			content =content+"xiaohongshu:已被更新";
+			content =content+"xiaohongshu:已被更新\n";
 		}
 		if(kuaishou_cookie!=null && !kuaishou_cookie.equals("") && kuaishou_cookie.length()>10) {
 			data.setKuaishouCookie(kuaishou_cookie);
 			logger.info("收到cookieCloud kuaishou cookie更新");
-			content =content+"kuaishou:已被更新";
+			content =content+"kuaishou:已被更新\n";
 		}
 		cookiesConfigService.updateCookie(data);
 		if(douyin_cookie!=null && !douyin_cookie.equals("") && douyin_cookie.length()>10 && douyin_cookie.contains("odin_tt") && douyin_cookie.contains("sessionid_ss") && douyin_cookie.contains("ttwid") && douyin_cookie.contains("passport_csrf_token")) {
@@ -163,7 +163,7 @@ public class ConfigService {
 			dyconfig.setCookies(douyin_cookie);
 			tikTokConfigService.updateTikTokConfig(dyconfig);
 			logger.info("收到cookieCloud douyin cookie更新");
-			content =content+"douyin:已被更新";
+			content =content+"douyin:已被更新\n";
 		}
 		content = content == null || content.isEmpty() ? "无更新成功任务" : content;
 		sendNotify.sendMessage(tilte, content);
