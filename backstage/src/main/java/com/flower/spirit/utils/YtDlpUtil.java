@@ -255,6 +255,9 @@ public class YtDlpUtil {
 		// 添加 --flat-playlist 支持播放列表
 		command.add("--flat-playlist");
 		
+		command.add("-f");
+		command.add("bestvideo+bestaudio/best");
+		
 		String apppath = Global.apppath;
 		File cookieDir = new File(apppath + "/cookies");
 		

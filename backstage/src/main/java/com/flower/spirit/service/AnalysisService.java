@@ -1062,6 +1062,7 @@ public class AnalysisService {
 	}
 
 	private VideoUrlResult selectBestVideoUrl(JSONArray formats) {
+		System.out.println(formats.toJSONString());
 		if (formats == null || formats.size() == 0) {
 			return new VideoUrlResult(null, false, 0);
 		}
@@ -1072,37 +1073,64 @@ public class AnalysisService {
 		int bestMergedHeight = 0;
 		int bestVideoHeight = 0;
 		boolean hasAudioOnly = false;
-
+		double bestMergedBitrate = -1.0;
+		double bestVideoBitrate = -1.0;
+		double bestAudioBitrate = -1.0;
 		for (int i = 0; i < formats.size(); i++) {
-			JSONObject format = formats.getJSONObject(i);
-			String vcodec = format.getString("vcodec");
-			String acodec = format.getString("acodec");
-			String formatUrl = format.getString("url");
-
-			if (formatUrl == null || formatUrl.isEmpty()) continue;
-
-			boolean hasVideo = vcodec != null && !vcodec.equals("none");
-			boolean hasAudio = acodec != null && !acodec.equals("none");
-
-			if (hasVideo && hasAudio) {
-				Integer height = format.getInteger("height");
-				if (height != null && height > bestMergedHeight) {
-					bestMergedHeight = height;
-					bestMergedFormat = format;
-				}
-			} else if (hasVideo && !hasAudio) {
-				hasAudioOnly = true;
-				Integer height = format.getInteger("height");
-				if (height != null && height > bestVideoHeight) {
-					bestVideoHeight = height;
-					bestVideoFormat = format;
-				}
-			} else if (!hasVideo && hasAudio) {
-				hasAudioOnly = true;
-				bestAudioFormat = format;
-			}
+		    JSONObject format = formats.getJSONObject(i);
+		    String vcodec = format.getString("vcodec");
+		    String acodec = format.getString("acodec");
+		    String vExt = format.getString("video_ext");
+		    String aExt = format.getString("audio_ext");
+		    String protocol = format.getString("protocol");
+		    String formatUrl = format.getString("url");
+		    if (formatUrl == null || formatUrl.isEmpty()) continue;
+		    boolean hasVideo = (vcodec != null && !"none".equals(vcodec)) || (vExt != null && !"none".equals(vExt));
+		    boolean hasAudio = (acodec != null && !"none".equals(acodec)) || (aExt != null && !"none".equals(aExt));
+		    int height = format.getInteger("height") != null ? format.getInteger("height") : 0;
+		    double tbr = 0.0;
+		    if (format.get("tbr") != null) {
+		        tbr = format.getDoubleValue("tbr");
+		    }
+		    if (hasVideo && !hasAudio) {
+		        if (height > bestVideoHeight) {
+		            bestVideoFormat = format;
+		            bestVideoHeight = height;
+		            bestVideoBitrate = tbr;
+		        } else if (height == bestVideoHeight && height > 0) {
+		            String currentBestProto = bestVideoFormat.getString("protocol");
+		            boolean isNewDirect = "https".equals(protocol) || "http".equals(protocol);
+		            boolean isCurrentDirect = "https".equals(currentBestProto) || "http".equals(currentBestProto);
+		            if (isNewDirect && !isCurrentDirect) {
+		                bestVideoFormat = format;
+		                bestVideoBitrate = tbr;
+		            } else if (isNewDirect == isCurrentDirect && tbr > bestVideoBitrate) {
+		                bestVideoFormat = format;
+		                bestVideoBitrate = tbr;
+		            }
+		            if(isNewDirect) {
+		            	hasAudioOnly = false;
+		            }
+		        }
+		    } 
+		    else if (!hasVideo && hasAudio) {
+		    	hasAudioOnly = true;
+		        if (tbr > bestAudioBitrate) {
+		            bestAudioFormat = format;
+		            bestAudioBitrate = tbr;
+		        }
+		    } 
+		    else if (hasVideo && hasAudio) {
+		        if (height > bestMergedHeight) {
+		            bestMergedFormat = format;
+		            bestMergedHeight = height;
+		            bestMergedBitrate = tbr;
+		        } else if (height == bestMergedHeight && tbr > bestMergedBitrate) {
+		            bestMergedBitrate = tbr;
+		            bestMergedFormat = format;
+		        }
+		    }
 		}
-
 		if (bestMergedFormat != null) {
 			logger.info("使用合并格式: 分辨率 {}p", bestMergedHeight);
 			return new VideoUrlResult(bestMergedFormat.getString("url"), false, bestMergedHeight);
@@ -1111,7 +1139,13 @@ public class AnalysisService {
 		boolean isDash = bestVideoFormat != null && hasAudioOnly;
 		if (bestVideoFormat != null) {
 			logger.info("使用视频流: 分辨率 {}p, DASH模式: {}", bestVideoHeight, isDash);
-			return new VideoUrlResult(bestVideoFormat.getString("url"), bestAudioFormat.getString("url"),isDash, bestVideoHeight);
+			if(bestAudioFormat!=null) {
+				return new VideoUrlResult(bestVideoFormat.getString("url"),bestAudioFormat.getString("url"),isDash, bestVideoHeight);
+			}else {
+				return new VideoUrlResult(bestVideoFormat.getString("url"),isDash, bestVideoHeight);
+			}
+		
+		
 		}
 
 		return new VideoUrlResult(null, false, 0);
