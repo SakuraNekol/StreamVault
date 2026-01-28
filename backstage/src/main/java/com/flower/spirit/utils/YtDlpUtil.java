@@ -334,7 +334,7 @@ public class YtDlpUtil {
 		String completeString = stringBuilder.toString();
 		if (process.exitValue() != 0) {
 			logger.error("yt-dlp 执行失败 (exitCode: {}): {}", process.exitValue(), completeString);
-			throw new IOException("yt-dlp 执行失败 (exitCode: " + process.exitValue() + "): " + completeString);
+//			throw new IOException("yt-dlp 执行失败 (exitCode: " + process.exitValue() + "): " + completeString);
 		} else {
 			logger.info("yt-dlp executed with exit code: {}, 输出长度: {}", process.exitValue(), completeString.length());
 		}
