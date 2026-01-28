@@ -948,6 +948,7 @@ public class AnalysisService {
 						}
 						
 						videoItem.put("videoUrl", videoUrl);
+						videoItem.put("audioUrl", urlResult.audioUrl);
 						videoItem.put("isDash", urlResult.isDash);
 						
 						videoList.add(videoItem);
@@ -991,7 +992,7 @@ public class AnalysisService {
 					logger.error("无法从JSON中提取视频URL，JSON keys: {}", jsonObject.keySet());
 					return new AjaxEntity(Global.ajax_uri_error, "解析失败: 无法获取视频下载地址", null);
 				}
-				
+				result.put("audioUrl", urlResult.audioUrl);
 				result.put("videoUrl", videoUrl);
 				result.put("isDash", urlResult.isDash);
 				result.put("needReferer", false);
@@ -1043,11 +1044,18 @@ public class AnalysisService {
 
 	private static class VideoUrlResult {
 		String videoUrl;
+		String audioUrl;
 		boolean isDash;
 		int height;
 
 		VideoUrlResult(String videoUrl, boolean isDash, int height) {
 			this.videoUrl = videoUrl;
+			this.isDash = isDash;
+			this.height = height;
+		}
+		VideoUrlResult(String videoUrl,String audioUrl, boolean isDash, int height) {
+			this.videoUrl = videoUrl;
+			this.audioUrl =audioUrl;
 			this.isDash = isDash;
 			this.height = height;
 		}
@@ -1060,6 +1068,7 @@ public class AnalysisService {
 
 		JSONObject bestMergedFormat = null;
 		JSONObject bestVideoFormat = null;
+		JSONObject bestAudioFormat = null;
 		int bestMergedHeight = 0;
 		int bestVideoHeight = 0;
 		boolean hasAudioOnly = false;
@@ -1090,6 +1099,7 @@ public class AnalysisService {
 				}
 			} else if (!hasVideo && hasAudio) {
 				hasAudioOnly = true;
+				bestAudioFormat = format;
 			}
 		}
 
@@ -1101,7 +1111,7 @@ public class AnalysisService {
 		boolean isDash = bestVideoFormat != null && hasAudioOnly;
 		if (bestVideoFormat != null) {
 			logger.info("使用视频流: 分辨率 {}p, DASH模式: {}", bestVideoHeight, isDash);
-			return new VideoUrlResult(bestVideoFormat.getString("url"), isDash, bestVideoHeight);
+			return new VideoUrlResult(bestVideoFormat.getString("url"), bestAudioFormat.getString("url"),isDash, bestVideoHeight);
 		}
 
 		return new VideoUrlResult(null, false, 0);

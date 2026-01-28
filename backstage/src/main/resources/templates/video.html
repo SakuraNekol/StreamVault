@@ -1081,6 +1081,9 @@
                             <button onclick="downloadToLocal()" class="btn-download">
                                 <span>📥 下载到本地</span>
                             </button>
+                            <button id="downloadAudioBtn" onclick="downloadAudio()" class="btn-download" style="display: none;">
+                                <span>🎵 下载音频</span>
+                            </button>
                             <button onclick="copyVideoUrl()" class="btn-copy">
                                 <span>📋 复制链接</span>
                             </button>
@@ -2211,6 +2214,7 @@
             const authorEl = document.getElementById('resultAuthor');
             const dashWarning = document.getElementById('dashWarning');
             const imageListContainer = document.getElementById('imageListContainer');
+            const downloadAudioBtn = document.getElementById('downloadAudioBtn');
             
             // 设置标题（转义特殊字符以防止XSS）
             let titleText = sanitizeText(result.title || '未知标题');
@@ -2244,8 +2248,9 @@
             // 设置作者
             authorEl.textContent = result.author ? '作者: ' + sanitizeText(result.author) : '';
             
-            // 隐藏DASH警告
+            // 隐藏DASH警告和音频按钮
             dashWarning.style.display = 'none';
+            downloadAudioBtn.style.display = 'none';
             
             // 处理图片类型
             if (result.mediaType === 'image' && result.imageUrls && result.imageUrls.length > 0) {
@@ -2265,9 +2270,12 @@
                     coverImg.src = '';
                 }
                 
-                // 显示DASH警告
+                // 显示DASH警告和音频按钮
                 if (result.isDash) {
                     dashWarning.style.display = 'block';
+                    if (result.audioUrl && isValidUrl(result.audioUrl)) {
+                        downloadAudioBtn.style.display = 'block';
+                    }
                 }
             }
         }
@@ -2549,6 +2557,35 @@
                 a.click();
                 document.body.removeChild(a);
             }
+        }
+        
+        // 下载音频
+        function downloadAudio() {
+            if (!currentParseResult || !currentParseResult.audioUrl) {
+                alert('没有可下载的音频');
+                return;
+            }
+            
+            const audioUrl = currentParseResult.audioUrl;
+            
+            // 验证URL
+            if (!isValidUrl(audioUrl)) {
+                alert('音频链接不合法');
+                return;
+            }
+            
+            const title = sanitizeText(currentParseResult.title || 'audio');
+            
+            // 创建一个隐藏的 a 标签
+            const a = document.createElement('a');
+            a.href = audioUrl;
+            a.download = title + '.mp3';
+            a.rel = 'noopener noreferrer';
+            
+            // 触发下载
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
         
         // 复制视频链接
