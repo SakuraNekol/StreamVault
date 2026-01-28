@@ -774,19 +774,16 @@ public class AnalysisService {
 	}
 	
 	public AjaxEntity directData(String token, String video) {
+		String platform = this.getPlatform(video);
+		String url = this.getUrl(video);
 		try {
 			// 1. 验证 token
 			if (!(Objects.equals(token, Global.apptoken) || Objects.equals(token, Global.readonlytoken))) {
 				return new AjaxEntity(Global.ajax_uri_error, "token 错误", null);
 			}
-			
-			// 2. 获取平台信息和真实URL
-			String platform = this.getPlatform(video);
-			String url = this.getUrl(video);
 			if (platform == null || url == null || url.isEmpty()) {
 				return new AjaxEntity(Global.ajax_uri_error, "无法识别视频链接", null);
 			}
-			
 			logger.info("解析视频 - 平台: {}, URL: {}", platform, url);
 			
 			Map<String, Object> result = new HashMap<>();
@@ -834,9 +831,7 @@ public class AnalysisService {
 				result.put("isDash", false);
 				result.put("needReferer", true);
 				result.put("referer", "https://www.kuaishou.com/");
-				
 			} else if (platform.equals("小红书")) {
-				// 5. 小红书平台使用 XiaohongshuParser
 				XiaohongshuParser.VideoInfo videoInfo = XiaohongshuParser.parseVideo(url);
 				if (videoInfo == null) {
 					return new AjaxEntity(Global.ajax_uri_error, "小红书解析失败，请检查链接是否正确", null);
@@ -846,8 +841,6 @@ public class AnalysisService {
 				result.put("title", videoInfo.getTitle());
 				result.put("author", videoInfo.getAuthor());
 				result.put("coverUrl", videoInfo.getCoverUrl());
-				
-				// 判断是视频还是图文
 				if ("video".equals(videoInfo.getType()) && videoInfo.getVideoUrl() != null && !videoInfo.getVideoUrl().isEmpty()) {
 					result.put("videoUrl", videoInfo.getVideoUrl());
 					result.put("duration", videoInfo.getDuration());
@@ -870,7 +863,6 @@ public class AnalysisService {
 				}
 				
 			} else if (platform.equals("网易云音乐") || platform.equals("QQ音乐")) {
-				// 6. 音乐平台使用 yt-dlp 音频模式
 				try {
 					String jsonStr = YtDlpUtil.execForAudioJson(url, platform);
 					
@@ -882,7 +874,7 @@ public class AnalysisService {
 						}
 					} catch (Exception e) {
 						logger.error("音乐JSON解析失败，原始数据: {}", jsonStr);
-						return new AjaxEntity(Global.ajax_uri_error, "音乐解析失败: " + e.getMessage(), null);
+						return handlePlatformError(platform, e);
 					}
 					
 					result.put("platform", platform);
@@ -890,72 +882,24 @@ public class AnalysisService {
 					result.put("author", jsonObject.getString("uploader"));
 					result.put("duration", jsonObject.getInteger("duration"));
 					result.put("mediaType", "audio");
+					result.put("coverUrl", extractBestCoverUrl(jsonObject));
 					
-					// 获取封面图 - 优先选择最高分辨率的缩略图
-					String coverUrl = jsonObject.getString("thumbnail");
-					if (coverUrl == null || coverUrl.isEmpty()) {
-						JSONArray thumbnails = jsonObject.getJSONArray("thumbnails");
-						if (thumbnails != null && thumbnails.size() > 0) {
-							// 选择分辨率最高的缩略图
-							JSONObject bestThumb = null;
-							int maxResolution = 0;
-							for (int i = 0; i < thumbnails.size(); i++) {
-								JSONObject thumb = thumbnails.getJSONObject(i);
-								Integer width = thumb.getInteger("width");
-								Integer height = thumb.getInteger("height");
-								int resolution = (width != null ? width : 0) * (height != null ? height : 0);
-								if (resolution > maxResolution || bestThumb == null) {
-									maxResolution = resolution;
-									bestThumb = thumb;
-								}
-							}
-							if (bestThumb != null) {
-								coverUrl = bestThumb.getString("url");
-							}
-						}
-					}
-					result.put("coverUrl", coverUrl);
-					
-					// 获取音频URL
 					String audioUrl = jsonObject.getString("url");
 					if (audioUrl == null || audioUrl.isEmpty()) {
-						// 尝试从formats中获取 - 选择比特率最高的音频格式
 						JSONArray formats = jsonObject.getJSONArray("formats");
-						if (formats != null && formats.size() > 0) {
-							JSONObject bestFormat = null;
-							int maxBitrate = 0;
-							for (int i = 0; i < formats.size(); i++) {
-								JSONObject format = formats.getJSONObject(i);
-								String formatUrl = format.getString("url");
-								if (formatUrl == null || formatUrl.isEmpty()) continue;
-								
-								// 获取比特率或文件大小作为质量指标
-								Integer abr = format.getInteger("abr"); // audio bitrate
-								Integer tbr = format.getInteger("tbr"); // total bitrate
-								int bitrate = (abr != null ? abr : 0) + (tbr != null ? tbr : 0);
-								
-								if (bitrate > maxBitrate || bestFormat == null) {
-									maxBitrate = bitrate;
-									bestFormat = format;
-								}
-							}
-							if (bestFormat != null) {
-								audioUrl = bestFormat.getString("url");
-							}
-						}
+						audioUrl = extractBestAudioUrl(formats);
 					}
 					
 					if (audioUrl == null || audioUrl.isEmpty()) {
 						return new AjaxEntity(Global.ajax_uri_error, "无法获取音频下载地址", null);
 					}
 					
-					result.put("videoUrl", audioUrl); // 使用videoUrl字段保持前端兼容
+					result.put("videoUrl", audioUrl);
 					result.put("isDash", false);
 					result.put("needReferer", false);
 					
 				} catch (Exception e) {
-					logger.error("音乐平台解析失败", e);
-					return new AjaxEntity(Global.ajax_uri_error, "音乐解析失败: " + e.getMessage(), null);
+					return handlePlatformError(platform, e);
 				}
 				
 			} else {
@@ -985,7 +929,6 @@ public class AnalysisService {
 				// 如果有多个视频，返回视频列表
 				if (allVideos.size() > 1) {
 					logger.info("检测到 {} 个视频，全部返回", allVideos.size());
-					// 构建视频列表返回
 					List<Map<String, Object>> videoList = new ArrayList<>();
 					for (int i = 0; i < allVideos.size(); i++) {
 						JSONObject jsonObject = allVideos.get(i);
@@ -995,97 +938,21 @@ public class AnalysisService {
 						videoItem.put("platform", platform);
 						videoItem.put("author", jsonObject.getString("uploader"));
 						videoItem.put("duration", jsonObject.getInteger("duration"));
+						videoItem.put("coverUrl", extractBestCoverUrlSimple(jsonObject));
 						
-						// 获取封面
-						String coverUrl = jsonObject.getString("thumbnail");
-						if (coverUrl == null || coverUrl.isEmpty()) {
-							JSONArray thumbnails = jsonObject.getJSONArray("thumbnails");
-							if (thumbnails != null && thumbnails.size() > 0) {
-								coverUrl = thumbnails.getJSONObject(thumbnails.size() - 1).getString("url");
-							}
-						}
-						videoItem.put("coverUrl", coverUrl);
-						// 获取视频URL
-						String videoUrl = null;
-						boolean isDash = false;				
 						JSONArray formats = jsonObject.getJSONArray("formats");
-						// 优先查找同时包含音视频的格式
-						if (formats != null && formats.size() > 0) {
-							// 第一遍：查找最佳的合并格式（同时包含音视频）
-							JSONObject bestMergedFormat = null;
-							int bestHeight = 0;
-							for (int j = 0; j < formats.size(); j++) {
-								JSONObject format = formats.getJSONObject(j);
-								String vcodec = format.getString("vcodec");
-								String acodec = format.getString("acodec");
-								String formatUrl = format.getString("url");
-								
-								// 同时包含视频和音频
-								if (vcodec != null && !vcodec.equals("none") && 
-									acodec != null && !acodec.equals("none") &&
-									formatUrl != null && !formatUrl.isEmpty()) {
-									
-									Integer height = format.getInteger("height");
-									if (height != null && height > bestHeight) {
-										bestHeight = height;
-										bestMergedFormat = format;
-									}
-								}
-							}
-							// 如果找到合并格式，使用它
-							if (bestMergedFormat != null) {
-								videoUrl = bestMergedFormat.getString("url");
-							}
-							// 第二遍：如果没有合并格式，检查是否是DASH
-							if (videoUrl == null) {
-								boolean hasVideoOnly = false;
-								boolean hasAudioOnly = false;
-								JSONObject bestVideoFormat = null;
-								int bestVideoHeight = 0;
-								for (int j = 0; j < formats.size(); j++) {
-									JSONObject format = formats.getJSONObject(j);
-									String vcodec = format.getString("vcodec");
-									String acodec = format.getString("acodec");
-									String formatUrl = format.getString("url");
-									
-									if (formatUrl == null || formatUrl.isEmpty()) continue;
-									
-									// 只有视频
-									if (vcodec != null && !vcodec.equals("none") && 
-										(acodec == null || acodec.equals("none"))) {
-										hasVideoOnly = true;
-										Integer height = format.getInteger("height");
-										if (height != null && height > bestVideoHeight) {
-											bestVideoHeight = height;
-											bestVideoFormat = format;
-										}
-									}
-									// 只有音频
-									if (acodec != null && !acodec.equals("none") && 
-										(vcodec == null || vcodec.equals("none"))) {
-										hasAudioOnly = true;
-									}
-								}
-								isDash = hasVideoOnly && hasAudioOnly;
-								// 使用最佳视频流（即使没有音频）
-								if (bestVideoFormat != null) {
-									videoUrl = bestVideoFormat.getString("url");
-								}
-							}
-						}
-						
-						// 如果formats中没有找到，尝试使用顶层的url字段
+						VideoUrlResult urlResult = selectBestVideoUrl(formats);
+						String videoUrl = urlResult.videoUrl;
 						if (videoUrl == null) {
 							videoUrl = jsonObject.getString("url");
 						}
 						
 						videoItem.put("videoUrl", videoUrl);
-						videoItem.put("isDash", isDash);
+						videoItem.put("isDash", urlResult.isDash);
 						
 						videoList.add(videoItem);
 					}
 					
-					// 返回多视频结果
 					Map<String, Object> multiResult = new HashMap<>();
 					multiResult.put("type", "multiple");
 					multiResult.put("platform", platform);
@@ -1102,113 +969,17 @@ public class AnalysisService {
 				result.put("title", jsonObject.getString("title"));
 				result.put("author", jsonObject.getString("uploader"));
 				result.put("duration", jsonObject.getInteger("duration"));
+				result.put("coverUrl", extractBestCoverUrlSimple(jsonObject));
 				
-				// 获取封面图URL - 改进逻辑以支持Twitter等平台的thumbnails数组
-				String coverUrl = jsonObject.getString("thumbnail");
-				if (coverUrl == null || coverUrl.isEmpty()) {
-					// 尝试从 thumbnails 数组获取（Twitter等平台使用此格式）
-					JSONArray thumbnails = jsonObject.getJSONArray("thumbnails");
-					if (thumbnails != null && thumbnails.size() > 0) {
-						// 选择最后一个（通常是最高质量的）
-						JSONObject lastThumb = thumbnails.getJSONObject(thumbnails.size() - 1);
-						coverUrl = lastThumb.getString("url");
-						if (coverUrl == null || coverUrl.isEmpty()) {
-							logger.warn("thumbnails数组中的url为空");
-						} else {
-							logger.info("从 thumbnails 数组获取封面: {}", coverUrl);
-						}
-					}
-				}
-				result.put("coverUrl", coverUrl);
-				
-				// 检查是否是 playlist
 				String entryType = jsonObject.getString("_type");
 				if ("playlist".equals(entryType)) {
-					return new AjaxEntity(Global.ajax_uri_error, "检测到播放列表，本地下载功能暂不支持播放列表。请使用服务器下载功能。", null);
+					return new AjaxEntity(Global.ajax_uri_error, "检测到播放列表，不支持播放列表模式。", null);
 				}
 				
-				// 获取视频URL - 改进逻辑以支持更多平台
 				JSONArray formats = jsonObject.getJSONArray("formats");
-				boolean isDash = false;
-				String videoUrl = null;
+				VideoUrlResult urlResult = selectBestVideoUrl(formats);
+				String videoUrl = urlResult.videoUrl;
 				
-				// 优先查找同时包含音视频的格式
-				if (formats != null && formats.size() > 0) {
-					logger.info("找到 {} 个格式", formats.size());
-					
-					// 第一遍：查找最佳的合并格式（同时包含音视频）
-					JSONObject bestMergedFormat = null;
-					int bestHeight = 0;
-					
-					for (int i = 0; i < formats.size(); i++) {
-						JSONObject format = formats.getJSONObject(i);
-						String vcodec = format.getString("vcodec");
-						String acodec = format.getString("acodec");
-						String formatUrl = format.getString("url");
-						
-						// 同时包含视频和音频
-						if (vcodec != null && !vcodec.equals("none") && 
-							acodec != null && !acodec.equals("none") &&
-							formatUrl != null && !formatUrl.isEmpty()) {
-							
-							Integer height = format.getInteger("height");
-							if (height != null && height > bestHeight) {
-								bestHeight = height;
-								bestMergedFormat = format;
-							}
-						}
-					}
-					
-					// 如果找到合并格式，使用它
-					if (bestMergedFormat != null) {
-						videoUrl = bestMergedFormat.getString("url");
-						logger.info("使用合并格式: 分辨率 {}p", bestHeight);
-					}
-					
-					// 第二遍：如果没有合并格式，检查是否是DASH，并选择最佳视频流
-					if (videoUrl == null) {
-						boolean hasVideoOnly = false;
-						boolean hasAudioOnly = false;
-						JSONObject bestVideoFormat = null;
-						int bestVideoHeight = 0;
-						
-						for (int i = 0; i < formats.size(); i++) {
-							JSONObject format = formats.getJSONObject(i);
-							String vcodec = format.getString("vcodec");
-							String acodec = format.getString("acodec");
-							String formatUrl = format.getString("url");
-							
-							if (formatUrl == null || formatUrl.isEmpty()) continue;
-							
-							// 只有视频
-							if (vcodec != null && !vcodec.equals("none") && 
-								(acodec == null || acodec.equals("none"))) {
-								hasVideoOnly = true;
-								Integer height = format.getInteger("height");
-								if (height != null && height > bestVideoHeight) {
-									bestVideoHeight = height;
-									bestVideoFormat = format;
-								}
-							}
-							
-							// 只有音频
-							if (acodec != null && !acodec.equals("none") && 
-								(vcodec == null || vcodec.equals("none"))) {
-								hasAudioOnly = true;
-							}
-						}
-						
-						isDash = hasVideoOnly && hasAudioOnly;
-						
-						// 使用最佳视频流（即使没有音频）
-						if (bestVideoFormat != null) {
-							videoUrl = bestVideoFormat.getString("url");
-							logger.info("使用视频流: 分辨率 {}p, DASH模式: {}", bestVideoHeight, isDash);
-						}
-					}
-				}
-				
-				// 如果formats中没有找到，尝试使用顶层的url字段
 				if (videoUrl == null) {
 					videoUrl = jsonObject.getString("url");
 					if (videoUrl != null) {
@@ -1216,24 +987,155 @@ public class AnalysisService {
 					}
 				}
 				
-				// 如果还是没有找到视频URL
 				if (videoUrl == null || videoUrl.isEmpty()) {
 					logger.error("无法从JSON中提取视频URL，JSON keys: {}", jsonObject.keySet());
 					return new AjaxEntity(Global.ajax_uri_error, "解析失败: 无法获取视频下载地址", null);
 				}
 				
 				result.put("videoUrl", videoUrl);
-				result.put("isDash", isDash);
+				result.put("isDash", urlResult.isDash);
 				result.put("needReferer", false);
 			}
 			
 			return new AjaxEntity(Global.ajax_success, "解析成功", result);
 			
 		} catch (Exception e) {
-			logger.error("解析视频失败", e);
-			e.printStackTrace();
-			return new AjaxEntity(Global.ajax_uri_error, "解析失败: " + e.getMessage(), null);
+			return handlePlatformError(platform, e);
 		}
+	}
+
+	private String extractBestCoverUrl(JSONObject jsonObject) {
+		String coverUrl = jsonObject.getString("thumbnail");
+		if (coverUrl == null || coverUrl.isEmpty()) {
+			JSONArray thumbnails = jsonObject.getJSONArray("thumbnails");
+			if (thumbnails != null && thumbnails.size() > 0) {
+				JSONObject bestThumb = null;
+				int maxResolution = 0;
+				for (int i = 0; i < thumbnails.size(); i++) {
+					JSONObject thumb = thumbnails.getJSONObject(i);
+					Integer width = thumb.getInteger("width");
+					Integer height = thumb.getInteger("height");
+					int resolution = (width != null ? width : 0) * (height != null ? height : 0);
+					if (resolution > maxResolution || bestThumb == null) {
+						maxResolution = resolution;
+						bestThumb = thumb;
+					}
+				}
+				if (bestThumb != null) {
+					coverUrl = bestThumb.getString("url");
+				}
+			}
+		}
+		return coverUrl;
+	}
+
+	private String extractBestCoverUrlSimple(JSONObject jsonObject) {
+		String coverUrl = jsonObject.getString("thumbnail");
+		if (coverUrl == null || coverUrl.isEmpty()) {
+			JSONArray thumbnails = jsonObject.getJSONArray("thumbnails");
+			if (thumbnails != null && thumbnails.size() > 0) {
+				JSONObject lastThumb = thumbnails.getJSONObject(thumbnails.size() - 1);
+				coverUrl = lastThumb.getString("url");
+			}
+		}
+		return coverUrl;
+	}
+
+	private static class VideoUrlResult {
+		String videoUrl;
+		boolean isDash;
+		int height;
+
+		VideoUrlResult(String videoUrl, boolean isDash, int height) {
+			this.videoUrl = videoUrl;
+			this.isDash = isDash;
+			this.height = height;
+		}
+	}
+
+	private VideoUrlResult selectBestVideoUrl(JSONArray formats) {
+		if (formats == null || formats.size() == 0) {
+			return new VideoUrlResult(null, false, 0);
+		}
+
+		JSONObject bestMergedFormat = null;
+		JSONObject bestVideoFormat = null;
+		int bestMergedHeight = 0;
+		int bestVideoHeight = 0;
+		boolean hasAudioOnly = false;
+
+		for (int i = 0; i < formats.size(); i++) {
+			JSONObject format = formats.getJSONObject(i);
+			String vcodec = format.getString("vcodec");
+			String acodec = format.getString("acodec");
+			String formatUrl = format.getString("url");
+
+			if (formatUrl == null || formatUrl.isEmpty()) continue;
+
+			boolean hasVideo = vcodec != null && !vcodec.equals("none");
+			boolean hasAudio = acodec != null && !acodec.equals("none");
+
+			if (hasVideo && hasAudio) {
+				Integer height = format.getInteger("height");
+				if (height != null && height > bestMergedHeight) {
+					bestMergedHeight = height;
+					bestMergedFormat = format;
+				}
+			} else if (hasVideo && !hasAudio) {
+				hasAudioOnly = true;
+				Integer height = format.getInteger("height");
+				if (height != null && height > bestVideoHeight) {
+					bestVideoHeight = height;
+					bestVideoFormat = format;
+				}
+			} else if (!hasVideo && hasAudio) {
+				hasAudioOnly = true;
+			}
+		}
+
+		if (bestMergedFormat != null) {
+			logger.info("使用合并格式: 分辨率 {}p", bestMergedHeight);
+			return new VideoUrlResult(bestMergedFormat.getString("url"), false, bestMergedHeight);
+		}
+
+		boolean isDash = bestVideoFormat != null && hasAudioOnly;
+		if (bestVideoFormat != null) {
+			logger.info("使用视频流: 分辨率 {}p, DASH模式: {}", bestVideoHeight, isDash);
+			return new VideoUrlResult(bestVideoFormat.getString("url"), isDash, bestVideoHeight);
+		}
+
+		return new VideoUrlResult(null, false, 0);
+	}
+
+	private String extractBestAudioUrl(JSONArray formats) {
+		if (formats == null || formats.size() == 0) {
+			return null;
+		}
+
+		JSONObject bestFormat = null;
+		int maxBitrate = 0;
+
+		for (int i = 0; i < formats.size(); i++) {
+			JSONObject format = formats.getJSONObject(i);
+			String formatUrl = format.getString("url");
+			if (formatUrl == null || formatUrl.isEmpty()) continue;
+
+			Integer abr = format.getInteger("abr");
+			Integer tbr = format.getInteger("tbr");
+			int bitrate = (abr != null ? abr : 0) + (tbr != null ? tbr : 0);
+
+			if (bitrate > maxBitrate || bestFormat == null) {
+				maxBitrate = bitrate;
+				bestFormat = format;
+			}
+		}
+
+		return bestFormat != null ? bestFormat.getString("url") : null;
+	}
+
+	private AjaxEntity handlePlatformError(String platform, Exception e) {
+		logger.error("{}平台解析失败", platform, e);
+		return new AjaxEntity(Global.ajax_uri_error, platform + "解析失败: " + e.getMessage(), null);
 	}
 
 }
