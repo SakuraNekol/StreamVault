@@ -132,6 +132,6 @@ public class ApiController {
 	@RequestMapping("/directData")
 	@CrossOrigin
 	public AjaxEntity directData(String token, String video) {
-		return analysisService.directData(token,video);
+		return analysisService.directData(token,video,"http");
 	}
 }

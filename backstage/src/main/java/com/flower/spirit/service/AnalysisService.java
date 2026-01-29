@@ -761,19 +761,16 @@ public class AnalysisService {
 			
 			}
 		}else {
-			String platform = this.getPlatform(video.getOriginaladdress());
-			String url = this.getUrl(video.getOriginaladdress());
-			if(null != platform&& platform.equals("抖音")) {
-				Map<String, String> downVideo = DouUtil.downVideo(url);
-				return new AjaxEntity(Global.ajax_success, "获取成功", downVideo);
-			}else {
-				return new AjaxEntity(Global.ajax_uri_error, "当前平台暂时不支持直链", null);
-			}
+			return directData(Global.apptoken, video.getOriginaladdress(),"local")
 		}
 		return null;
 	}
 	
-	public AjaxEntity directData(String token, String video) {
+	public AjaxEntity directData(String token, String video,String type) {
+		if ("http".equals(type) && !"video_standard".equals(Global.frontend)) {
+		    logger.info("当前主页模式不支持该接口调用");
+		    return null;
+		}
 		String platform = this.getPlatform(video);
 		String url = this.getUrl(video);
 		try {
